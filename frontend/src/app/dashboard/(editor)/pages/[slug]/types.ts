@@ -6,7 +6,11 @@ export type BlockType =
   | 'atomic_category'
   | 'title_heading'
   | 'text_image_cta'
-  | 'hero';
+  | 'hero'
+  | 'quote_testimonial'
+  | 'features_grid'
+  | 'accordion_faq'
+  | 'separator_spacer';
 
 export interface AtomicBlock {
   id: string;

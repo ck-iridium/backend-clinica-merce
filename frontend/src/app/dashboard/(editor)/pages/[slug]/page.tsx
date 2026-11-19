@@ -16,6 +16,7 @@ import CreatorSidebar from './components/CreatorSidebar';
 import { CanvasSection } from './components/CanvasSection';
 import BlockEditorModal from './components/BlockEditorModal';
 import AddBlockModal from './components/AddBlockModal';
+import { getBlockDefinition, getBlockIcon } from './utils/blockRegistry';
 
 export default function PageEditor() {
   const { slug } = useParams();
@@ -230,25 +231,32 @@ export default function PageEditor() {
 
         {/* ── DragOverlay — FUERA de cualquier contenedor con overflow ─ */}
         <DragOverlay dropAnimation={null} modifiers={[restrictToWindowEdges, snapCenterToCursor]}>
-          {activeId ? (
-            <div className="bg-white border-2 border-[#d4af37] rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.15)] p-4 max-w-[240px] flex items-center gap-3 select-none pointer-events-none opacity-95 rotate-1">
-              <div className="w-8 h-8 bg-amber-50 rounded-xl border border-amber-100 flex items-center justify-center text-[#d4af37] shrink-0">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6z" />
-                </svg>
+          {activeId ? (() => {
+            const isLibrary = activeId.startsWith('library-');
+            const blockType = isLibrary ? activeId.replace('library-', '') : (activeBlock?.block_type || '');
+            const blockDef = getBlockDefinition(blockType);
+            const blockIcon = getBlockIcon(blockType);
+            const blockLabel = blockDef?.label || activeBlock?.block_type?.replace(/_/g, ' ') || 'Bloque';
+            const displayTitle = isLibrary
+              ? blockLabel
+              : (activeBlock?.content_data?.heading || activeBlock?.content_data?.title || activeBlock?.content_data?.quote || blockLabel);
+
+            return (
+              <div className="bg-white/95 backdrop-blur-md border-2 border-[#d4af37] rounded-2xl shadow-[0_20px_50px_rgba(212,175,55,0.22)] p-3.5 max-w-[260px] flex items-center gap-3 select-none pointer-events-none opacity-95 rotate-2 scale-105 transition-transform">
+                <div className="w-10 h-10 bg-amber-50 rounded-xl border border-amber-200/80 flex items-center justify-center text-[#d4af37] shrink-0 shadow-2xs">
+                  {blockIcon}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <span className="text-[9px] font-black uppercase tracking-wider text-[#d4af37] block">
+                    {isLibrary ? 'Nuevo Bloque' : 'Moviendo Bloque'}
+                  </span>
+                  <span className="text-xs font-bold font-serif text-stone-900 block truncate mt-0.5">
+                    {displayTitle}
+                  </span>
+                </div>
               </div>
-              <div className="min-w-0">
-                <span className="text-[9px] font-black uppercase tracking-wider text-stone-400 block">
-                  {activeId.startsWith('library-') ? 'Nuevo bloque' : 'Moviendo'}
-                </span>
-                <span className="text-xs font-bold font-serif text-stone-800 block truncate mt-0.5">
-                  {activeId.startsWith('library-')
-                    ? activeId.replace('library-', '').replace(/_/g, ' ').toUpperCase()
-                    : (activeBlock?.content_data?.title || activeBlock?.content_data?.text || activeBlock?.block_type || 'Bloque')}
-                </span>
-              </div>
-            </div>
-          ) : null}
+            );
+          })() : null}
         </DragOverlay>
 
       </DndContext>

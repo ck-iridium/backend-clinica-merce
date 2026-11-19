@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import type { SectionBlock } from '../../types';
 
 interface SectionToolbarProps {
@@ -23,7 +23,29 @@ export function SectionToolbar({
   onUpdateSectionMetadata,
 }: SectionToolbarProps) {
   const [showGearPopover, setShowGearPopover] = useState(false);
+  const popoverRef = useRef<HTMLDivElement>(null);
+  const gearButtonRef = useRef<HTMLButtonElement>(null);
   const struct = section.content_data;
+
+  // Cierre automático al hacer click fuera del popover de ajustes
+  useEffect(() => {
+    if (!showGearPopover) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (
+        popoverRef.current &&
+        !popoverRef.current.contains(target) &&
+        gearButtonRef.current &&
+        !gearButtonRef.current.contains(target)
+      ) {
+        setShowGearPopover(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showGearPopover]);
+
+  const isCustomColor = struct.bg_color?.startsWith('#');
 
   return (
     <div 
@@ -89,7 +111,8 @@ export function SectionToolbar({
         {/* Ajustes avanzados de sección (Icono engranaje) */}
         <div className="relative">
           <button
-            onClick={() => setShowGearPopover(!showGearPopover)}
+            ref={gearButtonRef}
+            onClick={() => setShowGearPopover(prev => !prev)}
             className={`p-1.5 rounded-lg transition-all ${
               showGearPopover 
                 ? 'bg-[#d4af37] text-stone-950 shadow-xs' 
@@ -104,10 +127,28 @@ export function SectionToolbar({
           </button>
           
           {showGearPopover && (
-            <div className="absolute left-0 top-full mt-1.5 bg-white border border-stone-200 rounded-2xl shadow-2xl p-4 z-50 min-w-[280px] flex flex-col gap-3.5 text-stone-800 animate-in fade-in zoom-in-95 duration-200">
+            <div
+              ref={popoverRef}
+              className="absolute left-0 top-full mt-2 bg-white border border-stone-200/90 rounded-2xl shadow-2xl p-4 z-50 min-w-[290px] flex flex-col gap-3.5 text-stone-800 animate-in fade-in zoom-in-95 duration-200"
+            >
+              {/* Encabezado del Popover */}
+              <div className="flex items-center justify-between pb-2 border-b border-stone-100">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#d4af37]">
+                  Ajustes de Sección
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowGearPopover(false)}
+                  className="text-stone-400 hover:text-stone-700 text-xs font-bold p-0.5 rounded"
+                  title="Cerrar ajustes"
+                >
+                  ✕
+                </button>
+              </div>
+
               {/* Alineación Horizontal */}
               <div>
-                <span className="text-[9px] font-black uppercase tracking-wider text-[#d4af37] block mb-1.5">
+                <span className="text-[9px] font-black uppercase tracking-wider text-stone-500 block mb-1.5">
                   Alineación Horizontal
                 </span>
                 <div className="grid grid-cols-4 gap-1">
@@ -137,7 +178,7 @@ export function SectionToolbar({
 
               {/* Alineación Vertical */}
               <div>
-                <span className="text-[9px] font-black uppercase tracking-wider text-[#d4af37] block mb-1.5">
+                <span className="text-[9px] font-black uppercase tracking-wider text-stone-500 block mb-1.5">
                   Alineación Vertical
                 </span>
                 <div className="grid grid-cols-3 gap-1">
@@ -166,7 +207,7 @@ export function SectionToolbar({
 
               {/* Ancho de Contenedor */}
               <div>
-                <span className="text-[9px] font-black uppercase tracking-wider text-[#d4af37] block mb-1.5">
+                <span className="text-[9px] font-black uppercase tracking-wider text-stone-500 block mb-1.5">
                   Ancho de Contenedor
                 </span>
                 <div className="grid grid-cols-2 gap-1.5">
@@ -194,7 +235,7 @@ export function SectionToolbar({
 
               {/* Color de Fondo */}
               <div>
-                <span className="text-[9px] font-black uppercase tracking-wider text-[#d4af37] block mb-1.5">
+                <span className="text-[9px] font-black uppercase tracking-wider text-stone-500 block mb-1.5">
                   Color de Fondo
                 </span>
                 <div className="flex items-center gap-2">
@@ -216,14 +257,36 @@ export function SectionToolbar({
                       />
                     );
                   })}
-                  {/* Selector Hex libre */}
-                  <input
-                    type="color"
-                    value={struct.bg_color?.startsWith('#') ? struct.bg_color : '#ffffff'}
-                    onChange={(e) => onUpdateSectionMetadata(section.id, 'bg_color', e.target.value)}
-                    className="w-7 h-7 rounded-full cursor-pointer border border-stone-200 p-0 overflow-hidden"
-                    title="Color personalizado"
-                  />
+
+                  {/* Selector Hex personalizado con icono de Paleta Multicolor */}
+                  <div className="relative group/picker" title="Color personalizado (abrir paleta)">
+                    <button
+                      type="button"
+                      className={`w-7 h-7 rounded-full flex items-center justify-center transition-all shadow-xs relative overflow-hidden border ${
+                        isCustomColor
+                          ? 'ring-2 ring-[#d4af37] ring-offset-2 scale-110 border-white'
+                          : 'border-stone-300 hover:scale-105'
+                      }`}
+                      style={{
+                        background: isCustomColor
+                          ? struct.bg_color
+                          : 'conic-gradient(from 180deg at 50% 50%, #f43f5e 0deg, #fb923c 60deg, #facc15 120deg, #4ade80 180deg, #38bdf8 240deg, #818cf8 300deg, #f43f5e 360deg)',
+                      }}
+                    >
+                      <span className="w-5 h-5 rounded-full bg-stone-900/60 backdrop-blur-[1px] flex items-center justify-center text-white">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4.098 19.902a3.75 3.75 0 005.304 0l6.401-6.402M6.75 21A3.75 3.75 0 013 17.25V4.125C3 3.504 3.504 3 4.125 3h5.25c.621 0 1.125.504 1.125 1.125v4.072M6.75 21a3.75 3.75 0 003.75-3.75V8.197M6.75 21h13.125c.621 0 1.125-.504 1.125-1.125v-5.25c0-.621-.504-1.125-1.125-1.125h-4.072M10.5 8.197l2.88-2.88c.438-.439 1.15-.439 1.59 0l3.712 3.713c.44.44.44 1.152 0 1.59l-2.879 2.88M6.75 17.25h.008v.008H6.75v-.008z" />
+                        </svg>
+                      </span>
+                    </button>
+                    <input
+                      type="color"
+                      value={isCustomColor ? struct.bg_color : '#ffffff'}
+                      onChange={(e) => onUpdateSectionMetadata(section.id, 'bg_color', e.target.value)}
+                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                      title="Seleccionar color personalizado"
+                    />
+                  </div>
                 </div>
               </div>
             </div>

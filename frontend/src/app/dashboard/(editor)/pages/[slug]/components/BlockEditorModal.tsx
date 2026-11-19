@@ -7,6 +7,10 @@ import { ImageFields } from './modals/block-editor/fields/ImageFields';
 import { TextImageCtaFields } from './modals/block-editor/fields/TextImageCtaFields';
 import { ButtonFields } from './modals/block-editor/fields/ButtonFields';
 import { CategoryFields } from './modals/block-editor/fields/CategoryFields';
+import { QuoteTestimonialFields } from './modals/block-editor/fields/QuoteTestimonialFields';
+import { FeaturesGridFields } from './modals/block-editor/fields/FeaturesGridFields';
+import { AccordionFaqFields } from './modals/block-editor/fields/AccordionFaqFields';
+import { SeparatorSpacerFields } from './modals/block-editor/fields/SeparatorSpacerFields';
 
 interface BlockEditorModalProps {
   isOpen: boolean;
@@ -108,24 +112,54 @@ export default function BlockEditorModal({
               dbServices={dbServices}
             />
           )}
+
+          {blockType === 'quote_testimonial' && (
+            <QuoteTestimonialFields
+              editFormData={editFormData}
+              set={set}
+              openGalleryFor={openGalleryFor}
+            />
+          )}
+
+          {blockType === 'features_grid' && (
+            <FeaturesGridFields
+              editFormData={editFormData}
+              set={set}
+            />
+          )}
+
+          {blockType === 'accordion_faq' && (
+            <AccordionFaqFields
+              editFormData={editFormData}
+              set={set}
+            />
+          )}
+
+          {blockType === 'separator_spacer' && (
+            <SeparatorSpacerFields
+              editFormData={editFormData}
+              set={set}
+            />
+          )}
         </div>
 
         {/* Footer */}
-        <div className="px-8 py-5 border-t border-stone-100 flex gap-3 shrink-0">
+        <div className="px-8 py-5 border-t border-stone-100 flex items-center justify-end gap-3 shrink-0 bg-stone-50/50 rounded-b-3xl">
           <button
             onClick={onClose}
-            className="flex-1 py-3 rounded-2xl border border-stone-200 text-stone-500 hover:bg-stone-50 text-sm font-bold transition-all duration-200"
+            className="px-5 py-2.5 rounded-xl border border-stone-200 text-stone-600 hover:bg-stone-100 text-xs font-bold transition-all"
           >
             Cancelar
           </button>
           <button
             onClick={onSave}
             disabled={saving}
-            className="flex-1 py-3 rounded-2xl bg-stone-900 hover:bg-[#d4af37] text-white text-sm font-black uppercase tracking-wider transition-all duration-300 shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+            className="px-7 py-2.5 bg-stone-900 hover:bg-[#d4af37] text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-sm active:scale-95 disabled:opacity-50"
           >
-            {saving ? 'Guardando...' : 'Guardar cambios'}
+            {saving ? 'Guardando...' : 'Guardar Cambios'}
           </button>
         </div>
+
       </div>
     </div>
   );

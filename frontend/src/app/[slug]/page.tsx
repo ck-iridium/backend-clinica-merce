@@ -12,7 +12,19 @@ import Link from 'next/link';
 // Tipos estructurales del Page Builder
 interface AtomicBlock {
   id: string;
-  block_type: 'atomic_title' | 'atomic_text' | 'atomic_image' | 'atomic_button' | 'atomic_category' | 'title_heading' | 'text_image_cta' | 'hero';
+  block_type:
+    | 'atomic_title'
+    | 'atomic_text'
+    | 'atomic_image'
+    | 'atomic_button'
+    | 'atomic_category'
+    | 'title_heading'
+    | 'text_image_cta'
+    | 'hero'
+    | 'quote_testimonial'
+    | 'features_grid'
+    | 'accordion_faq'
+    | 'separator_spacer';
   content_data: Record<string, any>;
 }
 
@@ -878,6 +890,210 @@ export default async function CustomPage({ params }: PageProps) {
                                       })}
                                     </div>
                                   )}
+                                </div>
+                              </InspectableSection>
+                            );
+                          }
+
+                          // ──── RENDER: QUOTE TESTIMONIAL ────
+                          if (block.block_type === 'quote_testimonial') {
+                            const quote = data.quote || 'Nuestra prioridad es la armonía natural y el cuidado de cada detalle para realzar tu belleza única.';
+                            const author = data.author || 'Dra. Mercè Guasch';
+                            const role = data.role || 'Directora Médica & Especialista';
+                            const rating = data.rating ?? 5;
+                            const avatarUrl = data.avatar_url;
+
+                            return (
+                              <InspectableSection
+                                key={block.id}
+                                id={block.id}
+                                name={`Testimonio: ${author}`}
+                                pageSlug={slug}
+                                blockType={block.block_type}
+                              >
+                                <div className="w-full py-10 px-4 flex justify-center">
+                                  <div className="w-full max-w-3xl bg-white/95 rounded-3xl p-8 md:p-12 border border-stone-200/80 shadow-luxury text-center relative">
+                                    <div className="w-12 h-12 rounded-full bg-amber-50 text-primary border border-amber-200/60 flex items-center justify-center mx-auto mb-5 shadow-xs">
+                                      <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+                                      </svg>
+                                    </div>
+                                    {rating > 0 && (
+                                      <div className="flex justify-center gap-1 mb-4 text-primary">
+                                        {Array.from({ length: 5 }, (_, i) => (
+                                          <svg
+                                            key={i}
+                                            className={`w-4 h-4 ${i < rating ? 'fill-primary' : 'fill-stone-200 text-stone-200'}`}
+                                            viewBox="0 0 20 20"
+                                          >
+                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                          </svg>
+                                        ))}
+                                      </div>
+                                    )}
+                                    <p className="font-serif text-xl md:text-2xl text-stone-800 italic leading-relaxed mb-6">
+                                      “{quote}”
+                                    </p>
+                                    <div className="flex items-center justify-center gap-3">
+                                      {avatarUrl ? (
+                                        <img src={avatarUrl} alt={author} className="w-12 h-12 rounded-full object-cover border-2 border-primary/40 shadow-xs" />
+                                      ) : (
+                                        <div className="w-10 h-10 rounded-full bg-stone-900 text-primary font-serif font-bold text-sm flex items-center justify-center border border-stone-800 shadow-xs">
+                                          {author.charAt(0)}
+                                        </div>
+                                      )}
+                                      <div className="text-left">
+                                        <span className="font-serif font-bold text-sm text-stone-900 block leading-tight">{author}</span>
+                                        <span className="text-[11px] font-sans text-primary uppercase tracking-wider font-semibold block mt-0.5">{role}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </InspectableSection>
+                            );
+                          }
+
+                          // ──── RENDER: FEATURES GRID ────
+                          if (block.block_type === 'features_grid') {
+                            const heading = data.heading || 'Pilares de Excelencia';
+                            const subheading = data.subheading;
+                            const items: any[] = Array.isArray(data.items) && data.items.length > 0 ? data.items : [];
+                            const colClass = items.length === 2 ? 'grid-cols-1 md:grid-cols-2' : items.length === 4 ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 md:grid-cols-3';
+
+                            return (
+                              <InspectableSection
+                                key={block.id}
+                                id={block.id}
+                                name={`Pilares: ${heading}`}
+                                pageSlug={slug}
+                                blockType={block.block_type}
+                              >
+                                <div className="w-full py-12 px-6">
+                                  <div className="max-w-7xl mx-auto">
+                                    {(heading || subheading) && (
+                                      <div className="text-center mb-12 max-w-2xl mx-auto">
+                                        {heading && (
+                                          <h3 className="font-serif text-3xl md:text-4xl font-extrabold text-stone-900 leading-tight">
+                                            {heading}
+                                          </h3>
+                                        )}
+                                        {subheading && (
+                                          <p className="text-stone-500 text-base font-sans mt-3">
+                                            {subheading}
+                                          </p>
+                                        )}
+                                        <div className="w-12 h-0.5 bg-primary mx-auto mt-5" />
+                                      </div>
+                                    )}
+                                    <div className={`grid ${colClass} gap-8`}>
+                                      {items.map((item, idx) => (
+                                        <div
+                                          key={idx}
+                                          className="bg-white rounded-3xl p-8 border border-stone-150 shadow-luxury hover:border-primary/40 hover:-translate-y-1 transition-all duration-300 flex flex-col"
+                                        >
+                                          <div className="w-12 h-12 rounded-2xl bg-amber-50 text-primary border border-amber-200/70 flex items-center justify-center font-serif font-black text-base mb-6 shadow-2xs">
+                                            0{idx + 1}
+                                          </div>
+                                          <h4 className="font-serif font-bold text-xl text-stone-900 mb-3">
+                                            {item.title}
+                                          </h4>
+                                          <p className="text-stone-600 text-sm font-sans leading-relaxed">
+                                            {item.description}
+                                          </p>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                              </InspectableSection>
+                            );
+                          }
+
+                          // ──── RENDER: ACCORDION FAQ ────
+                          if (block.block_type === 'accordion_faq') {
+                            const heading = data.heading || 'Preguntas Frecuentes';
+                            const subheading = data.subheading;
+                            const items: any[] = Array.isArray(data.items) && data.items.length > 0 ? data.items : [];
+
+                            return (
+                              <InspectableSection
+                                key={block.id}
+                                id={block.id}
+                                name={`FAQ: ${heading}`}
+                                pageSlug={slug}
+                                blockType={block.block_type}
+                              >
+                                <div className="w-full py-12 px-6">
+                                  <div className="max-w-4xl mx-auto">
+                                    {(heading || subheading) && (
+                                      <div className="text-center mb-10">
+                                        {heading && (
+                                          <h3 className="font-serif text-3xl md:text-4xl font-extrabold text-stone-900 leading-tight">
+                                            {heading}
+                                          </h3>
+                                        )}
+                                        {subheading && (
+                                          <p className="text-stone-500 text-base font-sans mt-2">
+                                            {subheading}
+                                          </p>
+                                        )}
+                                      </div>
+                                    )}
+                                    <div className="space-y-4">
+                                      {items.map((item, idx) => (
+                                        <details
+                                          key={idx}
+                                          className="group bg-white rounded-2xl border border-stone-200/80 overflow-hidden shadow-2xs transition-all"
+                                          open={idx === 0}
+                                        >
+                                          <summary className="w-full px-7 py-5 flex items-center justify-between text-left gap-4 cursor-pointer hover:bg-stone-50/50 list-none select-none">
+                                            <span className="font-serif font-bold text-lg text-stone-800 group-hover:text-primary transition-colors">
+                                              {item.question}
+                                            </span>
+                                            <div className="w-7 h-7 rounded-full bg-stone-100 flex items-center justify-center text-stone-500 shrink-0 group-open:rotate-180 group-open:bg-amber-50 group-open:text-primary transition-all duration-300">
+                                              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                              </svg>
+                                            </div>
+                                          </summary>
+                                          <div className="px-7 pb-6 pt-1 text-stone-600 text-sm font-sans leading-relaxed border-t border-stone-100">
+                                            {item.answer}
+                                          </div>
+                                        </details>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                              </InspectableSection>
+                            );
+                          }
+
+                          // ──── RENDER: SEPARATOR SPACER ────
+                          if (block.block_type === 'separator_spacer') {
+                            const spacing = data.spacing || 'medium';
+                            const style = data.style || 'line_gold';
+                            const pyClass = spacing === 'small' ? 'py-4' : spacing === 'large' ? 'py-16' : 'py-8';
+
+                            return (
+                              <InspectableSection
+                                key={block.id}
+                                id={block.id}
+                                name="Divisor Decorativo"
+                                pageSlug={slug}
+                                blockType={block.block_type}
+                              >
+                                <div className={`w-full ${pyClass} flex items-center justify-center px-6`}>
+                                  {style === 'line_gold' && (
+                                    <div className="w-full max-w-xl flex items-center gap-3">
+                                      <div className="flex-1 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
+                                      <div className="w-2 h-2 rotate-45 border border-primary bg-amber-50" />
+                                      <div className="flex-1 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
+                                    </div>
+                                  )}
+                                  {style === 'line_subtle' && (
+                                    <div className="w-full max-w-2xl h-px bg-stone-200" />
+                                  )}
+                                  {style === 'spacer_only' && <div className="w-full h-1" />}
                                 </div>
                               </InspectableSection>
                             );

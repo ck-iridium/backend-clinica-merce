@@ -7,6 +7,10 @@ import { ImageBlockView } from './ImageBlockView';
 import { TextImageCtaBlockView } from './TextImageCtaBlockView';
 import { ButtonBlockView } from './ButtonBlockView';
 import { CategoryBlockView } from './CategoryBlockView';
+import { QuoteTestimonialBlockView } from './QuoteTestimonialBlockView';
+import { FeaturesGridBlockView } from './FeaturesGridBlockView';
+import { AccordionFaqBlockView } from './AccordionFaqBlockView';
+import { SeparatorSpacerBlockView } from './SeparatorSpacerBlockView';
 
 interface RenderBlockProps {
   block: AtomicBlock;
@@ -39,6 +43,14 @@ export function RenderBlock({ block, dbCategories, dbServices }: RenderBlockProp
           dbServices={dbServices}
         />
       );
+    case 'quote_testimonial':
+      return <QuoteTestimonialBlockView data={data} />;
+    case 'features_grid':
+      return <FeaturesGridBlockView data={data} />;
+    case 'accordion_faq':
+      return <AccordionFaqBlockView data={data} />;
+    case 'separator_spacer':
+      return <SeparatorSpacerBlockView data={data} />;
     default:
       return null;
   }
