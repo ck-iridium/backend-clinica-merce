@@ -18,14 +18,15 @@ interface RenderBlockProps {
   dbServices: any[];
   isBoxed?: boolean;
   sectionVerticalAlign?: string;
+  contentWidth?: 'boxed' | 'fullwidth' | 'fullwidth_boxed';
 }
 
-export function RenderBlock({ block, dbCategories, dbServices, isBoxed = false, sectionVerticalAlign }: RenderBlockProps) {
+export function RenderBlock({ block, dbCategories, dbServices, isBoxed = false, sectionVerticalAlign, contentWidth }: RenderBlockProps) {
   const data = block.content_data || {};
 
   switch (block.block_type) {
     case 'hero':
-      return <HeroBlockView data={data} isBoxed={isBoxed} sectionVerticalAlign={sectionVerticalAlign} />;
+      return <HeroBlockView data={data} isBoxed={isBoxed} sectionVerticalAlign={sectionVerticalAlign} contentWidth={contentWidth} />;
     case 'atomic_title':
     case 'title_heading':
       return <TitleBlockView data={data} />;
@@ -43,6 +44,7 @@ export function RenderBlock({ block, dbCategories, dbServices, isBoxed = false, 
           data={data}
           dbCategories={dbCategories}
           dbServices={dbServices}
+          contentWidth={contentWidth}
         />
       );
     case 'quote_testimonial':

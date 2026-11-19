@@ -146,6 +146,7 @@ export function PublicSection({
                         dbServices={dbServices}
                         isBoxed={true}
                         sectionVerticalAlign={verticalAlign}
+                        contentWidth={contentWidth}
                       />
                     ))
                   )}
@@ -201,6 +202,7 @@ export function PublicSection({
                     dbServices={dbServices}
                     isBoxed={false}
                     sectionVerticalAlign={verticalAlign}
+                    contentWidth={contentWidth}
                   />
                 ))
               )}

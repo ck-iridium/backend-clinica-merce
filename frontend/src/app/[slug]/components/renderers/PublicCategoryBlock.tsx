@@ -8,9 +8,10 @@ interface PublicCategoryBlockProps {
   data: Record<string, any>;
   dbCategories: any[];
   dbServices: any[];
+  contentWidth?: 'boxed' | 'fullwidth' | 'fullwidth_boxed';
 }
 
-export function PublicCategoryBlock({ data, dbCategories, dbServices }: PublicCategoryBlockProps) {
+export function PublicCategoryBlock({ data, dbCategories, dbServices, contentWidth }: PublicCategoryBlockProps) {
   let catId = data.category_id;
   if (!catId && dbCategories.length > 0) {
     catId = dbCategories[0]?.id;
@@ -118,6 +119,7 @@ export function PublicCategoryBlock({ data, dbCategories, dbServices }: PublicCa
               max_services: data.max_items || 6,
             }}
             services={filteredServices}
+            isFullWidth={contentWidth === 'fullwidth'}
           />
         </div>
       )}

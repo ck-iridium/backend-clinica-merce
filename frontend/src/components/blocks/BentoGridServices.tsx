@@ -155,7 +155,7 @@ function BentoServiceCard({ svc, idx, gridClass, total }: { svc: any, idx: numbe
 }
 
 // ─── Componente Principal ───────────────────────────────────────────────────
-export default function BentoGridServices({ data, services }: { data: any, services: any[] }) {
+export default function BentoGridServices({ data, services, isFullWidth = false }: { data: any, services: any[], isFullWidth?: boolean }) {
   const maxServices = data?.max_services || 6;
   const filteredServices = services
     .filter(s => s.is_active)
@@ -203,11 +203,13 @@ export default function BentoGridServices({ data, services }: { data: any, servi
     return 'md:col-span-1 md:row-span-1 h-full';
   };
 
+  const containerClass = isFullWidth ? 'w-full' : 'max-w-7xl mx-auto w-full';
+
   return (
     <div className="w-full bg-transparent flex flex-col">
       {/* Title */}
       {(data?.title || data?.subtitle) && (
-        <div className="max-w-7xl mx-auto w-full mb-8 text-center md:text-left">
+        <div className={`${containerClass} mb-8 text-center md:text-left`}>
           {data?.title && (
             <h2 className="text-3xl md:text-4xl font-serif font-extrabold leading-tight">
               {data.title}
@@ -222,7 +224,7 @@ export default function BentoGridServices({ data, services }: { data: any, servi
       )}
 
       {/* Asymmetric Bento Grid */}
-      <div className={`max-w-7xl mx-auto w-full grid ${containerGridClass}`}>
+      <div className={`${containerClass} grid ${containerGridClass}`}>
         {filteredServices.map((svc, idx) => {
           const gridClass = getGridClasses(idx, total);
           return (

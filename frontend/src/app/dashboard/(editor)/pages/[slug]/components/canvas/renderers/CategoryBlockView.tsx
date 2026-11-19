@@ -7,9 +7,10 @@ interface CategoryBlockViewProps {
   data: Record<string, any>;
   dbCategories: any[];
   dbServices: any[];
+  contentWidth?: 'boxed' | 'fullwidth' | 'fullwidth_boxed';
 }
 
-export function CategoryBlockView({ data, dbCategories, dbServices }: CategoryBlockViewProps) {
+export function CategoryBlockView({ data, dbCategories, dbServices, contentWidth }: CategoryBlockViewProps) {
   let catId = data.category_id;
   if (!catId && dbCategories.length > 0) {
     catId = dbCategories[0]?.id;
@@ -104,6 +105,7 @@ export function CategoryBlockView({ data, dbCategories, dbServices }: CategoryBl
             max_services: data.max_items || 6
           }}
           services={services}
+          isFullWidth={contentWidth === 'fullwidth'}
         />
       )}
 

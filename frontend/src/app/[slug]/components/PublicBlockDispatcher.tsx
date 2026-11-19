@@ -20,6 +20,7 @@ interface PublicBlockDispatcherProps {
   dbServices: any[];
   isBoxed?: boolean;
   sectionVerticalAlign?: string;
+  contentWidth?: 'boxed' | 'fullwidth' | 'fullwidth_boxed';
 }
 
 export function PublicBlockDispatcher({
@@ -29,6 +30,7 @@ export function PublicBlockDispatcher({
   dbServices,
   isBoxed = false,
   sectionVerticalAlign,
+  contentWidth,
 }: PublicBlockDispatcherProps) {
   const data = block.content_data || {};
 
@@ -108,7 +110,7 @@ export function PublicBlockDispatcher({
           pageSlug={slug}
           blockType={block.block_type}
         >
-          <PublicHeroBlock data={data} isBoxed={isBoxed} sectionVerticalAlign={sectionVerticalAlign} />
+          <PublicHeroBlock data={data} isBoxed={isBoxed} sectionVerticalAlign={sectionVerticalAlign} contentWidth={contentWidth} />
         </InspectableSection>
       );
 
@@ -126,6 +128,7 @@ export function PublicBlockDispatcher({
             data={data}
             dbCategories={dbCategories}
             dbServices={dbServices}
+            contentWidth={contentWidth}
           />
         </InspectableSection>
       );

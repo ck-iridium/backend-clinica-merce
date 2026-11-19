@@ -348,9 +348,9 @@ BLOCK_SCHEMAS: Dict[str, Dict[str, Any]] = {
             "content_width": {
                 "type": "select",
                 "label": "Ancho de Contenedor",
-                "options": ["boxed", "fullwidth"],
+                "options": ["boxed", "fullwidth", "fullwidth_boxed"],
                 "default": "boxed",
-                "description": "boxed (cuadrícula central max-w-7xl), fullwidth (ancho completo w-full)."
+                "description": "boxed (todo boxed max-w-7xl), fullwidth (todo fullwidth w-full), fullwidth_boxed (fondo fullwidth, contenido boxed)."
             },
             "horizontal_alignment": {
                 "type": "select",

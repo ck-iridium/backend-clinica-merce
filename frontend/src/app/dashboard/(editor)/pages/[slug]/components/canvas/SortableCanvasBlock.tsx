@@ -17,6 +17,7 @@ interface SortableCanvasBlockProps {
   dbServices: any[];
   isBoxed?: boolean;
   sectionVerticalAlign?: string;
+  contentWidth?: 'boxed' | 'fullwidth' | 'fullwidth_boxed';
 }
 
 export function SortableCanvasBlock({
@@ -31,6 +32,7 @@ export function SortableCanvasBlock({
   dbServices,
   isBoxed = false,
   sectionVerticalAlign,
+  contentWidth,
 }: SortableCanvasBlockProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: block.id,
@@ -153,6 +155,7 @@ export function SortableCanvasBlock({
           dbServices={dbServices}
           isBoxed={isBoxed}
           sectionVerticalAlign={sectionVerticalAlign}
+          contentWidth={contentWidth}
         />
       </div>
     </div>

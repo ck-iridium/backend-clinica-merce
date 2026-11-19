@@ -17,6 +17,7 @@ interface CanvasColumnProps {
   dbServices: any[];
   isBoxed?: boolean;
   sectionVerticalAlign?: string;
+  contentWidth?: 'boxed' | 'fullwidth' | 'fullwidth_boxed';
 }
 
 export function CanvasColumn({
@@ -32,6 +33,7 @@ export function CanvasColumn({
   dbServices,
   isBoxed = false,
   sectionVerticalAlign,
+  contentWidth,
 }: CanvasColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id: col.id });
   const blocks: AtomicBlock[] = col.blocks || [];
@@ -58,6 +60,7 @@ export function CanvasColumn({
             dbServices={dbServices}
             isBoxed={isBoxed}
             sectionVerticalAlign={sectionVerticalAlign}
+            contentWidth={contentWidth}
           />
         ))}
       </SortableContext>

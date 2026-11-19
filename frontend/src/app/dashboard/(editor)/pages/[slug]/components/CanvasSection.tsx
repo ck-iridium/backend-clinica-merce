@@ -129,6 +129,7 @@ export function CanvasSection({
                   dbServices={dbServices}
                   isBoxed={true}
                   sectionVerticalAlign={verticalAlign}
+                  contentWidth={contentWidth}
                 />
               ))}
             </div>
@@ -178,6 +179,7 @@ export function CanvasSection({
               dbServices={dbServices}
               isBoxed={false}
               sectionVerticalAlign={verticalAlign}
+              contentWidth={contentWidth}
             />
           ))}
         </div>
