@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Search, Plus, Menu, ChevronRight, ChevronLeft, ChevronUp, LogOut, User, LayoutDashboard, Users, Sparkles, Ticket, Receipt, CalendarDays, Settings, Database, Image as ImageIcon, Globe, Tag, ShieldCheck, Briefcase, FileText, MoreHorizontal, CreditCard } from 'lucide-react';
+import { Home, Search, Plus, Menu, ChevronRight, ChevronLeft, ChevronUp, LogOut, User, LayoutDashboard, Users, Sparkles, Ticket, Receipt, CalendarDays, Settings, Database, Image as ImageIcon, Globe, Tag, ShieldCheck, Briefcase, FileText, MoreHorizontal, CreditCard, ShieldAlert } from 'lucide-react';
 import { GlobalSearch } from './GlobalSearch';
 import { NotificationCenter } from './NotificationCenter';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -45,6 +45,18 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
   const { t, language, setLanguage } = useLanguage();
   const [userName, setUserName] = useState<string>('');
   const [planType, setPlanType] = useState<string | null>(null);
+  const [isImpersonating, setIsImpersonating] = useState(false);
+  const [impersonateTenantName, setImpersonateTenantName] = useState('');
+
+  const handleExitImpersonation = () => {
+    document.cookie = "is_impersonating=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    document.cookie = "impersonate_tenant_id=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    document.cookie = "impersonate_tenant_slug=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    document.cookie = "impersonate_tenant_name=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    document.cookie = "tenant_id=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    document.cookie = "tenant_slug=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    window.location.href = '/super-admin';
+  };
 
   useEffect(() => {
     if (authUserName) {
@@ -60,6 +72,13 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
       const parts = value.split(`; ${name}=`);
       if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
       return null;
+    }
+
+    const isImp = getCookie('is_impersonating') === 'true';
+    if (isImp) {
+      setIsImpersonating(true);
+      const tName = getCookie('impersonate_tenant_name') || 'Clínica';
+      setImpersonateTenantName(decodeURIComponent(tName));
     }
 
     try {
@@ -405,12 +424,26 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center justify-between w-full px-5 py-5 group outline-none hover:bg-stone-900/50 active:bg-stone-900 transition-all duration-200">
                     <div className="flex items-center gap-3 overflow-hidden">
-                      <div className="w-10 h-10 rounded-full bg-stone-900 border border-[#d4af37]/40 text-[#d4af37] flex items-center justify-center font-bold text-lg shadow-lg shrink-0 overflow-hidden group-active:scale-95 transition-transform">
-                        <User size={20} />
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg shadow-lg shrink-0 overflow-hidden group-active:scale-95 transition-transform relative ${
+                        isImpersonating
+                          ? 'bg-amber-500/20 border-2 border-amber-500/50 text-amber-400'
+                          : 'bg-stone-900 border border-[#d4af37]/40 text-[#d4af37]'
+                      }`}>
+                        {isImpersonating ? <ShieldAlert size={20} className="text-amber-400" /> : <User size={20} />}
+                        {isImpersonating && (
+                          <span className="absolute top-0 right-0 flex h-2.5 w-2.5">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500 border border-stone-950"></span>
+                          </span>
+                        )}
                       </div>
                       <div className="flex flex-col text-left overflow-hidden">
-                        <span className="text-white font-bold text-sm leading-tight truncate">{userName || 'Usuario'}</span>
-                        <span className="text-stone-500 text-[10px] font-black uppercase tracking-widest truncate">{role || 'Personal'}</span>
+                        <span className="text-white font-bold text-sm leading-tight truncate">
+                          {isImpersonating ? (impersonateTenantName || 'Modo Soporte') : (userName || 'Usuario')}
+                        </span>
+                        <span className={`text-[10px] font-black uppercase tracking-widest truncate ${isImpersonating ? 'text-amber-400 font-bold' : 'text-stone-500'}`}>
+                          {isImpersonating ? 'Modo Soporte Activo' : (role || 'Personal')}
+                        </span>
                       </div>
                     </div>
                     <ChevronUp size={18} className={`text-stone-600 transition-all duration-300 ${isUserMenuOpen ? 'rotate-180 text-white' : 'group-hover:text-stone-400'}`} />
@@ -433,6 +466,28 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
                           exit={{ opacity: 0, y: 10, scale: 0.95 }}
                           transition={{ type: "spring", stiffness: 400, damping: 30 }}
                         >
+                          {isImpersonating && (
+                            <div className="p-3 bg-gradient-to-b from-amber-500/15 to-amber-500/5 border border-amber-500/30 rounded-xl mx-2 my-2 space-y-2">
+                              <div className="flex items-center gap-2">
+                                <span className="relative flex h-2 w-2">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                                  <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                                </span>
+                                <ShieldAlert size={14} className="text-amber-400 shrink-0" />
+                                <span className="text-[10px] font-black uppercase tracking-wider text-amber-400">
+                                  Modo Soporte Activo
+                                </span>
+                              </div>
+                              <p className="text-xs font-serif font-bold text-white truncate">{impersonateTenantName}</p>
+                              <button
+                                onClick={() => { setIsUserMenuOpen(false); handleExitImpersonation(); }}
+                                className="w-full flex items-center justify-center gap-2 bg-[#d4af37] hover:bg-[#b08e23] text-stone-950 font-sans font-bold text-[11px] uppercase tracking-wider py-2 px-3 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
+                              >
+                                <LogOut size={13} strokeWidth={2.5} />
+                                <span>Salir y Volver</span>
+                              </button>
+                            </div>
+                          )}
                           <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-stone-500 px-4 py-3 flex items-center justify-between gap-2">
                             <span>{t('dashboard.menu.profile') || 'Gestión de Cuenta'}</span>
                             {planType && (

@@ -213,13 +213,6 @@
   }
 }
 
-/* ─── Ocultar ImpersonationBanner en móvil cuando el Co-Piloto AI está abierto ─── */
-@media (max-width: 640px) {
-  body[data-copilot-open="true"] #impersonation-banner {
-    display: none !important;
-  }
-}
-
 /* ─── Animaciones de Esfera Cromática IA (Agentic Motion Design) ─── */
 @keyframes orb-spin-slow {
   from {

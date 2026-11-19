@@ -7,8 +7,16 @@ import {
   Ticket, Receipt, CalendarDays, Settings,
   Database, Image as ImageIcon, Globe, Tag,
   ShieldCheck, User, LogOut, Search, ChevronRight,
-  MoreHorizontal, Briefcase, FileText, CreditCard, MapPin, Clock
+  MoreHorizontal, Briefcase, FileText, CreditCard, MapPin, Clock, ShieldAlert
 } from 'lucide-react';
+
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+  return null;
+}
 import { GlobalSearch } from './GlobalSearch';
 import { NotificationCenter } from './NotificationCenter';
 import {
@@ -84,24 +92,33 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
   const [planType, setPlanType] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const [isEmbedded, setIsEmbedded] = useState(false);
+  const [isImpersonating, setIsImpersonating] = useState(false);
+  const [impersonateTenantName, setImpersonateTenantName] = useState('');
 
   useEffect(() => {
     setMounted(true);
     if (typeof window !== 'undefined') {
       setIsEmbedded(window.self !== window.top || window.location.search.includes('embedded=true'));
     }
+    const isImp = getCookie('is_impersonating') === 'true';
+    if (isImp) {
+      setIsImpersonating(true);
+      const tName = getCookie('impersonate_tenant_name') || 'Clínica';
+      setImpersonateTenantName(decodeURIComponent(tName));
+    }
   }, []);
 
-  useEffect(() => {
-    // Helper simple para leer cookies del lado del cliente
-    function getCookie(name: string): string | null {
-      if (typeof document === 'undefined') return null;
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
-      return null;
-    }
+  const handleExitImpersonation = () => {
+    document.cookie = "is_impersonating=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    document.cookie = "impersonate_tenant_id=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    document.cookie = "impersonate_tenant_slug=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    document.cookie = "impersonate_tenant_name=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    document.cookie = "tenant_id=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    document.cookie = "tenant_slug=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    window.location.href = '/super-admin';
+  };
 
+  useEffect(() => {
     // 1. Intentar leer rápido de localStorage
     try {
       const userStr = localStorage.getItem('user');
@@ -488,11 +505,56 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="w-full flex items-center justify-center p-3 rounded-2xl text-stone-500 hover:bg-stone-900 hover:text-white transition-all outline-none dashboard-sidebar-bottom-item">
-                  <User size={22} strokeWidth={1.5} />
+                <button
+                  title={isImpersonating ? `Modo Soporte Activo: ${impersonateTenantName} (Clic para opciones)` : (userName || 'Perfil')}
+                  className={`w-full flex items-center justify-center p-3 rounded-2xl transition-all outline-none relative dashboard-sidebar-bottom-item ${
+                    isImpersonating
+                      ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40 hover:bg-amber-500/30 hover:text-amber-300 shadow-[0_0_15px_rgba(212,175,55,0.25)]'
+                      : 'text-stone-500 hover:bg-stone-900 hover:text-white'
+                  }`}
+                >
+                  {isImpersonating ? (
+                    <>
+                      <ShieldAlert size={22} className="text-amber-400 animate-pulse" />
+                      <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500 border border-stone-950"></span>
+                      </span>
+                    </>
+                  ) : (
+                    <User size={22} strokeWidth={1.5} />
+                  )}
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" side="right" className="w-56 ml-4 rounded-[1.5rem] bg-stone-900 border-stone-800 text-white shadow-2xl p-2 animate-in slide-in-from-left-2 duration-200">
+              <DropdownMenuContent align="start" side="right" className="w-64 ml-4 rounded-[1.5rem] bg-stone-900 border-stone-800 text-white shadow-2xl p-2 animate-in slide-in-from-left-2 duration-200">
+                {isImpersonating && (
+                  <>
+                    <div className="p-3 bg-gradient-to-b from-amber-500/15 to-amber-500/5 border border-amber-500/30 rounded-2xl mb-2 space-y-2.5">
+                      <div className="flex items-center gap-2">
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                        </span>
+                        <ShieldAlert size={14} className="text-amber-400 shrink-0" />
+                        <span className="text-[10px] font-black uppercase tracking-wider text-amber-400">
+                          Modo Soporte Activo
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-stone-400 block font-medium">Clínica actual:</span>
+                        <p className="font-bold text-white truncate font-serif text-xs mt-0.5">{impersonateTenantName}</p>
+                      </div>
+                      <button
+                        onClick={handleExitImpersonation}
+                        className="w-full flex items-center justify-center gap-2 bg-[#d4af37] hover:bg-[#b08e23] text-stone-950 font-sans font-bold text-[11px] uppercase tracking-wider py-2 px-3 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
+                      >
+                        <LogOut size={13} strokeWidth={2.5} />
+                        <span>Salir y Volver</span>
+                      </button>
+                    </div>
+                    <DropdownMenuSeparator className="bg-stone-800" />
+                  </>
+                )}
                 <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-stone-500 px-4 py-3 flex items-center justify-between gap-2">
                   <div className="flex flex-col gap-0.5">
                     <span className="text-white text-xs font-bold leading-tight truncate max-w-[110px]">{userName || 'Usuario'}</span>
