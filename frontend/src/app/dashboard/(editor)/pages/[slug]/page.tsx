@@ -26,6 +26,8 @@ export default function PageEditor() {
     sections,
     loading,
     saving,
+    lastSavedAt,
+    hasUnsavedChanges,
     dbCategories,
     dbServices,
     canUndo,
@@ -91,6 +93,8 @@ export default function PageEditor() {
           pageTitle={pageTitle}
           slug={slugStr}
           saving={saving}
+          lastSavedAt={lastSavedAt}
+          hasUnsavedChanges={hasUnsavedChanges}
           canUndo={canUndo}
           onUndo={handleUndo}
           onSave={handleSaveAll}
@@ -128,6 +132,26 @@ export default function PageEditor() {
                 Ctrl+Z
               </kbd>
             </button>
+
+            {/* Indicador de Autoguardado en Tiempo Real */}
+            <div className="flex items-center gap-2 ml-3">
+              {saving ? (
+                <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200/60 animate-pulse">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping inline-block" />
+                  Guardando cambios...
+                </span>
+              ) : hasUnsavedChanges ? (
+                <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-stone-500 bg-stone-100 px-2.5 py-1 rounded-md border border-stone-200/60">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block" />
+                  Cambios pendientes
+                </span>
+              ) : lastSavedAt ? (
+                <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200/60">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+                  Guardado {lastSavedAt}
+                </span>
+              ) : null}
+            </div>
 
             <div className="ml-auto flex gap-1.5 items-center">
               <div className="w-2.5 h-2.5 rounded-full bg-red-400/80" />

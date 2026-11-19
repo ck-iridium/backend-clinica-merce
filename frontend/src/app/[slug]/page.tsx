@@ -331,12 +331,49 @@ export default async function CustomPage({ params }: PageProps) {
 
                           // ──── RENDER: ATOMIC TITLE ────
                           if (block.block_type === 'atomic_title' || block.block_type === 'title_heading') {
-                            const Tag = data.title_tag || 'h2';
+                            const Tag = (data.title_tag || 'h2') as keyof JSX.IntrinsicElements;
                             const alignment = data.alignment || 'center';
                             const alignClass = 
                               alignment === 'left' ? 'text-left' : 
                               alignment === 'right' ? 'text-right' : 
                               'text-center';
+
+                            // Fuentes preestablecidas
+                            const fontClass = 
+                              data.font_family === 'inter' ? 'font-sans' :
+                              data.font_family === 'cormorant' ? 'font-serif italic tracking-wide' :
+                              data.font_family === 'cinzel' ? 'font-serif uppercase tracking-[0.2em]' :
+                              data.font_family === 'montserrat' ? 'font-sans tracking-wide font-bold' :
+                              'font-serif';
+                              
+                            // Grosor
+                            const weightClass = 
+                              data.font_weight === 'normal' ? 'font-normal' :
+                              data.font_weight === 'medium' ? 'font-medium' :
+                              data.font_weight === 'semibold' ? 'font-semibold' :
+                              data.font_weight === 'bold' ? 'font-bold' :
+                              data.font_weight === 'extrabold' ? 'font-black' :
+                              'font-extrabold';
+
+                            // Tamaño
+                            const sizeClass = 
+                              data.font_size === 'small' ? 'text-xl md:text-2xl' :
+                              data.font_size === 'large' ? 'text-3xl md:text-5xl' :
+                              data.font_size === 'xlarge' ? 'text-4xl md:text-6xl' :
+                              'text-2xl md:text-4xl';
+
+                            // Transformación
+                            const transformClass = 
+                              data.text_transform === 'uppercase' ? 'uppercase tracking-widest' :
+                              data.text_transform === 'italic' ? 'italic' :
+                              '';
+
+                            // Color
+                            const colorClass = 
+                              data.text_color === 'gold' ? 'text-[#d4af37]' :
+                              data.text_color === 'white' ? 'text-white' :
+                              data.text_color === 'stone-400' ? 'text-stone-400' :
+                              'text-stone-900';
 
                             return (
                               <InspectableSection
@@ -347,11 +384,11 @@ export default async function CustomPage({ params }: PageProps) {
                                 blockType={block.block_type}
                               >
                                 <div className={`w-full ${alignClass} py-3`}>
-                                  <Tag className={`font-serif text-3xl md:text-4xl font-extrabold text-stone-800 leading-tight`}>
+                                  <Tag className={`${fontClass} ${weightClass} ${sizeClass} ${transformClass} ${colorClass} leading-tight`}>
                                     {data.title}
                                   </Tag>
                                   {data.show_divider !== false && (
-                                    <div className={`w-12 h-[2px] bg-primary mt-4 rounded-full inline-block`} />
+                                    <div className={`w-12 h-[2px] bg-[#d4af37] mt-4 rounded-full ${alignment === 'center' ? 'mx-auto' : alignment === 'right' ? 'ml-auto' : ''}`} />
                                   )}
                                   {data.subtitle && (
                                     <p className="text-stone-400 text-sm mt-3 font-sans max-w-lg mx-auto">
@@ -475,13 +512,25 @@ export default async function CustomPage({ params }: PageProps) {
                             const isVideo = data.image_url && (data.image_url.includes('.mp4') || data.image_url.includes('.webm') || data.image_url.includes('video_'));
                             const fitMode = data.object_fit || 'cover';
                             const heightStyle = data.height_preset === 'small' ? '250px' : data.height_preset === 'medium' ? '400px' : data.height_preset === 'large' ? '550px' : data.height_preset === 'screen' ? '750px' : '380px';
-                            const align = data.alignment || 'left';
+                            const layout = data.layout || (data.alignment === 'right' ? 'image_right' : data.alignment === 'center' ? 'image_top' : 'image_left');
+                            const isStacked = layout === 'image_top' || layout === 'image_bottom';
 
-                            const layoutClass = align === 'right' 
-                              ? 'flex flex-col md:flex-row-reverse gap-8 md:gap-12 items-center'
-                              : align === 'center'
-                              ? 'flex flex-col gap-6'
-                              : 'flex flex-col md:flex-row gap-8 md:gap-12 items-center';
+                            const layoutClass = 
+                              layout === 'image_right' 
+                                ? 'flex flex-col md:flex-row-reverse gap-8 md:gap-14 items-center'
+                                : layout === 'image_top'
+                                ? 'flex flex-col gap-8 items-center max-w-4xl mx-auto'
+                                : layout === 'image_bottom'
+                                ? 'flex flex-col-reverse gap-8 items-center max-w-4xl mx-auto'
+                                : 'flex flex-col md:flex-row gap-8 md:gap-14 items-center';
+
+                            const imageContainerClass = isStacked
+                              ? 'w-full max-w-3xl mx-auto'
+                              : 'w-full md:w-1/2';
+
+                            const textContainerClass = isStacked
+                              ? 'w-full max-w-2xl mx-auto text-center items-center'
+                              : 'w-full md:w-1/2 text-left items-start';
 
                             return (
                               <InspectableSection
@@ -494,7 +543,7 @@ export default async function CustomPage({ params }: PageProps) {
                                 <div className="w-full py-8 px-6">
                                   <div className={`w-full max-w-7xl mx-auto ${layoutClass}`}>
                                     {/* Lado Imagen */}
-                                    <div className={`w-full ${align === 'center' ? 'max-w-4xl mx-auto' : 'md:w-1/2'} shrink-0 rounded-[2rem] overflow-hidden shadow-luxury border border-stone-100 p-3 bg-white`}>
+                                    <div className={`${imageContainerClass} shrink-0 rounded-[2rem] overflow-hidden shadow-luxury border border-stone-100 p-3 bg-white`}>
                                       {data.image_url ? (
                                         <div className="relative overflow-hidden rounded-2xl w-full">
                                           {isVideo ? (
@@ -529,7 +578,7 @@ export default async function CustomPage({ params }: PageProps) {
                                     </div>
 
                                     {/* Lado Texto */}
-                                    <div className={`w-full ${align === 'center' ? 'max-w-3xl mx-auto text-center' : 'md:w-1/2 text-left'} flex flex-col justify-center space-y-4`}>
+                                    <div className={`${textContainerClass} flex flex-col justify-center space-y-4`}>
                                       {(data.heading || data.title) && (
                                         <h3 className="font-serif text-2xl md:text-3xl lg:text-4xl font-extrabold text-stone-800 leading-tight">
                                           {data.heading || data.title}
@@ -541,7 +590,7 @@ export default async function CustomPage({ params }: PageProps) {
                                         </p>
                                       )}
                                       {(data.cta_text || data.button_text) && (
-                                        <div className={`pt-2 ${align === 'center' ? 'flex justify-center' : ''}`}>
+                                        <div className={`pt-2 ${isStacked ? 'flex justify-center' : ''}`}>
                                           <Link
                                             href={data.cta_url || data.button_url || data.url || '#'}
                                             className="inline-block bg-stone-900 text-white text-[10px] font-black uppercase tracking-widest px-7 py-3.5 rounded-[var(--radius-btn)] shadow-md transition-all duration-300 hover:bg-primary hover:text-white"

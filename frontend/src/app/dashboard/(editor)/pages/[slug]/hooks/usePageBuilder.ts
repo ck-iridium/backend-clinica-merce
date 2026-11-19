@@ -81,6 +81,21 @@ export function usePageBuilder(slug: string | string[]) {
   const [sections, setSections] = useState<SectionBlock[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  // Bloqueo de salida involuntaria si hay cambios sin guardar
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges || saving) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges, saving]);
 
   // ── Historial Deshacer (Undo / Ctrl + Z) ────────────────────────
   const [history, setHistory] = useState<SectionBlock[][]>([]);
@@ -278,6 +293,8 @@ export function usePageBuilder(slug: string | string[]) {
     if (saveTimeoutRef.current[sectionId]) {
       clearTimeout(saveTimeoutRef.current[sectionId]);
     }
+    setHasUnsavedChanges(true);
+    setSaving(true);
     saveTimeoutRef.current[sectionId] = setTimeout(async () => {
       try {
         const res = await fetch(`${API}/cms/blocks/${sectionId}`, {
@@ -286,8 +303,13 @@ export function usePageBuilder(slug: string | string[]) {
           body: JSON.stringify({ block_type: 'section', content_data: section.content_data }),
         });
         if (!res.ok) throw new Error();
+        const now = new Date();
+        setLastSavedAt(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+        setHasUnsavedChanges(false);
       } catch {
         toast.error('Error al sincronizar sección con Supabase');
+      } finally {
+        setSaving(false);
       }
     }, 800);
   }, []);
@@ -305,6 +327,9 @@ export function usePageBuilder(slug: string | string[]) {
           })
         )
       );
+      const now = new Date();
+      setLastSavedAt(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+      setHasUnsavedChanges(false);
       toast.success('¡Página guardada correctamente!');
     } catch {
       toast.error('Error al guardar la página');
@@ -735,6 +760,8 @@ export function usePageBuilder(slug: string | string[]) {
     sections,
     loading,
     saving,
+    lastSavedAt,
+    hasUnsavedChanges,
     dbCategories,
     dbServices,
     activeId,

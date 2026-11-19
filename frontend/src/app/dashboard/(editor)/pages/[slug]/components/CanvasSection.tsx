@@ -30,7 +30,7 @@ function RenderBlock({ block, dbCategories, dbServices }: {
       'text-center items-center';
 
     return (
-      <div className={`relative w-full min-h-[340px] bg-stone-900 overflow-hidden flex items-end ${heroOuterAlign}`}>
+      <div className={`relative w-full min-h-[460px] md:min-h-[580px] bg-stone-900 overflow-hidden flex items-end ${heroOuterAlign}`}>
         {data.image_url && (
           data.image_url.match(/\.(mp4|webm)/) ? (
             <video src={data.image_url} autoPlay loop muted playsInline
@@ -39,18 +39,18 @@ function RenderBlock({ block, dbCategories, dbServices }: {
             <img src={data.image_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
           )
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-stone-950/70 to-transparent" />
-        <div className={`relative z-10 p-8 md:p-12 max-w-2xl w-full flex flex-col ${heroTextAlign}`}>
+        <div className="absolute inset-0 bg-gradient-to-t from-stone-950/70 via-stone-950/20 to-transparent" />
+        <div className={`relative z-10 p-8 md:p-14 max-w-3xl w-full flex flex-col ${heroTextAlign}`}>
           {data.heading && (
-            <h1 className="font-serif text-3xl md:text-4xl font-extrabold text-white leading-tight mb-3">
+            <h1 className="font-serif text-3xl md:text-5xl font-extrabold text-white leading-tight mb-3">
               {data.heading}
             </h1>
           )}
           {data.subheading && (
-            <p className="text-white/80 font-sans text-sm mb-6 leading-relaxed">{data.subheading}</p>
+            <p className="text-white/80 font-sans text-base md:text-lg mb-6 leading-relaxed">{data.subheading}</p>
           )}
           {data.cta_text && (
-            <span className="inline-block bg-[#d4af37] text-white text-xs font-black uppercase tracking-widest px-6 py-3 rounded-xl shadow-lg cursor-default">
+            <span className="inline-block bg-[#d4af37] text-white text-xs font-black uppercase tracking-widest px-7 py-3.5 rounded-xl shadow-lg cursor-default">
               {data.cta_text}
             </span>
           )}
@@ -70,16 +70,54 @@ function RenderBlock({ block, dbCategories, dbServices }: {
   if (block.block_type === 'atomic_title' || block.block_type === 'title_heading') {
     const Tag = (data.title_tag || 'h2') as keyof JSX.IntrinsicElements;
     const align = data.alignment === 'left' ? 'text-left' : data.alignment === 'right' ? 'text-right' : 'text-center';
+    
+    // Fuentes preestablecidas
+    const fontClass = 
+      data.font_family === 'inter' ? 'font-sans' :
+      data.font_family === 'cormorant' ? 'font-serif italic tracking-wide' :
+      data.font_family === 'cinzel' ? 'font-serif uppercase tracking-[0.2em]' :
+      data.font_family === 'montserrat' ? 'font-sans tracking-wide font-bold' :
+      'font-serif';
+      
+    // Grosor
+    const weightClass = 
+      data.font_weight === 'normal' ? 'font-normal' :
+      data.font_weight === 'medium' ? 'font-medium' :
+      data.font_weight === 'semibold' ? 'font-semibold' :
+      data.font_weight === 'bold' ? 'font-bold' :
+      data.font_weight === 'extrabold' ? 'font-black' :
+      'font-extrabold';
+
+    // Tamaño
+    const sizeClass = 
+      data.font_size === 'small' ? 'text-xl md:text-2xl' :
+      data.font_size === 'large' ? 'text-3xl md:text-5xl' :
+      data.font_size === 'xlarge' ? 'text-4xl md:text-6xl' :
+      'text-2xl md:text-4xl';
+
+    // Transformación
+    const transformClass = 
+      data.text_transform === 'uppercase' ? 'uppercase tracking-widest' :
+      data.text_transform === 'italic' ? 'italic' :
+      '';
+
+    // Color
+    const colorClass = 
+      data.text_color === 'gold' ? 'text-[#d4af37]' :
+      data.text_color === 'white' ? 'text-white' :
+      data.text_color === 'stone-400' ? 'text-stone-400' :
+      'text-stone-900';
+
     return (
-      <div className={`py-4 w-full ${align}`}>
-        <Tag className="font-serif text-2xl md:text-3xl font-extrabold text-stone-800 leading-tight">
+      <div className={`py-6 w-full ${align}`}>
+        <Tag className={`${fontClass} ${weightClass} ${sizeClass} ${transformClass} ${colorClass} leading-tight`}>
           {data.title || 'Título de sección'}
         </Tag>
         {data.show_divider !== false && (
-          <div className={`w-10 h-[2px] bg-[#d4af37] mt-3 rounded-full ${align === 'text-center' ? 'mx-auto' : align === 'text-right' ? 'ml-auto' : ''}`} />
+          <div className={`w-12 h-[2px] bg-[#d4af37] mt-4 rounded-full ${align === 'text-center' ? 'mx-auto' : align === 'text-right' ? 'ml-auto' : ''}`} />
         )}
         {data.subtitle && (
-          <p className="text-stone-400 text-sm mt-3 font-sans">{data.subtitle}</p>
+          <p className="text-stone-400 text-sm md:text-base mt-3 font-sans max-w-xl mx-auto leading-relaxed">{data.subtitle}</p>
         )}
       </div>
     );
@@ -158,19 +196,31 @@ function RenderBlock({ block, dbCategories, dbServices }: {
     const isVideo = data.image_url && (data.image_url.includes('.mp4') || data.image_url.includes('.webm') || data.image_url.includes('video_'));
     const fitMode = data.object_fit || 'cover';
     const heightStyle = data.height_preset === 'small' ? '250px' : data.height_preset === 'medium' ? '400px' : data.height_preset === 'large' ? '550px' : data.height_preset === 'screen' ? '750px' : '380px';
-    const align = data.alignment || 'left';
+    const layout = data.layout || (data.alignment === 'right' ? 'image_right' : data.alignment === 'center' ? 'image_top' : 'image_left');
+    const isStacked = layout === 'image_top' || layout === 'image_bottom';
 
-    const layoutClass = align === 'right' 
-      ? 'flex flex-col md:flex-row-reverse gap-8 md:gap-12 items-center'
-      : align === 'center'
-      ? 'flex flex-col gap-6'
-      : 'flex flex-col md:flex-row gap-8 md:gap-12 items-center';
+    const layoutClass = 
+      layout === 'image_right' 
+        ? 'flex flex-col md:flex-row-reverse gap-8 md:gap-14 items-center'
+        : layout === 'image_top'
+        ? 'flex flex-col gap-8 items-center max-w-4xl mx-auto'
+        : layout === 'image_bottom'
+        ? 'flex flex-col-reverse gap-8 items-center max-w-4xl mx-auto'
+        : 'flex flex-col md:flex-row gap-8 md:gap-14 items-center';
+
+    const imageContainerClass = isStacked
+      ? 'w-full max-w-3xl mx-auto'
+      : 'w-full md:w-1/2';
+
+    const textContainerClass = isStacked
+      ? 'w-full max-w-2xl mx-auto text-center items-center'
+      : 'w-full md:w-1/2 text-left items-start';
 
     return (
       <div className="w-full py-8">
         <div className={`w-full max-w-7xl mx-auto ${layoutClass}`}>
           {/* Lado Imagen */}
-          <div className={`w-full ${align === 'center' ? 'max-w-4xl mx-auto' : 'md:w-1/2'} shrink-0 rounded-[2rem] overflow-hidden shadow-luxury border border-stone-100 p-3 bg-white`}>
+          <div className={`${imageContainerClass} shrink-0 rounded-[2rem] overflow-hidden shadow-luxury border border-stone-100 p-3 bg-white`}>
             {data.image_url ? (
               <div className="relative overflow-hidden rounded-2xl w-full">
                 {isVideo ? (
@@ -204,7 +254,7 @@ function RenderBlock({ block, dbCategories, dbServices }: {
           </div>
 
           {/* Lado Texto */}
-          <div className={`w-full ${align === 'center' ? 'max-w-3xl mx-auto text-center' : 'md:w-1/2 text-left'} flex flex-col justify-center space-y-4`}>
+          <div className={`${textContainerClass} flex flex-col justify-center space-y-4`}>
             {data.heading && (
               <h3 className="font-serif text-2xl md:text-3xl lg:text-4xl font-extrabold text-stone-850 leading-tight">
                 {data.heading}
@@ -216,7 +266,7 @@ function RenderBlock({ block, dbCategories, dbServices }: {
               </p>
             )}
             {data.cta_text && (
-              <div className={`pt-2 ${align === 'center' ? 'flex justify-center' : ''}`}>
+              <div className={`pt-2 ${isStacked ? 'flex justify-center' : ''}`}>
                 <span className="inline-block bg-stone-900 text-white text-[10px] font-black uppercase tracking-widest px-7 py-3.5 rounded-xl shadow-md cursor-default">
                   {data.cta_text}
                 </span>
@@ -410,11 +460,15 @@ function SortableCanvasBlock({ block, sectionId, columnId, onEdit, onDelete, dbC
     opacity: isDragging ? 0.35 : 1,
   };
 
+  const isHeroBlock = block.block_type === 'hero';
+
   return (
     <div 
       ref={setNodeRef} 
       style={style} 
-      className="relative group/block hover:ring-2 hover:ring-[#d4af37]/60 hover:bg-stone-50/15 rounded-3xl p-2.5 transition-all duration-300"
+      className={`relative group/block transition-all duration-300 ${
+        isHeroBlock ? 'p-0 rounded-none' : 'rounded-3xl p-2.5'
+      }`}
     >
       {/* Controles del bloque — aparecen al hover */}
       <div className="absolute top-4 right-4 z-50 flex items-center gap-1.5 opacity-0 group-hover/block:opacity-100 transition-opacity duration-200">
@@ -490,8 +544,8 @@ function CanvasColumn({ col, sectionId, columnsCount, onEdit, onDelete, onAddBlo
         ))}
       </SortableContext>
 
-      {/* Botón flotante para añadir bloque al final de una columna con contenido */}
-      {blocks.length > 0 && (
+      {/* Botón flotante para añadir bloque al final de una columna con contenido (oculto en Hero para mantener estética limpia) */}
+      {blocks.length > 0 && !blocks.some(b => b.block_type === 'hero') && (
         <div className="flex justify-center py-2 opacity-0 group-hover/col:opacity-100 transition-opacity duration-200">
           <button
             onClick={() => onAddBlock(sectionId, col.id)}
@@ -501,7 +555,7 @@ function CanvasColumn({ col, sectionId, columnsCount, onEdit, onDelete, onAddBlo
             <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
             </svg>
-            <span>+ Añadir bloque</span>
+            <span>Añadir bloque</span>
           </button>
         </div>
       )}
@@ -573,11 +627,11 @@ export function CanvasSection({ section, index, totalSections, onReorder, onDele
   return (
     <div 
       style={isCustomHex ? { backgroundColor: rawBg } : undefined}
-      className={`relative group/section w-full ${bgColor} ${isDark ? 'text-white' : ''} transition-all duration-300 hover:ring-1 hover:ring-[#d4af37]/40`}
+      className={`relative group/section w-full ${bgColor} ${isDark ? 'text-white' : ''} transition-all duration-300`}
     >
-      {/* ── Toolbar flotante de sección (se muestra SOLO al hover o con engranaje abierto) ── */}
+      {/* ── Toolbar flotante de sección (esquina superior izquierda para evitar colisión con controles de bloques) ── */}
       <div 
-        className={`absolute top-3 right-6 z-40 select-none transition-all duration-200 ${
+        className={`absolute top-3 left-6 z-40 select-none transition-all duration-200 ${
           showGearPopover 
             ? 'opacity-100 scale-100 pointer-events-auto' 
             : 'opacity-0 scale-95 pointer-events-none group-hover/section:opacity-100 group-hover/section:scale-100 group-hover/section:pointer-events-auto'
@@ -654,7 +708,7 @@ export function CanvasSection({ section, index, totalSections, onReorder, onDele
           </button>
           
           {showGearPopover && (
-            <div className="absolute right-0 top-full mt-1.5 bg-white border border-stone-200 rounded-2xl shadow-2xl p-4 z-50 min-w-[280px] flex flex-col gap-3.5 text-stone-800 animate-in fade-in zoom-in-95 duration-200">
+            <div className="absolute left-0 top-full mt-1.5 bg-white border border-stone-200 rounded-2xl shadow-2xl p-4 z-50 min-w-[280px] flex flex-col gap-3.5 text-stone-800 animate-in fade-in zoom-in-95 duration-200">
               {/* Alineación Horizontal */}
               <div>
                 <span className="text-[9px] font-black uppercase tracking-wider text-[#d4af37] block mb-1.5">
@@ -806,9 +860,9 @@ export function CanvasSection({ section, index, totalSections, onReorder, onDele
           ? 'w-full'
           : 'max-w-7xl mx-auto';
 
-        const paddingClass = isFirstWithHero
+        const paddingClass = hasHero
           ? 'p-0'
-          : (hasHero || hasCardsSlider)
+          : hasCardsSlider
           ? 'px-0 py-4'
           : (isFullWidth ? 'px-6 md:px-12 py-10 md:py-14' : 'px-6 md:px-8 py-10 md:py-14');
 

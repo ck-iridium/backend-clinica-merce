@@ -90,6 +90,8 @@ interface CreatorSidebarProps {
   pageTitle: string;
   slug: string;
   saving: boolean;
+  lastSavedAt?: string | null;
+  hasUnsavedChanges?: boolean;
   canUndo?: boolean;
   onUndo?: () => void;
   onSave: () => void;
@@ -100,6 +102,8 @@ export default function CreatorSidebar({
   pageTitle,
   slug,
   saving,
+  lastSavedAt,
+  hasUnsavedChanges,
   canUndo = false,
   onUndo,
   onSave,
@@ -187,6 +191,29 @@ export default function CreatorSidebar({
             </svg>
             <span>Ver Web</span>
           </button>
+        </div>
+
+        {/* Indicador de Estado y Autoguardado */}
+        <div className="mt-2.5 flex items-center justify-between text-[10px] px-1 font-medium text-stone-400">
+          {saving ? (
+            <span className="text-amber-600 flex items-center gap-1 font-bold animate-pulse">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping inline-block" />
+              Sincronizando con el servidor...
+            </span>
+          ) : hasUnsavedChanges ? (
+            <span className="text-stone-500 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block" />
+              Cambios pendientes en local
+            </span>
+          ) : lastSavedAt ? (
+            <span className="text-emerald-700 flex items-center gap-1 font-bold">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+              Guardado automático {lastSavedAt}
+            </span>
+          ) : (
+            <span className="text-stone-400">Protección contra pérdida activa</span>
+          )}
+          <span className="text-stone-300">Ctrl+Z deshacer</span>
         </div>
       </div>
 
