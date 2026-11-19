@@ -10,6 +10,7 @@ interface CanvasColumnProps {
   columnsCount: number;
   onEdit: (block: any) => void;
   onDelete: (blockId: string, sectionId: string, columnId: string) => void;
+  onClone: (blockId: string, sectionId: string, columnId: string) => void;
   onAddBlock: (sectionId: string, columnId: string) => void;
   dbCategories: any[];
   dbServices: any[];
@@ -22,6 +23,7 @@ export function CanvasColumn({
   columnsCount,
   onEdit,
   onDelete,
+  onClone,
   onAddBlock,
   dbCategories,
   dbServices,
@@ -46,6 +48,7 @@ export function CanvasColumn({
             columnId={col.id}
             onEdit={onEdit}
             onDelete={onDelete}
+            onClone={onClone}
             dbCategories={dbCategories}
             dbServices={dbServices}
             isBoxed={isBoxed}

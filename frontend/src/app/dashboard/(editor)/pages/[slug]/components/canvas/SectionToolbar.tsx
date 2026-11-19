@@ -26,6 +26,11 @@ export function SectionToolbar({
   const popoverRef = useRef<HTMLDivElement>(null);
   const gearButtonRef = useRef<HTMLButtonElement>(null);
   const struct = section.content_data;
+  const hasHero = (struct.columns || []).some((col: any) =>
+    (col.blocks || []).some((b: any) => b.block_type === 'hero')
+  );
+  const defaultTop = hasHero ? 'none' : 'md';
+  const defaultBottom = hasHero ? 'none' : 'md';
 
   // Cierre automático al hacer click fuera del popover de ajustes
   useEffect(() => {
@@ -221,6 +226,80 @@ export function SectionToolbar({
                         key={opt.value}
                         onClick={() => onUpdateSectionMetadata(section.id, 'content_width', opt.value)}
                         className={`py-1.5 px-2 rounded-lg text-[10px] font-bold transition-all border text-center ${
+                          isSel
+                            ? 'bg-stone-900 border-stone-900 text-white shadow-sm'
+                            : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Margen Superior (Top) */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[9px] font-black uppercase tracking-wider text-stone-500">
+                    Margen Superior (Top)
+                  </span>
+                  <span className="text-[9px] font-mono text-[#d4af37] font-bold">
+                    {(struct.padding_top || defaultTop).toUpperCase()}
+                  </span>
+                </div>
+                <div className="grid grid-cols-5 gap-1">
+                  {[
+                    { value: 'none', label: '0' },
+                    { value: 'sm', label: 'S' },
+                    { value: 'md', label: 'M' },
+                    { value: 'lg', label: 'L' },
+                    { value: 'xl', label: 'XL' }
+                  ].map(opt => {
+                    const isSel = (struct.padding_top || defaultTop) === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => onUpdateSectionMetadata(section.id, 'padding_top', opt.value)}
+                        className={`py-1.5 rounded-lg text-[10px] font-bold transition-all border text-center ${
+                          isSel
+                            ? 'bg-stone-900 border-stone-900 text-white shadow-sm'
+                            : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Margen Inferior (Bottom) */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[9px] font-black uppercase tracking-wider text-stone-500">
+                    Margen Inferior (Bottom)
+                  </span>
+                  <span className="text-[9px] font-mono text-[#d4af37] font-bold">
+                    {(struct.padding_bottom || defaultBottom).toUpperCase()}
+                  </span>
+                </div>
+                <div className="grid grid-cols-5 gap-1">
+                  {[
+                    { value: 'none', label: '0' },
+                    { value: 'sm', label: 'S' },
+                    { value: 'md', label: 'M' },
+                    { value: 'lg', label: 'L' },
+                    { value: 'xl', label: 'XL' }
+                  ].map(opt => {
+                    const isSel = (struct.padding_bottom || defaultBottom) === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => onUpdateSectionMetadata(section.id, 'padding_bottom', opt.value)}
+                        className={`py-1.5 rounded-lg text-[10px] font-bold transition-all border text-center ${
                           isSel
                             ? 'bg-stone-900 border-stone-900 text-white shadow-sm'
                             : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'

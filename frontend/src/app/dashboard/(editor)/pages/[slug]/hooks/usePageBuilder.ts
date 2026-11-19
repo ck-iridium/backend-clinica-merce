@@ -467,6 +467,43 @@ export function usePageBuilder(slug: string | string[]) {
     if (sec) saveSectionToBackend(sec);
   };
 
+  const handleCloneBlock = (blockId: string, sectionId: string, columnId: string) => {
+    recordHistory();
+    let clonedName = 'Bloque';
+    const updated = sectionsRef.current.map(sec => {
+      if (sec.id !== sectionId) return sec;
+      return {
+        ...sec,
+        content_data: {
+          ...sec.content_data,
+          columns: sec.content_data.columns.map(col => {
+            if (col.id !== columnId) return col;
+            const blockIndex = col.blocks.findIndex(b => b.id === blockId);
+            if (blockIndex === -1) return col;
+            const originalBlock = col.blocks[blockIndex];
+            clonedName = originalBlock.content_data?.title || originalBlock.content_data?.heading || originalBlock.block_type.replace(/_/g, ' ');
+            const clonedBlock: AtomicBlock = {
+              ...originalBlock,
+              id: `block-${Date.now()}-${Math.random().toString(36).substr(2, 7)}`,
+              content_data: JSON.parse(JSON.stringify(originalBlock.content_data || {})),
+            };
+            const newBlocks = [...col.blocks];
+            newBlocks.splice(blockIndex + 1, 0, clonedBlock);
+            return {
+              ...col,
+              blocks: newBlocks,
+            };
+          }),
+        },
+      };
+    });
+    setSections(updated);
+    sectionsRef.current = updated;
+    const sec = updated.find(s => s.id === sectionId);
+    if (sec) saveSectionToBackend(sec);
+    toast.success(`Bloque "${clonedName}" duplicado`);
+  };
+
   const handleStartEditBlock = (block: any) => {
     setEditingBlock(block);
     setEditFormData({ ...block.content_data });
@@ -767,6 +804,7 @@ export function usePageBuilder(slug: string | string[]) {
     // Blocks
     handleAddBlockToColumn,
     handleDeleteBlockFromColumn,
+    handleCloneBlock,
     handleStartEditBlock,
     handleSaveBlockEdit,
     handleOpenAddBlockForColumn,

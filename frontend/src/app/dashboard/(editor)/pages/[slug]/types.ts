@@ -28,6 +28,8 @@ export interface SectionStructure {
   id: string;
   columns_count: number;
   py_spacing?: string;
+  padding_top?: string;
+  padding_bottom?: string;
   bg_color?: string;
   content_width?: 'boxed' | 'fullwidth';
   horizontal_alignment?: string;

@@ -47,6 +47,7 @@ export default function PageEditor() {
     handleUpdateSectionMetadata,
     handleAddBlockToColumn,
     handleDeleteBlockFromColumn,
+    handleCloneBlock,
     handleStartEditBlock,
     handleSaveBlockEdit,
     handleOpenAddBlockForColumn,
@@ -205,6 +206,7 @@ export default function PageEditor() {
                       onUpdateSectionMetadata={handleUpdateSectionMetadata}
                       onEditBlock={handleStartEditBlock}
                       onDeleteBlock={handleDeleteBlockFromColumn}
+                      onCloneBlock={handleCloneBlock}
                       onAddBlock={handleOpenAddBlockForColumn}
                       dbCategories={dbCategories}
                       dbServices={dbServices}

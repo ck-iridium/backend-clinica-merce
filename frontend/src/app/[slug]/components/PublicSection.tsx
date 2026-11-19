@@ -41,13 +41,42 @@ export function PublicSection({
   );
   const isFirstWithHero = index === 0 && hasHero;
   const isFirstSection = index === 0;
-  const pySpacing = isFirstWithHero
-    ? 'pt-0 pb-0'
+  // Márgenes / espaciados verticales configurables (Top & Bottom)
+  const SPACING_TOP_MAP: Record<string, string> = {
+    none: 'pt-0',
+    sm: 'pt-6 md:pt-8',
+    md: 'pt-12 md:pt-16',
+    lg: 'pt-20 md:pt-24',
+    xl: 'pt-28 md:pt-36',
+  };
+
+  const SPACING_BOTTOM_MAP: Record<string, string> = {
+    none: 'pb-0',
+    sm: 'pb-6 md:pb-8',
+    md: 'pb-12 md:pb-16',
+    lg: 'pb-20 md:pb-24',
+    xl: 'pb-28 md:pb-36',
+  };
+
+  const ptClass = struct.padding_top && SPACING_TOP_MAP[struct.padding_top]
+    ? SPACING_TOP_MAP[struct.padding_top]
+    : isFirstWithHero
+    ? 'pt-0'
     : hasHero
-    ? 'py-0'
+    ? 'pt-0'
     : isFirstSection
-    ? 'pt-6 md:pt-8 pb-12 md:pb-16'
-    : struct.py_spacing || 'py-20';
+    ? 'pt-6 md:pt-8'
+    : struct.py_spacing || 'pt-20';
+
+  const pbClass = struct.padding_bottom && SPACING_BOTTOM_MAP[struct.padding_bottom]
+    ? SPACING_BOTTOM_MAP[struct.padding_bottom]
+    : isFirstWithHero
+    ? 'pb-0'
+    : hasHero
+    ? 'pb-0'
+    : isFirstSection
+    ? 'pb-12 md:pb-16'
+    : struct.py_spacing || 'pb-20';
 
   const rawBg = struct.bg_color || 'cream';
   const isCustomHex = rawBg.startsWith('#');
@@ -93,7 +122,7 @@ export function PublicSection({
     >
       <section
         style={isCustomHex ? { backgroundColor: rawBg } : undefined}
-        className={`w-full ${pySpacing} ${bgColor} ${paddingClass} ${
+        className={`w-full ${ptClass} ${pbClass} ${bgColor} ${paddingClass} ${
           isDark ? 'text-white' : ''
         } transition-all duration-300 border-b border-stone-100/30`}
       >

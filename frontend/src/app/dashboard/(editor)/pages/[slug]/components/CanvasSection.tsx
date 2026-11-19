@@ -14,6 +14,7 @@ interface CanvasSectionProps {
   onUpdateSectionMetadata: (id: string, key: string, value: any) => void;
   onEditBlock: (block: any) => void;
   onDeleteBlock: (blockId: string, sectionId: string, columnId: string) => void;
+  onCloneBlock: (blockId: string, sectionId: string, columnId: string) => void;
   onAddBlock: (sectionId: string, columnId: string) => void;
   dbCategories: any[];
   dbServices: any[];
@@ -29,6 +30,7 @@ export function CanvasSection({
   onUpdateSectionMetadata,
   onEditBlock,
   onDeleteBlock,
+  onCloneBlock,
   onAddBlock,
   dbCategories,
   dbServices,
@@ -62,9 +64,40 @@ export function CanvasSection({
     ? 'w-full'
     : 'max-w-7xl mx-auto px-6 w-full';
 
-  const paddingClass = isFullWidth
-    ? (hasHero ? 'p-0' : hasCardsSlider ? 'px-0 py-4' : 'px-6 md:px-12 py-10 md:py-14')
-    : (hasHero ? 'py-4 md:py-6 px-0' : 'py-10 md:py-14 px-0');
+  // Márgenes / espaciados verticales configurables (Top & Bottom)
+  const SPACING_TOP_MAP: Record<string, string> = {
+    none: 'pt-0',
+    sm: 'pt-6 md:pt-8',
+    md: 'pt-10 md:pt-14',
+    lg: 'pt-20 md:pt-24',
+    xl: 'pt-28 md:pt-36',
+  };
+
+  const SPACING_BOTTOM_MAP: Record<string, string> = {
+    none: 'pb-0',
+    sm: 'pb-6 md:pb-8',
+    md: 'pb-10 md:pb-14',
+    lg: 'pb-20 md:pb-24',
+    xl: 'pb-28 md:pb-36',
+  };
+
+  const ptClass = struct.padding_top && SPACING_TOP_MAP[struct.padding_top]
+    ? SPACING_TOP_MAP[struct.padding_top]
+    : isFullWidth
+    ? (hasHero ? 'pt-0' : hasCardsSlider ? 'pt-4' : 'pt-10 md:pt-14')
+    : (hasHero ? 'pt-4 md:pt-6' : 'pt-10 md:pt-14');
+
+  const pbClass = struct.padding_bottom && SPACING_BOTTOM_MAP[struct.padding_bottom]
+    ? SPACING_BOTTOM_MAP[struct.padding_bottom]
+    : isFullWidth
+    ? (hasHero ? 'pb-0' : hasCardsSlider ? 'pb-4' : 'pb-10 md:pb-14')
+    : (hasHero ? 'pb-4 md:pb-6' : 'pb-10 md:pb-14');
+
+  const pxClass = isFullWidth
+    ? (hasHero || hasCardsSlider ? 'px-0' : 'px-6 md:px-12')
+    : 'px-0';
+
+  const paddingClass = `${ptClass} ${pbClass} ${pxClass}`;
 
   const gapClass = hasHero ? 'gap-0' : 'gap-6';
   const verticalAlign = struct.vertical_alignment || 'items-start';
@@ -98,6 +131,7 @@ export function CanvasSection({
               columnsCount={columnsCount}
               onEdit={onEditBlock}
               onDelete={onDeleteBlock}
+              onClone={onCloneBlock}
               onAddBlock={onAddBlock}
               dbCategories={dbCategories}
               dbServices={dbServices}
