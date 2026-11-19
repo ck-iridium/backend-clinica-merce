@@ -16,6 +16,7 @@ interface SortableCanvasBlockProps {
   dbCategories: any[];
   dbServices: any[];
   isBoxed?: boolean;
+  sectionVerticalAlign?: string;
 }
 
 export function SortableCanvasBlock({
@@ -29,6 +30,7 @@ export function SortableCanvasBlock({
   dbCategories,
   dbServices,
   isBoxed = false,
+  sectionVerticalAlign,
 }: SortableCanvasBlockProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: block.id,
@@ -145,7 +147,13 @@ export function SortableCanvasBlock({
           }
         }}
       >
-        <RenderBlock block={block} dbCategories={dbCategories} dbServices={dbServices} isBoxed={isBoxed} />
+        <RenderBlock
+          block={block}
+          dbCategories={dbCategories}
+          dbServices={dbServices}
+          isBoxed={isBoxed}
+          sectionVerticalAlign={sectionVerticalAlign}
+        />
       </div>
     </div>
   );

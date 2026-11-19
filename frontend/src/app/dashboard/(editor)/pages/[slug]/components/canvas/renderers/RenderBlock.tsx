@@ -17,14 +17,15 @@ interface RenderBlockProps {
   dbCategories: any[];
   dbServices: any[];
   isBoxed?: boolean;
+  sectionVerticalAlign?: string;
 }
 
-export function RenderBlock({ block, dbCategories, dbServices, isBoxed = false }: RenderBlockProps) {
+export function RenderBlock({ block, dbCategories, dbServices, isBoxed = false, sectionVerticalAlign }: RenderBlockProps) {
   const data = block.content_data || {};
 
   switch (block.block_type) {
     case 'hero':
-      return <HeroBlockView data={data} isBoxed={isBoxed} />;
+      return <HeroBlockView data={data} isBoxed={isBoxed} sectionVerticalAlign={sectionVerticalAlign} />;
     case 'atomic_title':
     case 'title_heading':
       return <TitleBlockView data={data} />;

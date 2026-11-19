@@ -139,6 +139,7 @@ export function CanvasSection({
               dbCategories={dbCategories}
               dbServices={dbServices}
               isBoxed={isBoxed}
+              sectionVerticalAlign={verticalAlign}
             />
           ))}
         </div>

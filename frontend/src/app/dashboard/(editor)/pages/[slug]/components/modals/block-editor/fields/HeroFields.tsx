@@ -31,33 +31,63 @@ export function HeroFields({
         aspectRatio="aspect-[16/7]"
       />
 
-      {/* Alineación de Contenido */}
-      <div>
-        <label className={labelClass}>Alineación del Titular y Contenido</label>
-        <div className="grid grid-cols-3 gap-2">
-          {[
-            { value: 'left', label: 'Izquierda', icon: AlignLeft },
-            { value: 'center', label: 'Centrado', icon: AlignCenter },
-            { value: 'right', label: 'Derecha', icon: AlignRight }
-          ].map(opt => {
-            const Icon = opt.icon;
-            const isSel = (editFormData.alignment || 'center') === opt.value;
-            return (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => set('alignment', opt.value)}
-                className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all border flex items-center justify-center gap-2 ${
-                  isSel
-                    ? 'bg-stone-900 border-stone-900 text-white shadow-sm ring-1 ring-stone-900'
-                    : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'
-                }`}
-              >
-                <Icon size={14} className={isSel ? 'text-primary' : 'text-stone-400'} />
-                <span>{opt.label}</span>
-              </button>
-            );
-          })}
+      {/* Alineación Horizontal y Vertical de Contenido */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+        <div>
+          <label className={labelClass}>Alineación Horizontal</label>
+          <div className="grid grid-cols-3 gap-1.5">
+            {[
+              { value: 'left', label: 'Izquierda', icon: AlignLeft },
+              { value: 'center', label: 'Centrado', icon: AlignCenter },
+              { value: 'right', label: 'Derecha', icon: AlignRight }
+            ].map(opt => {
+              const Icon = opt.icon;
+              const isSel = (editFormData.alignment || 'center') === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => set('alignment', opt.value)}
+                  className={`py-2 px-2 rounded-xl text-xs font-bold transition-all border flex items-center justify-center gap-1.5 ${
+                    isSel
+                      ? 'bg-stone-900 border-stone-900 text-white shadow-xs'
+                      : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'
+                  }`}
+                >
+                  <Icon size={13} className={isSel ? 'text-primary' : 'text-stone-400'} />
+                  <span>{opt.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div>
+          <label className={labelClass}>Alineación Vertical</label>
+          <div className="grid grid-cols-3 gap-1.5">
+            {[
+              { value: 'top', label: 'Arriba' },
+              { value: 'center', label: 'Centro' },
+              { value: 'bottom', label: 'Abajo' }
+            ].map(opt => {
+              const currentV = editFormData.vertical_alignment || 'center';
+              const isSel = currentV === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => set('vertical_alignment', opt.value)}
+                  className={`py-2 px-2 rounded-xl text-xs font-bold transition-all border flex items-center justify-center ${
+                    isSel
+                      ? 'bg-stone-900 border-stone-900 text-white shadow-xs'
+                      : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'
+                  }`}
+                >
+                  <span>{opt.label}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 

@@ -149,6 +149,7 @@ export function PublicSection({
                     dbCategories={dbCategories}
                     dbServices={dbServices}
                     isBoxed={isBoxed}
+                    sectionVerticalAlign={verticalAlign}
                   />
                 ))
               )}
