@@ -218,7 +218,7 @@ export default function TenantStripeTab({ tenant, onSubscribe, redirectingPlan }
               <ul className="text-[10px] text-stone-500 font-sans space-y-1 pt-2 border-t border-stone-100">
                 <li>✓ Hasta 10 Especialistas</li>
                 <li>✓ Hasta 5 Sedes Físicas</li>
-                <li>✓ AI Webmaster (Texto, Voz, Fotos)</li>
+                <li>✓ Diseñador Web con IA (Texto, Fotos)</li>
                 <li>✓ Soporte Prioritario VIP 24/7</li>
               </ul>
             </div>

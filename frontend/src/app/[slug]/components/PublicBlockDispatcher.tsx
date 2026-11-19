@@ -1,5 +1,4 @@
 import React from 'react';
-import InspectableSection from '@/components/ai/webmaster/InspectableSection';
 import type { AtomicBlock } from '../types';
 import { PublicTitleBlock } from './renderers/PublicTitleBlock';
 import { PublicTextBlock } from './renderers/PublicTextBlock';
@@ -37,154 +36,53 @@ export function PublicBlockDispatcher({
   switch (block.block_type) {
     case 'atomic_title':
     case 'title_heading':
-      return (
-        <InspectableSection
-          key={block.id}
-          id={block.id}
-          name={`Título: "${data.title || 'Encabezado'}"`}
-          pageSlug={slug}
-          blockType={block.block_type}
-        >
-          <PublicTitleBlock data={data} />
-        </InspectableSection>
-      );
+      return <PublicTitleBlock key={block.id} data={data} />;
 
     case 'atomic_text':
-      return (
-        <InspectableSection
-          key={block.id}
-          id={block.id}
-          name="Texto Editorial"
-          pageSlug={slug}
-          blockType={block.block_type}
-        >
-          <PublicTextBlock data={data} />
-        </InspectableSection>
-      );
+      return <PublicTextBlock key={block.id} data={data} />;
 
     case 'atomic_image':
-      return (
-        <InspectableSection
-          key={block.id}
-          id={block.id}
-          name={data.image_url ? 'Fotografía Editorial' : 'Fotografía / Espacio de Imagen'}
-          pageSlug={slug}
-          blockType={block.block_type}
-        >
-          <PublicImageBlock data={data} />
-        </InspectableSection>
-      );
+      return <PublicImageBlock key={block.id} data={data} />;
 
     case 'text_image_cta':
-      return (
-        <InspectableSection
-          key={block.id}
-          id={block.id}
-          name="Imagen + Texto Editorial"
-          pageSlug={slug}
-          blockType={block.block_type}
-        >
-          <PublicTextImageCtaBlock data={data} />
-        </InspectableSection>
-      );
+      return <PublicTextImageCtaBlock key={block.id} data={data} />;
 
     case 'atomic_button':
-      return (
-        <InspectableSection
-          key={block.id}
-          id={block.id}
-          name="Botón de Acción"
-          pageSlug={slug}
-          blockType={block.block_type}
-        >
-          <PublicButtonBlock data={data} />
-        </InspectableSection>
-      );
+      return <PublicButtonBlock key={block.id} data={data} />;
 
     case 'hero':
       return (
-        <InspectableSection
+        <PublicHeroBlock
           key={block.id}
-          id={block.id}
-          name="Hero Principal"
-          pageSlug={slug}
-          blockType={block.block_type}
-        >
-          <PublicHeroBlock data={data} isBoxed={isBoxed} sectionVerticalAlign={sectionVerticalAlign} contentWidth={contentWidth} />
-        </InspectableSection>
+          data={data}
+          isBoxed={isBoxed}
+          sectionVerticalAlign={sectionVerticalAlign}
+          contentWidth={contentWidth}
+        />
       );
 
-    case 'atomic_category': {
-      const cat = dbCategories.find((c) => c.id === data.category_id);
+    case 'atomic_category':
       return (
-        <InspectableSection
+        <PublicCategoryBlock
           key={block.id}
-          id={block.id}
-          name={`Catálogo: ${cat?.name || 'Tratamientos'}`}
-          pageSlug={slug}
-          blockType={block.block_type}
-        >
-          <PublicCategoryBlock
-            data={data}
-            dbCategories={dbCategories}
-            dbServices={dbServices}
-            contentWidth={contentWidth}
-          />
-        </InspectableSection>
+          data={data}
+          dbCategories={dbCategories}
+          dbServices={dbServices}
+          contentWidth={contentWidth}
+        />
       );
-    }
 
     case 'quote_testimonial':
-      return (
-        <InspectableSection
-          key={block.id}
-          id={block.id}
-          name={`Testimonio: ${data.author || 'Dra. Mercè Guasch'}`}
-          pageSlug={slug}
-          blockType={block.block_type}
-        >
-          <PublicQuoteBlock data={data} />
-        </InspectableSection>
-      );
+      return <PublicQuoteBlock key={block.id} data={data} />;
 
     case 'features_grid':
-      return (
-        <InspectableSection
-          key={block.id}
-          id={block.id}
-          name={`Pilares: ${data.heading || 'Pilares de Excelencia'}`}
-          pageSlug={slug}
-          blockType={block.block_type}
-        >
-          <PublicFeaturesGridBlock data={data} />
-        </InspectableSection>
-      );
+      return <PublicFeaturesGridBlock key={block.id} data={data} />;
 
     case 'accordion_faq':
-      return (
-        <InspectableSection
-          key={block.id}
-          id={block.id}
-          name={`FAQ: ${data.heading || 'Preguntas Frecuentes'}`}
-          pageSlug={slug}
-          blockType={block.block_type}
-        >
-          <PublicAccordionFaqBlock data={data} />
-        </InspectableSection>
-      );
+      return <PublicAccordionFaqBlock key={block.id} data={data} />;
 
     case 'separator_spacer':
-      return (
-        <InspectableSection
-          key={block.id}
-          id={block.id}
-          name="Divisor Decorativo"
-          pageSlug={slug}
-          blockType={block.block_type}
-        >
-          <PublicSeparatorSpacerBlock data={data} />
-        </InspectableSection>
-      );
+      return <PublicSeparatorSpacerBlock key={block.id} data={data} />;
 
     default:
       return null;

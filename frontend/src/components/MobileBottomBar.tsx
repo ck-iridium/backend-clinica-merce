@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Search, Plus, Menu, ChevronRight, ChevronLeft, ChevronUp, LogOut, User, LayoutDashboard, Users, Sparkles, Ticket, Receipt, CalendarDays, Settings, Database, Image as ImageIcon, Globe, Tag, ShieldCheck, Briefcase, FileText, MoreHorizontal, Bot, CreditCard } from 'lucide-react';
+import { Home, Search, Plus, Menu, ChevronRight, ChevronLeft, ChevronUp, LogOut, User, LayoutDashboard, Users, Sparkles, Ticket, Receipt, CalendarDays, Settings, Database, Image as ImageIcon, Globe, Tag, ShieldCheck, Briefcase, FileText, MoreHorizontal, CreditCard } from 'lucide-react';
 import { GlobalSearch } from './GlobalSearch';
 import { NotificationCenter } from './NotificationCenter';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -164,7 +164,6 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
   const navItemsMain = [
     { href: '/dashboard/pos', label: t('dashboard.menu.pos') || 'Venta Rápida', icon: Tag, isSubmenu: false, style: 'accent' },
     { href: '/dashboard', label: t('dashboard.menu.home') || 'Inicio', icon: LayoutDashboard, isSubmenu: false, exact: true },
-    { href: '/dashboard/ai-webmaster', label: t('dashboard.menu.ai_webmaster') || 'Asistente Web IA', icon: Bot, isSubmenu: false },
     { href: '/dashboard/calendar', label: t('dashboard.menu.calendar') || 'Agenda', icon: CalendarDays, isSubmenu: false },
     { href: '/dashboard/clients', label: t('dashboard.menu.clients') || 'Clientes', icon: Users, isSubmenu: false },
     { href: '/dashboard/invoices', label: t('dashboard.menu.invoices') || 'Facturas', icon: Receipt, isSubmenu: false },
@@ -176,22 +175,20 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
     if (!item.href) return true; // Los submenús no tienen href directo
 
     // Restricciones de Plan:
-    // AI Webmaster solo en Gold
-    if (item.href === '/dashboard/ai-webmaster' && planType !== 'gold') return false;
     // Facturas y Bonos no disponibles en Plan Individual (Basic)
     if (planType === 'basic' && (item.href === '/dashboard/invoices' || item.href === '/dashboard/vouchers')) return false;
 
     const currentRole = role?.toLowerCase();
 
-    // Especialista SOLO ve: Inicio, Agenda, Clientes, Asistente Web IA.
+    // Especialista SOLO ve: Inicio, Agenda, Clientes.
     if (currentRole === 'especialista') {
-      const allowed = ['/dashboard', '/dashboard/calendar', '/dashboard/clients', '/dashboard/ai-webmaster'];
+      const allowed = ['/dashboard', '/dashboard/calendar', '/dashboard/clients'];
       return allowed.includes(item.href || '');
     }
 
-    // Recepción ve Facturas, POS, Bonos y Asistente Web IA como directos
+    // Recepción ve Facturas, POS y Bonos como directos
     if (currentRole === 'recepción' || currentRole === 'recepcion') {
-      const allowed = ['/dashboard', '/dashboard/calendar', '/dashboard/clients', '/dashboard/invoices', '/dashboard/pos', '/dashboard/vouchers', '/dashboard/ai-webmaster'];
+      const allowed = ['/dashboard', '/dashboard/calendar', '/dashboard/clients', '/dashboard/invoices', '/dashboard/pos', '/dashboard/vouchers'];
       return allowed.includes(item.href || '');
     }
 

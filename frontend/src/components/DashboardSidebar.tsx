@@ -7,7 +7,7 @@ import {
   Ticket, Receipt, CalendarDays, Settings,
   Database, Image as ImageIcon, Globe, Tag,
   ShieldCheck, User, LogOut, Search, ChevronRight,
-  MoreHorizontal, Briefcase, FileText, Bot, CreditCard, MapPin, Clock
+  MoreHorizontal, Briefcase, FileText, CreditCard, MapPin, Clock
 } from 'lucide-react';
 import { GlobalSearch } from './GlobalSearch';
 import { NotificationCenter } from './NotificationCenter';
@@ -43,7 +43,6 @@ interface DashboardSidebarProps {
 export const navLinks = [
   { href: '/dashboard/pos', label: 'Venta Rápida', icon: Tag, style: 'accent' },
   { href: '/dashboard', label: 'Inicio', icon: LayoutDashboard, style: 'normal', exact: true },
-  { href: '/dashboard/ai-webmaster', label: 'Asistente Web IA', icon: Bot, style: 'highlight' },
   { href: '/dashboard/clients', label: 'Clientes', icon: Users, style: 'normal' },
   { href: '/dashboard/team', label: 'Equipo', icon: ShieldCheck, style: 'normal' },
   { href: '/dashboard/locations', label: 'Sedes', icon: MapPin, style: 'normal' },
@@ -65,7 +64,6 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
     switch (href) {
       case '/dashboard/pos': return t('dashboard.menu.pos');
       case '/dashboard': return t('dashboard.menu.home');
-      case '/dashboard/ai-webmaster': return t('dashboard.menu.ai_webmaster') || 'Asistente Web IA';
       case '/dashboard/clients': return t('dashboard.menu.clients');
       case '/dashboard/team': return t('dashboard.menu.team');
       case '/dashboard/locations': return t('dashboard.menu.locations') || 'Sedes';
@@ -254,7 +252,6 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
     const directLinksHrefs = [
       '/dashboard/pos', 
       '/dashboard', 
-      '/dashboard/ai-webmaster',
       '/dashboard/calendar', 
       '/dashboard/clients', 
       '/dashboard/invoices',
@@ -278,11 +275,6 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
     // Filtrado por roles para cada grupo
     const filterByRole = (links: typeof navLinks) => {
       return links.filter(link => {
-        // --- FEATURE FLAG PARA EL PLAN GOLD ---
-        if (link.href === '/dashboard/ai-webmaster' && planType !== 'gold') {
-          return false;
-        }
-
         // --- RESTRICCIÓN PLAN INDIVIDUAL (BASIC): Facturas oficiales y Bonos son exclusivos de Plan Pro y Elite ---
         if (planType === 'basic' && (link.href === '/dashboard/invoices' || link.href === '/dashboard/vouchers')) {
           return false;
@@ -301,7 +293,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
         }
 
         if (currentRole === 'especialista') {
-          const allowed = ['/dashboard', '/dashboard/calendar', '/dashboard/clients', '/dashboard/ai-webmaster', '/dashboard/my-schedule'];
+          const allowed = ['/dashboard', '/dashboard/calendar', '/dashboard/clients', '/dashboard/my-schedule'];
           return allowed.includes(link.href);
         }
         return false;

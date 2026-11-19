@@ -1,5 +1,4 @@
 import React from 'react';
-import InspectableSection, { EmptyColumnDropZone } from '@/components/ai/webmaster/InspectableSection';
 import type { SectionBlock } from '../types';
 import { PublicBlockDispatcher } from './PublicBlockDispatcher';
 
@@ -106,56 +105,37 @@ export function PublicSection({
   // ── 1. Caso TODO BOXED: La sección entera es una caja centrada contenida ──
   if (isAllBoxed) {
     return (
-      <InspectableSection
-        key={section.id}
-        id={section.id}
-        name={`Sección ${index + 1} (${columnsCount} ${
-          columnsCount === 1 ? 'columna' : 'columnas'
-        })`}
-        pageSlug={slug}
-        blockType="section"
-      >
-        <div className="w-full px-4 md:px-6 my-4 md:my-6">
-          <section
-            style={isCustomHex ? { backgroundColor: rawBg } : undefined}
-            className={`max-w-7xl mx-auto w-full ${ptClass} ${pbClass} ${bgColor} rounded-3xl md:rounded-[2.5rem] overflow-hidden shadow-luxury border border-stone-200/40 ${
-              isDark ? 'text-white' : ''
-            } transition-all duration-300`}
+      <div key={section.id} className="w-full px-4 md:px-6 my-4 md:my-6">
+        <section
+          style={isCustomHex ? { backgroundColor: rawBg } : undefined}
+          className={`max-w-7xl mx-auto w-full ${ptClass} ${pbClass} ${bgColor} rounded-3xl md:rounded-[2.5rem] overflow-hidden shadow-luxury border border-stone-200/40 ${
+            isDark ? 'text-white' : ''
+          } transition-all duration-300`}
+        >
+          <div
+            className={`w-full ${
+              hasHero || hasCardsSlider ? '' : `grid ${gridClass} px-6 md:px-12`
+            } ${verticalAlign} ${horizontalAlign}`}
           >
-            <div
-              className={`w-full ${
-                hasHero || hasCardsSlider ? '' : `grid ${gridClass} px-6 md:px-12`
-              } ${verticalAlign} ${horizontalAlign}`}
-            >
-              {columns.map((col, colIdx) => (
-                <div key={col.id} className="flex flex-col gap-6 justify-center">
-                  {(col.blocks || []).length === 0 ? (
-                    <EmptyColumnDropZone
-                      colIndex={colIdx}
-                      totalCols={columnsCount}
-                      sectionId={section.id}
-                      pageSlug={slug}
-                    />
-                  ) : (
-                    (col.blocks || []).map((block) => (
-                      <PublicBlockDispatcher
-                        key={block.id}
-                        block={block}
-                        slug={slug}
-                        dbCategories={dbCategories}
-                        dbServices={dbServices}
-                        isBoxed={true}
-                        sectionVerticalAlign={verticalAlign}
-                        contentWidth={contentWidth}
-                      />
-                    ))
-                  )}
-                </div>
-              ))}
-            </div>
-          </section>
-        </div>
-      </InspectableSection>
+            {columns.map((col) => (
+              <div key={col.id} className="flex flex-col gap-6 justify-center">
+                {(col.blocks || []).map((block) => (
+                  <PublicBlockDispatcher
+                    key={block.id}
+                    block={block}
+                    slug={slug}
+                    dbCategories={dbCategories}
+                    dbServices={dbServices}
+                    isBoxed={true}
+                    sectionVerticalAlign={verticalAlign}
+                    contentWidth={contentWidth}
+                  />
+                ))}
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
     );
   }
 
@@ -165,51 +145,33 @@ export function PublicSection({
     : (hasHero ? 'w-full' : `max-w-7xl mx-auto px-6 w-full grid ${gridClass}`);
 
   return (
-    <InspectableSection
+    <section
       key={section.id}
-      id={section.id}
-      name={`Sección ${index + 1} (${columnsCount} ${
-        columnsCount === 1 ? 'columna' : 'columnas'
-      })`}
-      pageSlug={slug}
-      blockType="section"
+      style={isCustomHex ? { backgroundColor: rawBg } : undefined}
+      className={`w-full ${ptClass} ${pbClass} ${bgColor} ${
+        isDark ? 'text-white' : ''
+      } transition-all duration-300 border-b border-stone-100/30`}
     >
-      <section
-        style={isCustomHex ? { backgroundColor: rawBg } : undefined}
-        className={`w-full ${ptClass} ${pbClass} ${bgColor} ${
-          isDark ? 'text-white' : ''
-        } transition-all duration-300 border-b border-stone-100/30`}
+      <div
+        className={`${innerContentClass} ${verticalAlign} ${horizontalAlign}`}
       >
-        <div
-          className={`${innerContentClass} ${verticalAlign} ${horizontalAlign}`}
-        >
-          {columns.map((col, colIdx) => (
-            <div key={col.id} className="flex flex-col gap-6 justify-center">
-              {(col.blocks || []).length === 0 ? (
-                <EmptyColumnDropZone
-                  colIndex={colIdx}
-                  totalCols={columnsCount}
-                  sectionId={section.id}
-                  pageSlug={slug}
-                />
-              ) : (
-                (col.blocks || []).map((block) => (
-                  <PublicBlockDispatcher
-                    key={block.id}
-                    block={block}
-                    slug={slug}
-                    dbCategories={dbCategories}
-                    dbServices={dbServices}
-                    isBoxed={false}
-                    sectionVerticalAlign={verticalAlign}
-                    contentWidth={contentWidth}
-                  />
-                ))
-              )}
-            </div>
-          ))}
-        </div>
-      </section>
-    </InspectableSection>
+        {columns.map((col) => (
+          <div key={col.id} className="flex flex-col gap-6 justify-center">
+            {(col.blocks || []).map((block) => (
+              <PublicBlockDispatcher
+                key={block.id}
+                block={block}
+                slug={slug}
+                dbCategories={dbCategories}
+                dbServices={dbServices}
+                isBoxed={false}
+                sectionVerticalAlign={verticalAlign}
+                contentWidth={contentWidth}
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }

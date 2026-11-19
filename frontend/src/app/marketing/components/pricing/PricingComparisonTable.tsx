@@ -393,8 +393,8 @@ export function PricingComparisonTable({
 
             <tr className="hover:bg-stone-50/50 transition-colors">
               <td className="py-3.5 px-6">
-                <span className="font-bold text-stone-900 block text-xs md:text-sm">Estudio AI Webmaster en Vivo (/ai-webmaster)</span>
-                <span className="text-[11px] text-stone-400 font-medium">Diseño web, SEO, branding y carrusel Hero con vista previa simultánea</span>
+                <span className="font-bold text-stone-900 block text-xs md:text-sm">Asistente IA en Diseñador Web (CMS)</span>
+                <span className="text-[11px] text-stone-400 font-medium">Generación de textos, imágenes y bloques con IA en el editor visual</span>
               </td>
               <td className="py-3.5 px-6">
                 <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-stone-400">

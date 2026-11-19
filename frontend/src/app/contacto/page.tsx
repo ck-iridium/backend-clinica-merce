@@ -16,7 +16,6 @@ import { useLanguage } from '@/app/contexts/LanguageContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatInstagramUrl, formatMapsUrl } from '@/lib/utils';
 import AlternateUrlsSetter from '@/components/seo/AlternateUrlsSetter';
-import InspectableSection from '@/components/ai/webmaster/InspectableSection';
 
 const DAYS_MAP_LOCAL: Record<string, Record<number, string>> = {
   es: { 1: 'Lunes', 2: 'Martes', 3: 'Miércoles', 4: 'Jueves', 5: 'Viernes', 6: 'Sábado', 7: 'Domingo' },
@@ -330,31 +329,23 @@ export default function ContactoPage() {
           
           {/* LADO IZQUIERDO: CONTENIDO (Cols 1-7) */}
           <div className="lg:col-span-7 space-y-20">
-            <InspectableSection
-              id="contact-header"
-              name="Encabezado de Contacto (Título y Subtítulo)"
-              pageSlug="/contacto"
-              blockType="contact_header"
-              className="rounded-3xl p-2 -m-2"
-            >
-              <motion.div variants={itemVariants} className="space-y-8">
-                <div className="inline-flex items-center gap-3">
-                  <div className="w-8 h-px bg-primary" />
-                  <span className="text-primary font-bold text-[10px] uppercase tracking-[0.5em] block">
-                    Concierge & Care
-                  </span>
-                </div>
-                <h1 className="text-7xl md:text-[10rem] font-serif font-medium text-stone-900 leading-[0.85] tracking-tighter">
-                  {customHeader?.title || t('contact.title')} <br /> 
-                  <span className="italic font-light text-stone-300 ml-[0.1em]">
-                    {customHeader?.title ? (customHeader.title_italic || '') : t('contact.title_italic')}
-                  </span>
-                </h1>
-                <p className="text-xl md:text-2xl text-stone-500 max-w-xl leading-relaxed font-light font-sans">
-                  {customHeader?.subtitle || t('contact.subtitle')}
-                </p>
-              </motion.div>
-            </InspectableSection>
+            <motion.div variants={itemVariants} className="space-y-8">
+              <div className="inline-flex items-center gap-3">
+                <div className="w-8 h-px bg-primary" />
+                <span className="text-primary font-bold text-[10px] uppercase tracking-[0.5em] block">
+                  Concierge & Care
+                </span>
+              </div>
+              <h1 className="text-7xl md:text-[10rem] font-serif font-medium text-stone-900 leading-[0.85] tracking-tighter">
+                {customHeader?.title || t('contact.title')} <br /> 
+                <span className="italic font-light text-stone-300 ml-[0.1em]">
+                  {customHeader?.title ? (customHeader.title_italic || '') : t('contact.title_italic')}
+                </span>
+              </h1>
+              <p className="text-xl md:text-2xl text-stone-500 max-w-xl leading-relaxed font-light font-sans">
+                {customHeader?.subtitle || t('contact.subtitle')}
+              </p>
+            </motion.div>
 
             {/* GRID DE INFORMACIÓN DINÁMICA */}
             <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 gap-16">

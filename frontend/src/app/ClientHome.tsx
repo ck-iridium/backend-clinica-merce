@@ -7,7 +7,6 @@ import TreatmentCarousel from '@/components/TreatmentCarousel';
 import Footer from '@/components/Footer';
 import PublicNavbar from '@/components/PublicNavbar';
 import HeroSlider from '@/components/blocks/HeroSlider';
-import InspectableSection from '@/components/ai/webmaster/InspectableSection';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { LuxuryTreatmentPlaceholder } from '@/components/ui/LuxuryTreatmentPlaceholder';
 
@@ -531,9 +530,7 @@ export default function ClientHome({ content, settings, services, categories }: 
           // ── HERO ──────────────────────────────────────────────────────────
           if (section.type === 'hero') {
             return (
-              <InspectableSection key="hero" id="hero" name="Portada Hero" pageSlug="home" blockType="hero">
-                <HeroSlider content={content} />
-              </InspectableSection>
+              <HeroSlider key="hero" content={content} />
             );
           }
 
@@ -542,8 +539,7 @@ export default function ClientHome({ content, settings, services, categories }: 
           // ── ABOUT ─────────────────────────────────────────────────────────
           if (section.type === 'about') {
             return (
-              <InspectableSection key="about" id="about" name="Sobre Nosotros (Editorial e Imagen)" pageSlug="home" blockType="about">
-                <section className="bg-[#F5F2EE] dark:bg-stone-950 relative flex items-center min-h-[100dvh] h-auto md:h-auto snap-start md:snap-none py-16 md:py-24">
+              <section key="about" className="bg-[#F5F2EE] dark:bg-stone-950 relative flex items-center min-h-[100dvh] h-auto md:h-auto snap-start md:snap-none py-16 md:py-24">
                   <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-center w-full">
                     {/* Columna Izquierda (Texto e Imagen en móvil) */}
                     <div className="space-y-6 md:space-y-8 flex flex-col items-center text-center md:items-start md:text-left">
@@ -591,7 +587,6 @@ export default function ClientHome({ content, settings, services, categories }: 
                     </div>
                   </div>
                 </section>
-              </InspectableSection>
             );
           }
 
@@ -615,116 +610,101 @@ export default function ClientHome({ content, settings, services, categories }: 
               : `w-full pt-12 pb-16 md:py-24 flex flex-col h-auto snap-start md:snap-none`;
 
             return (
-              <InspectableSection 
-                key={`cat-${category.id}`} 
-                id={`cat-${category.id}`} 
-                name={`Catálogo: ${category.name}`} 
-                pageSlug="home" 
-                blockType="category"
+              <section
+                key={`cat-${category.id}`}
+                className={`${sectionClasses} ${isEven ? 'bg-white dark:bg-stone-950' : 'bg-[#F5F2EE] dark:bg-stone-900/60'}`}
               >
-                <section
-                  className={`${sectionClasses} ${isEven ? 'bg-white dark:bg-stone-950' : 'bg-[#F5F2EE] dark:bg-stone-900/60'}`}
-                >
-                  {/* Cabecera de la categoría */}
-                  <div className="w-full max-w-7xl mx-auto px-6 mb-8 flex-shrink-0 flex flex-col md:flex-row md:justify-between md:items-end gap-3 md:gap-8">
-                    <div className="max-w-2xl">
-                      <h2 className="text-3xl md:text-5xl font-serif font-extrabold text-stone-900 dark:text-stone-100 leading-tight">
-                        {cleanTitle(category.name)}
-                      </h2>
-                      <p className="hidden md:block text-lg md:text-xl text-stone-500 dark:text-stone-400 mt-2">
-                        {category.description || t('home.discover_treatments', 'Descubre nuestros tratamientos exclusivos.')}
-                      </p>
-                    </div>
-                    <Link
-                      href={`/tratamientos/${category.slug || category.id}`}
-                      className="self-end md:self-auto inline-flex items-center gap-2 font-bold text-primary hover:text-stone-900 dark:hover:text-white transition-colors uppercase tracking-widest text-[10px] md:text-sm"
-                    >
-                      <span className="hidden md:inline">{t('home.see_catalog', 'Ver Catálogo')}</span>
-                      <span className="md:hidden">{t('home.see_all', 'Ver todo')}</span>
-                      <span className="text-xl">→</span>
-                    </Link>
+                {/* Cabecera de la categoría */}
+                <div className="w-full max-w-7xl mx-auto px-6 mb-8 flex-shrink-0 flex flex-col md:flex-row md:justify-between md:items-end gap-3 md:gap-8">
+                  <div className="max-w-2xl">
+                    <h2 className="text-3xl md:text-5xl font-serif font-extrabold text-stone-900 dark:text-stone-100 leading-tight">
+                      {cleanTitle(category.name)}
+                    </h2>
+                    <p className="hidden md:block text-lg md:text-xl text-stone-500 dark:text-stone-400 mt-2">
+                      {category.description || t('home.discover_treatments', 'Descubre nuestros tratamientos exclusivos.')}
+                    </p>
                   </div>
+                  <Link
+                    href={`/tratamientos/${category.slug || category.id}`}
+                    className="self-end md:self-auto inline-flex items-center gap-2 font-bold text-primary hover:text-stone-900 dark:hover:text-white transition-colors uppercase tracking-widest text-[10px] md:text-sm"
+                  >
+                    <span className="hidden md:inline">{t('home.see_catalog', 'Ver Catálogo')}</span>
+                    <span className="md:hidden">{t('home.see_all', 'Ver todo')}</span>
+                    <span className="text-xl">→</span>
+                  </Link>
+                </div>
 
-                  {/* ── RENDERIZADO CONDICIONAL POR layout_style DE LA CATEGORÍA ─ */}
-                  <div className={isSlider ? "flex-1 flex items-stretch w-full py-4 overflow-hidden" : "w-full py-4"}>
-                    {layoutStyle === 'cards_slider' && (
-                      <div className="w-full flex-1 min-h-0 flex flex-col justify-center pb-8">
-                        {/* DESKTOP */}
-                        <div className="hidden md:block w-full">
-                          {categoryServices.length === 1 && (
-                            <div className="max-w-7xl mx-auto px-6">
-                              <div className="w-full aspect-[16/9] md:h-[500px]">
-                                <ServiceCard service={categoryServices[0]} className="w-full h-full" />
-                              </div>
+                {/* ── RENDERIZADO CONDICIONAL POR layout_style DE LA CATEGORÍA ─ */}
+                <div className={isSlider ? "flex-1 flex items-stretch w-full py-4 overflow-hidden" : "w-full py-4"}>
+                  {layoutStyle === 'cards_slider' && (
+                    <div className="w-full flex-1 min-h-0 flex flex-col justify-center pb-8">
+                      {/* DESKTOP */}
+                      <div className="hidden md:block w-full">
+                        {categoryServices.length === 1 && (
+                          <div className="max-w-7xl mx-auto px-6">
+                            <div className="w-full aspect-[16/9] md:h-[500px]">
+                              <ServiceCard service={categoryServices[0]} className="w-full h-full" />
                             </div>
-                          )}
-                          {categoryServices.length === 2 && (
-                            <div className="max-w-7xl mx-auto px-6 flex justify-center gap-8">
-                              <div className="w-[372px] h-[662px]">
-                                <ServiceCard service={categoryServices[0]} className="w-full h-full" />
-                              </div>
-                              <div className="w-[372px] h-[662px]">
-                                <ServiceCard service={categoryServices[1]} className="w-full h-full" />
-                              </div>
+                          </div>
+                        )}
+                        {categoryServices.length === 2 && (
+                          <div className="max-w-7xl mx-auto px-6 flex justify-center gap-8">
+                            <div className="w-[372px] h-[662px]">
+                              <ServiceCard service={categoryServices[0]} className="w-full h-full" />
                             </div>
-                          )}
-                          {categoryServices.length >= 3 && (
-                            <TreatmentCarousel servicios={categoryServices} loop={true} />
-                          )}
-                        </div>
-
-                        {/* MOBILE VIEW */}
-                        <div className="md:hidden flex overflow-x-auto snap-x-mandatory hide-scroll gap-4 px-6 items-stretch w-full flex-1 min-h-0 pb-4">
-                          {categoryServices.map((svc: any) => (
-                            <ServiceCard key={svc.id} service={svc} className="snap-stop-always" />
-                          ))}
-                        </div>
+                            <div className="w-[372px] h-[662px]">
+                              <ServiceCard service={categoryServices[1]} className="w-full h-full" />
+                            </div>
+                          </div>
+                        )}
+                        {categoryServices.length >= 3 && (
+                          <TreatmentCarousel servicios={categoryServices} loop={true} />
+                        )}
                       </div>
-                    )}
 
-                    {layoutStyle === 'bento_grid' && (
-                      <BentoCategoryGrid services={categoryServices} />
-                    )}
+                      {/* MOBILE VIEW */}
+                      <div className="md:hidden flex overflow-x-auto snap-x-mandatory hide-scroll gap-4 px-6 items-stretch w-full flex-1 min-h-0 pb-4">
+                        {categoryServices.map((svc: any) => (
+                          <ServiceCard key={svc.id} service={svc} className="snap-stop-always" />
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-                    {layoutStyle === 'traditional_grid' && (
-                      <TraditionalCategoryGrid services={categoryServices} />
-                    )}
+                  {layoutStyle === 'bento_grid' && (
+                    <BentoCategoryGrid services={categoryServices} />
+                  )}
 
-                    {layoutStyle === 'minimalist_list' && (
-                      <MinimalistCategoryList services={categoryServices} />
-                    )}
-                  </div>
-                </section>
-              </InspectableSection>
+                  {layoutStyle === 'traditional_grid' && (
+                    <TraditionalCategoryGrid services={categoryServices} />
+                  )}
+
+                  {layoutStyle === 'minimalist_list' && (
+                    <MinimalistCategoryList services={categoryServices} />
+                  )}
+                </div>
+              </section>
             );
           }
 
           // ── CTA ───────────────────────────────────────────────────────────
           if (section.type === 'cta') {
             return (
-              <InspectableSection 
-                key="cta" 
-                id="cta" 
-                name="Llamada a la Acción (CTA Reserva)" 
-                pageSlug="home" 
-                blockType="cta"
-              >
-                <section className="flex flex-col justify-center w-full py-24 bg-primary text-primary-foreground text-center px-6 h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none">
-                  <div className="max-w-3xl mx-auto space-y-8 animate-in zoom-in-95 duration-700 w-full">
-                    <h2 className="text-5xl md:text-6xl font-extrabold tracking-tight">
-                      {cleanTitle(translate(content.cta_title, content.translations, 'cta_title'))}
-                    </h2>
-                    <p className="text-xl md:text-2xl font-medium opacity-90">
-                      {cleanParagraphText(translate(content.cta_subtitle, content.translations, 'cta_subtitle'))}
-                    </p>
-                    <div className="pt-6">
-                      <a href={content.cta_button_link} className="inline-block bg-stone-900 dark:bg-stone-950 text-white dark:text-stone-100 px-12 py-6 rounded-[var(--radius-btn)] font-bold text-xl hover:bg-stone-800 dark:hover:bg-black transition-all shadow-xl hover:scale-105">
-                        {translate(content.cta_button_text, content.translations, 'cta_button_text')}
-                      </a>
-                    </div>
+              <section key="cta" className="flex flex-col justify-center w-full py-24 bg-primary text-primary-foreground text-center px-6 h-[100dvh] snap-start snap-stop-always md:h-auto md:snap-none">
+                <div className="max-w-3xl mx-auto space-y-8 animate-in zoom-in-95 duration-700 w-full">
+                  <h2 className="text-5xl md:text-6xl font-extrabold tracking-tight">
+                    {cleanTitle(translate(content.cta_title, content.translations, 'cta_title'))}
+                  </h2>
+                  <p className="text-xl md:text-2xl font-medium opacity-90">
+                    {cleanParagraphText(translate(content.cta_subtitle, content.translations, 'cta_subtitle'))}
+                  </p>
+                  <div className="pt-6">
+                    <a href={content.cta_button_link} className="inline-block bg-stone-900 dark:bg-stone-950 text-white dark:text-stone-100 px-12 py-6 rounded-[var(--radius-btn)] font-bold text-xl hover:bg-stone-800 dark:hover:bg-black transition-all shadow-xl hover:scale-105">
+                      {translate(content.cta_button_text, content.translations, 'cta_button_text')}
+                    </a>
                   </div>
-                </section>
-              </InspectableSection>
+                </div>
+              </section>
             );
           }
 

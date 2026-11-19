@@ -73,7 +73,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     features: [
       { text: 'Hasta 10 miembros (+15€/mes extra)', isBold: true },
       { text: 'Hasta 5 sedes (+20€/mes extra)', isBold: true },
-      { text: 'Estudio AI Webmaster en Vivo (Texto, Voz y Fotos)', isSpecial: true },
+      { text: 'Constructor Web con IA (Generación de bloques, texto y fotos)', isSpecial: true },
       { text: 'Co-Piloto Operativo IA (Acciones ilimitadas)', isBold: true },
       { text: 'Todo lo incluido en el Plan Pro' },
       { text: 'Marca blanca 100% invisible' },

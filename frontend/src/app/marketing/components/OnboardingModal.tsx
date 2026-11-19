@@ -60,7 +60,7 @@ const PLANS_DATA: Record<string, {
     yearlyPrice: 1290,
     monthlyEquiv: '107,50€',
     savings: 258,
-    highlight: 'Hasta 10 miembros, 5 sedes, IA Webmaster e IA Concierge 24/7.',
+    highlight: 'Hasta 10 miembros, 5 sedes, Diseñador Web IA e IA Concierge 24/7.',
   },
 };
 

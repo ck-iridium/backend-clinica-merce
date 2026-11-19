@@ -115,11 +115,10 @@ export default function AICopilotWidget() {
       )
     : false;
 
-  // Ocultar si no está autorizado o si ya estamos en el estudio AI Webmaster
+  // Ocultar si no está autorizado
   if (
     (loadingRole && !role && !localFallbackRole) ||
-    !isAuthorized ||
-    pathname === '/dashboard/ai-webmaster'
+    !isAuthorized
   ) {
     return null;
   }

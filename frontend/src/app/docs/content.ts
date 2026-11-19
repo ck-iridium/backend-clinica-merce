@@ -250,8 +250,8 @@ export const DOCS_NAVIGATION: DocSectionNavigation[] = [
         id: 'agentes-ia-webmaster',
         title: {
           es: 'Asistentes Inteligentes para Gestionar tu Web',
-          en: 'Autonomous AI Webmaster & Global Copilot',
-          fr: 'Assistants IA Autonomes Webmaster & Copilote'
+          en: 'Autonomous AI Assistant & Global Copilot',
+          fr: 'Assistants IA Autonomes & Copilote'
         }
       }
     ]
