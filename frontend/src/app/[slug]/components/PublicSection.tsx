@@ -95,20 +95,73 @@ export function PublicSection({
     ? 'bg-[#FAF7F0]'
     : 'bg-[#FAFAFA]';
 
-  const isBoxed = struct.content_width === 'boxed';
-  const isExplicitFullWidth = struct.content_width === 'fullwidth';
-  const isFullWidth = isExplicitFullWidth || (!isBoxed && (hasHero || hasCardsSlider));
+  // Modos de ancho: 'boxed' (Todo Boxed) | 'fullwidth' (Todo Fullwidth) | 'fullwidth_boxed' (Fondo Fullwidth, Contenido Boxed)
+  const contentWidth = struct.content_width || 'boxed';
+  const isAllBoxed = contentWidth === 'boxed';
+  const isAllFullWidth = contentWidth === 'fullwidth';
 
-  // Alineación exacta con el Navbar (max-w-7xl mx-auto px-6)
-  const paddingClass = isFullWidth
-    ? (hasHero ? 'px-0' : hasCardsSlider ? 'px-0 py-4' : 'px-4 md:px-8')
-    : (hasHero ? 'px-0' : 'px-0');
-
-  const widthClass = isFullWidth
-    ? 'w-full'
-    : 'max-w-7xl mx-auto px-6 w-full';
   const verticalAlign = struct.vertical_alignment || 'items-start';
   const horizontalAlign = struct.horizontal_alignment || 'justify-start';
+
+  // ── 1. Caso TODO BOXED: La sección entera es una caja centrada contenida ──
+  if (isAllBoxed) {
+    return (
+      <InspectableSection
+        key={section.id}
+        id={section.id}
+        name={`Sección ${index + 1} (${columnsCount} ${
+          columnsCount === 1 ? 'columna' : 'columnas'
+        })`}
+        pageSlug={slug}
+        blockType="section"
+      >
+        <div className="w-full px-4 md:px-6 my-4 md:my-6">
+          <section
+            style={isCustomHex ? { backgroundColor: rawBg } : undefined}
+            className={`max-w-7xl mx-auto w-full ${ptClass} ${pbClass} ${bgColor} rounded-3xl md:rounded-[2.5rem] overflow-hidden shadow-luxury border border-stone-200/40 ${
+              isDark ? 'text-white' : ''
+            } transition-all duration-300`}
+          >
+            <div
+              className={`w-full ${
+                hasHero || hasCardsSlider ? '' : `grid ${gridClass} px-6 md:px-12`
+              } ${verticalAlign} ${horizontalAlign}`}
+            >
+              {columns.map((col, colIdx) => (
+                <div key={col.id} className="flex flex-col gap-6 justify-center">
+                  {(col.blocks || []).length === 0 ? (
+                    <EmptyColumnDropZone
+                      colIndex={colIdx}
+                      totalCols={columnsCount}
+                      sectionId={section.id}
+                      pageSlug={slug}
+                    />
+                  ) : (
+                    (col.blocks || []).map((block) => (
+                      <PublicBlockDispatcher
+                        key={block.id}
+                        block={block}
+                        slug={slug}
+                        dbCategories={dbCategories}
+                        dbServices={dbServices}
+                        isBoxed={true}
+                        sectionVerticalAlign={verticalAlign}
+                      />
+                    ))
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+      </InspectableSection>
+    );
+  }
+
+  // ── 2 y 3. Casos TODO FULLWIDTH o FONDO FULLWIDTH CON CONTENIDO BOXED ──
+  const innerContentClass = isAllFullWidth
+    ? (hasHero || hasCardsSlider ? 'w-full' : `w-full grid ${gridClass} px-4 md:px-8`)
+    : (hasHero ? 'w-full' : `max-w-7xl mx-auto px-6 w-full grid ${gridClass}`);
 
   return (
     <InspectableSection
@@ -122,14 +175,12 @@ export function PublicSection({
     >
       <section
         style={isCustomHex ? { backgroundColor: rawBg } : undefined}
-        className={`w-full ${ptClass} ${pbClass} ${bgColor} ${paddingClass} ${
+        className={`w-full ${ptClass} ${pbClass} ${bgColor} ${
           isDark ? 'text-white' : ''
         } transition-all duration-300 border-b border-stone-100/30`}
       >
         <div
-          className={`${widthClass} ${
-            hasHero || hasCardsSlider ? '' : `grid ${gridClass}`
-          } ${verticalAlign} ${horizontalAlign}`}
+          className={`${innerContentClass} ${verticalAlign} ${horizontalAlign}`}
         >
           {columns.map((col, colIdx) => (
             <div key={col.id} className="flex flex-col gap-6 justify-center">
@@ -148,7 +199,7 @@ export function PublicSection({
                     slug={slug}
                     dbCategories={dbCategories}
                     dbServices={dbServices}
-                    isBoxed={isBoxed}
+                    isBoxed={false}
                     sectionVerticalAlign={verticalAlign}
                   />
                 ))

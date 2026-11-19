@@ -228,31 +228,45 @@ export function SectionToolbar({
                 </div>
               </div>
 
-              {/* Ancho de Contenedor */}
+              {/* Ancho de Sección y Contenido */}
               <div>
                 <span className="text-[9px] font-black uppercase tracking-wider text-stone-500 block mb-1.5">
-                  Ancho de Contenedor
+                  Ancho de Sección y Contenido
                 </span>
-                <div className="grid grid-cols-2 gap-1.5">
-                  {[
-                    { value: 'boxed', label: 'Centrado (Boxed)' },
-                    { value: 'fullwidth', label: 'Ancho Total' }
-                  ].map(opt => {
-                    const isSel = (struct.content_width || 'boxed') === opt.value;
-                    return (
-                      <button
-                        key={opt.value}
-                        onClick={() => onUpdateSectionMetadata(section.id, 'content_width', opt.value)}
-                        className={`py-1.5 px-2 rounded-lg text-[10px] font-bold transition-all border text-center ${
-                          isSel
-                            ? 'bg-stone-900 border-stone-900 text-white shadow-sm'
-                            : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'
-                        }`}
-                      >
-                        {opt.label}
-                      </button>
-                    );
-                  })}
+                <div className="flex flex-col gap-1.5">
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {[
+                      { value: 'boxed', label: 'Todo Boxed' },
+                      { value: 'fullwidth', label: 'Todo Fullwidth' }
+                    ].map(opt => {
+                      const isSel = (struct.content_width || 'boxed') === opt.value;
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => onUpdateSectionMetadata(section.id, 'content_width', opt.value)}
+                          className={`py-1.5 px-2 rounded-lg text-[10px] font-bold transition-all border text-center ${
+                            isSel
+                              ? 'bg-stone-900 border-stone-900 text-white shadow-xs'
+                              : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => onUpdateSectionMetadata(section.id, 'content_width', 'fullwidth_boxed')}
+                    className={`w-full py-1.5 px-2 rounded-lg text-[10px] font-bold transition-all border text-center ${
+                      struct.content_width === 'fullwidth_boxed'
+                        ? 'bg-stone-900 border-stone-900 text-white shadow-xs'
+                        : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'
+                    }`}
+                  >
+                    Fondo Fullwidth (Contenido Boxed)
+                  </button>
                 </div>
               </div>
 

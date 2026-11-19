@@ -29,7 +29,7 @@ export interface SectionStructure {
   padding_top?: string;
   padding_bottom?: string;
   bg_color?: string;
-  content_width?: 'boxed' | 'fullwidth';
+  content_width?: 'boxed' | 'fullwidth' | 'fullwidth_boxed';
   horizontal_alignment?: string;
   vertical_alignment?: string;
   columns: ColumnStructure[];

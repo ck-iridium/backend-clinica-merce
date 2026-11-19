@@ -171,7 +171,7 @@ export default function PageEditor() {
           </div>
 
           {/* Contenedor del lienzo Full Width real (idéntico a la web pública) */}
-          <div className="flex-1 overflow-y-auto w-full flex flex-col bg-white">
+          <div className="flex-1 overflow-y-auto w-full flex flex-col bg-[#FAFAFA]">
             <div className="w-full flex-1 flex flex-col relative min-h-[85vh]">
               
               {loading ? (

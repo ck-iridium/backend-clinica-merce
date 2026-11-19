@@ -164,29 +164,6 @@ export default function CreatorSidebar({
             </Tooltip>
           </div>
         </TooltipProvider>
-
-        {/* Indicador de Estado y Autoguardado */}
-        <div className="mt-2.5 flex items-center justify-between text-[10px] px-0.5 font-medium text-stone-400">
-          {saving ? (
-            <span className="text-amber-600 flex items-center gap-1 font-bold animate-pulse">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping inline-block" />
-              Sincronizando...
-            </span>
-          ) : hasUnsavedChanges ? (
-            <span className="text-stone-500 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block" />
-              Cambios pendientes
-            </span>
-          ) : lastSavedAt ? (
-            <span className="text-emerald-700 flex items-center gap-1 font-bold">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
-              Guardado {lastSavedAt}
-            </span>
-          ) : (
-            <span className="text-stone-400">Protegido</span>
-          )}
-          <span className="text-stone-300">Ctrl+Z</span>
-        </div>
       </div>
 
       {/* ── Librería de Bloques en Grid 2 por Fila ───────────────── */}
