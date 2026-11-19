@@ -27,7 +27,7 @@ export default function BlockAIGeneratorModal({
   onApply,
 }: BlockAIGeneratorModalProps) {
   const [prompt, setPrompt] = useState('');
-  const [tone, setTone] = useState<'premium' | 'clinico' | 'cercano'>('premium');
+  const [tone, setTone] = useState<'cercano' | 'premium' | 'clinico'>('cercano');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedData, setGeneratedData] = useState<Record<string, any> | null>(null);
   const [activeTab, setActiveTab] = useState<'text' | 'image'>('text');
@@ -101,67 +101,29 @@ export default function BlockAIGeneratorModal({
     }
   };
 
-  // Sugerencias rápidas por tipo de bloque
-  const getSuggestions = () => {
+  // Placeholder dinámico e intuitivo según el tipo de bloque
+  const getPlaceholder = () => {
+    if (activeTab === 'image') {
+      return 'Ej: Fotografía editorial y luminosa, espacio elegante, plano detalle estético, luz natural suave, 8k...';
+    }
     switch (blockType) {
       case 'accordion_faq':
-        return [
-          'Cuidados posteriores y recuperación',
-          'Dolor, anestesia y confort',
-          'Duración y sesiones necesarias',
-          'Contraindicaciones y seguridad médica'
-        ];
+        return 'Ej: Redacta 4 preguntas frecuentes sobre cómo reservar, cancelaciones, duración y qué incluye el servicio...';
       case 'atomic_title':
       case 'title_heading':
-        return [
-          'Titular Quiet Luxury y evocador',
-          'Enfoque médico y seguridad clínica',
-          'Tecnología de vanguardia no invasiva',
-          'Resultados naturales y rejuvenecimiento'
-        ];
+        return 'Ej: Un titular inspirador para presentar nuestros servicios estrella e invitar a visitarnos...';
       case 'atomic_text':
-        return [
-          'Texto editorial y sensorial de bienvenida',
-          'Explicación clínica sencilla del tratamiento',
-          'Beneficios en armonía facial y corporal',
-          'Propuesta de valor y bienestar integral'
-        ];
+        return 'Ej: Escribe un texto explicando la comodidad de nuestro servicio, la atención personalizada y el cuidado del cliente...';
       case 'features_grid':
-        return [
-          '3 pilares de excelencia médica',
-          'Tecnología de última generación y confort',
-          'Diagnóstico previo personalizado y seguridad',
-          'Protocolos exclusivos para pacientes VIP'
-        ];
+        return 'Ej: 3 ventajas principales de elegirnos: puntualidad, productos de alta calidad y trato 100% personalizado...';
       case 'hero':
-        return [
-          'Titular impactante de bienvenida exclusiva',
-          'Medicina estética y bienestar regenerativo',
-          'Llamada a consulta de valoración médica'
-        ];
+        return 'Ej: Frase impactante de bienvenida para la portada que invite a descubrir nuestro espacio y reservar cita...';
       case 'quote_testimonial':
-        return [
-          'Testimonio natural de paciente agradecida',
-          'Cita inspiradora de la Dirección Médica',
-          'Experiencia sensorial y confianza'
-        ];
+        return 'Ej: Testimonio de una clienta encantada con su resultado y la atención recibida...';
       case 'text_image_cta':
-        return [
-          'Innovación médica y confort sensorial',
-          'Tratamiento exclusivo con cita previa',
-          'Resultados progresivos sin tiempo de baja'
-        ];
-      case 'atomic_image':
-        return [
-          'Cabina médica minimalista con luz cálida difusa',
-          'Primer plano de cuidado facial en atmósfera serena',
-          'Textura de sérum dorado en superficie de mármol'
-        ];
+        return 'Ej: Presentación de nuestra experiencia exclusiva, destacando el bienestar y un botón para reservar cita...';
       default:
-        return [
-          'Redactar con estilo Quiet Luxury 2026',
-          'Tono médico profesional y confiable'
-        ];
+        return 'Indica de qué quieres hablar, qué servicios destacar o qué mensaje deseas transmitir...';
     }
   };
 
@@ -241,18 +203,19 @@ export default function BlockAIGeneratorModal({
         {/* ── Header ── */}
         <div className="px-7 pt-6 pb-4 border-b border-stone-150 flex items-start justify-between shrink-0 bg-gradient-to-b from-stone-50/70 to-white">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="w-2 h-2 rounded-full bg-[#d4af37] animate-pulse" />
-              <span className="text-[10px] font-black uppercase tracking-[0.25em] text-[#d4af37]">
-                Copilot IA · Quiet Luxury
-              </span>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-50 border border-orange-200/80 text-orange-600 text-[10px] font-black uppercase tracking-wider mb-2">
+              <svg className="w-3.5 h-3.5 text-orange-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 0 0 0-8c-2 0-4 1.33-6 4Z" />
+                <circle cx="12" cy="12" r="1" fill="currentColor" />
+              </svg>
+              <span>Copilot IA · Asistente de Bloque</span>
             </div>
             <h2 className="font-serif text-2xl font-bold text-stone-900 leading-tight flex items-center gap-2">
               <span>{blockDef?.icon || '🪄'}</span>
               <span>Generar {blockLabel}</span>
             </h2>
             <p className="text-stone-400 text-xs mt-0.5 font-sans">
-              Indica qué deseas transmitir y la IA adaptará el bloque al estándar de tu clínica.
+              Indica qué deseas transmitir y la IA adaptará el bloque al estilo de tu negocio.
             </p>
           </div>
           <button
@@ -301,44 +264,26 @@ export default function BlockAIGeneratorModal({
               </span>
               <div className="grid grid-cols-3 gap-2">
                 {[
+                  { id: 'cercano', label: 'Cercano & Tuteo', sub: 'De tú a tú, fresco y sin tecnicismos' },
                   { id: 'premium', label: 'Quiet Luxury', sub: 'Elegante y refinado' },
-                  { id: 'clinico', label: 'Médico Científico', sub: 'Riguroso y técnico' },
-                  { id: 'cercano', label: 'Cálido y Empático', sub: 'Tranquilizador' },
+                  { id: 'clinico', label: 'Profesional & Técnico', sub: 'Riguroso y con autoridad' },
                 ].map(t => (
                   <button
                     key={t.id}
                     onClick={() => setTone(t.id as any)}
                     className={`p-2.5 rounded-2xl border text-left transition-all ${
                       tone === t.id
-                        ? 'border-[#d4af37] bg-amber-50/30 text-stone-900 shadow-2xs'
+                        ? 'border-orange-500 bg-orange-50/40 text-stone-900 shadow-2xs'
                         : 'border-stone-200 bg-white text-stone-600 hover:bg-stone-50'
                     }`}
                   >
-                    <span className="text-[11px] font-bold block">{t.label}</span>
+                    <span className={`text-[11px] font-bold block ${tone === t.id ? 'text-orange-600' : ''}`}>{t.label}</span>
                     <span className="text-[9px] text-stone-400 block mt-0.5">{t.sub}</span>
                   </button>
                 ))}
               </div>
             </div>
           )}
-
-          {/* Sugerencias Rápidas de 1 Clic */}
-          <div>
-            <span className="text-[10px] font-black uppercase tracking-wider text-stone-500 block mb-1.5">
-              Sugerencias Rápidas
-            </span>
-            <div className="flex flex-wrap gap-1.5">
-              {getSuggestions().map((sug, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setPrompt(sug)}
-                  className="px-3 py-1.5 rounded-xl text-xs bg-stone-100 hover:bg-amber-50 border border-stone-200/80 hover:border-[#d4af37]/60 text-stone-600 hover:text-stone-900 transition-all font-medium"
-                >
-                  {sug}
-                </button>
-              ))}
-            </div>
-          </div>
 
           {/* Input de Prompt con Micrófono de Voz */}
           <div>
@@ -358,23 +303,19 @@ export default function BlockAIGeneratorModal({
               <textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                placeholder={
-                  activeTab === 'image'
-                    ? 'Ej: Primer plano de tratamiento facial de hidro-dermoabrasión con iluminación tenue en clínica de lujo...'
-                    : 'Ej: Redacta las 4 preguntas más frecuentes de pacientes que van a hacerse ácido hialurónico por primera vez...'
-                }
-                rows={3}
-                className="w-full rounded-2xl border border-stone-200 bg-stone-50/50 p-3.5 pr-14 text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#d4af37]/50 focus:border-[#d4af37] transition-all resize-none font-sans"
+                placeholder={getPlaceholder()}
+                rows={4}
+                className="w-full rounded-2xl border border-stone-200 bg-stone-50/50 p-4 pr-14 text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-orange-500/40 focus:border-orange-500 transition-all resize-none font-sans leading-relaxed"
               />
 
               {/* Botón de Dictado por Voz */}
               <button
                 type="button"
                 onClick={toggleListening}
-                className={`absolute bottom-3 right-3 w-8 h-8 rounded-xl flex items-center justify-center transition-all ${
+                className={`absolute bottom-3.5 right-3.5 w-8 h-8 rounded-xl flex items-center justify-center transition-all ${
                   isListening
                     ? 'bg-red-500 text-white shadow-md animate-bounce'
-                    : 'bg-white border border-stone-200 text-stone-500 hover:text-[#d4af37] hover:border-[#d4af37]'
+                    : 'bg-white border border-stone-200 text-stone-500 hover:text-orange-500 hover:border-orange-500 shadow-xs'
                 }`}
                 title={isListening ? 'Detener micrófono' : 'Dictar por voz'}
               >
@@ -390,16 +331,19 @@ export default function BlockAIGeneratorModal({
             <button
               onClick={handleGenerate}
               disabled={isGenerating || !prompt.trim()}
-              className="flex items-center gap-2 bg-stone-900 hover:bg-stone-800 disabled:opacity-50 text-white px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-md active:scale-95"
+              className="flex items-center gap-2 bg-gradient-to-tr from-[#ff5500] to-[#ff7a18] hover:from-[#ff4500] hover:to-[#ff6a00] disabled:opacity-50 text-white px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-md shadow-orange-500/25 active:scale-95"
             >
               {isGenerating ? (
                 <>
-                  <span className="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                  <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   <span>Generando con IA...</span>
                 </>
               ) : (
                 <>
-                  <span>✨</span>
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 0 0 0-8c-2 0-4 1.33-6 4Z" />
+                    <circle cx="12" cy="12" r="1" fill="currentColor" />
+                  </svg>
                   <span>{activeTab === 'image' ? 'Crear Fotografía IA' : 'Generar Contenido'}</span>
                 </>
               )}

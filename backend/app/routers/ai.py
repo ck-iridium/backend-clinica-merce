@@ -308,22 +308,28 @@ def generate_block_content(
     db: Session = Depends(database.get_db)
 ):
     settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == database.current_tenant_var.get()).first()
-    clinic_name = settings.clinic_name if settings and settings.clinic_name else "Clínica de Estética y Bienestar"
+    clinic_name = settings.clinic_name if settings and settings.clinic_name else "Centro de Belleza y Bienestar"
 
-    tone_str = "Quiet Luxury refinado, médico y exclusivo"
-    if request.tone == "clinico":
-        tone_str = "riguroso, científico, médico y basado en evidencia"
-    elif request.tone == "cercano":
-        tone_str = "cálido, empático, accesible y de confianza"
+    tone_str = "Quiet Luxury refinado y exclusivo"
+    if request.tone == "cercano":
+        tone_str = "cercano, fresco, directo y de tú a tú (TUTEO OBLIGATORIO: dirígete siempre al lector de 'tú', por ejemplo 'tu momento', 'disfruta', 'descubre lo que tu cabello y piel necesitan'. Prohibido hablar de 'usted'. No uses tecnicismos complejos; sé natural, acogedor y cercano)."
+    elif request.tone in ["clinico", "profesional"]:
+        tone_str = "profesional, técnico, riguroso y con autoridad"
+    elif request.tone == "premium":
+        tone_str = "Quiet Luxury refinado, elegante, minimalista y aspiracional"
 
     block_type = request.block_type
     current_data = request.current_data or {}
 
     prompt_instructions = f"""
-Eres un redactor y estratega de contenido de clase mundial para clínicas de medicina estética, dermatología y bienestar de lujo.
-Estás generando contenido para un bloque web de tipo '{block_type}' para la clínica '{clinic_name}'.
+Eres un redactor y copywriter creativo de primer nivel especializado en negocios de estética, belleza, peluquería, salones y clínicas ('{clinic_name}').
+Estás generando contenido para un bloque web de tipo '{block_type}'.
 Tono solicitado: {tone_str}.
 Idioma: {request.language or 'es'}.
+
+DIRECTRICES CLAVE:
+1. ADAPTABILIDAD AL NEGOCIO: Adapta el contenido estrictamente a lo que el usuario pida (peluquería, corte de pelo a domicilio, estética, manicura, masajes, tratamientos faciales o medicina estética). Respeta el sector del usuario sin asumir medicina a menos que lo pida.
+2. ENFOQUE DEL TONO: Si el tono es cercano, tutea siempre al lector con naturalidad y frescura, sin tecnicismos. Si es Quiet Luxury, aporta sobriedad y distinción. Si es profesional, rigor y técnica.
 
 Petición del usuario:
 \"\"\"{request.prompt}\"\"\"
