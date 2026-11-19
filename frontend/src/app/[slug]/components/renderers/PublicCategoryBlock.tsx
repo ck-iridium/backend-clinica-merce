@@ -110,7 +110,7 @@ export function PublicCategoryBlock({ data, dbCategories, dbServices }: PublicCa
       )}
 
       {layoutStyle === 'bento_grid' && (
-        <div className="-mx-6 md:-mx-12">
+        <div className="w-full">
           <BentoGridServices
             data={{
               title: category?.name || 'Nuestros Tratamientos',

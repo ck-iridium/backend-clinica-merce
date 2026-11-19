@@ -74,7 +74,7 @@ export function CategoryFields({ editFormData, set, dbCategories, dbServices }: 
           <div className="grid grid-cols-2 gap-2.5 select-none">
             {[
               { value: 'traditional_grid', label: 'Cuadrícula (Grid)', desc: 'Columnas limpias y ordenadas' },
-              { value: 'bento_grid', label: 'Bento Asimétrico 2026', desc: 'Layout dinámico Quiet Luxury' },
+              { value: 'bento_grid', label: 'Bento Asimétrico', desc: 'Layout dinámico Quiet Luxury' },
               { value: 'cards_slider', label: 'Carrusel de Tarjetas', desc: 'Desplazamiento interactivo' },
               { value: 'minimalist_list', label: 'Lista Elegante', desc: 'Tipografía y precios discretos' }
             ].map(layout => {

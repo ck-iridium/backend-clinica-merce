@@ -85,8 +85,8 @@ function BentoServiceCard({ svc, idx, gridClass, total }: { svc: any, idx: numbe
             loading="lazy"
           />
         ) : (
-          <div className="w-full h-full bg-stone-100 flex items-center justify-center">
-            <span className="font-serif text-stone-300 italic">ProBookia</span>
+          <div className="w-full h-full bg-gradient-to-br from-stone-900 via-stone-950 to-stone-900 flex items-center justify-center">
+            <span className="font-serif text-stone-600 italic">ProBookia</span>
           </div>
         )}
       </div>
@@ -205,18 +205,22 @@ export default function BentoGridServices({ data, services }: { data: any, servi
   };
 
   return (
-    <section className="w-full py-24 px-6 md:px-12 bg-[#FAFAFA] flex flex-col snap-start snap-stop-always md:snap-none">
+    <div className="w-full bg-transparent flex flex-col">
       {/* Title */}
-      <div className="max-w-7xl mx-auto w-full mb-12 text-center md:text-left">
-        <h2 className="text-4xl md:text-5xl font-serif font-extrabold text-stone-900 leading-tight">
-          {data?.title || 'Nuestros Tratamientos Insignia'}
-        </h2>
-        {data?.subtitle && (
-          <p className="text-lg md:text-xl text-stone-500 mt-3 font-medium font-sans">
-            {data.subtitle}
-          </p>
-        )}
-      </div>
+      {(data?.title || data?.subtitle) && (
+        <div className="max-w-7xl mx-auto w-full mb-8 text-center md:text-left">
+          {data?.title && (
+            <h2 className="text-3xl md:text-4xl font-serif font-extrabold leading-tight">
+              {data.title}
+            </h2>
+          )}
+          {data?.subtitle && (
+            <p className="text-sm md:text-base opacity-75 mt-2 font-medium font-sans">
+              {data.subtitle}
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Asymmetric Bento Grid */}
       <div className={`max-w-7xl mx-auto w-full grid ${containerGridClass}`}>
@@ -233,6 +237,6 @@ export default function BentoGridServices({ data, services }: { data: any, servi
           );
         })}
       </div>
-    </section>
+    </div>
   );
 }

@@ -46,8 +46,19 @@ export function CategoryBlockView({ data, dbCategories, dbServices }: CategoryBl
     rawLayout === 'list' ? 'minimalist_list' :
     rawLayout;
 
+  const handlePreventNavigation = (e: React.MouseEvent) => {
+    const anchor = (e.target as HTMLElement).closest('a');
+    if (anchor) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
+
   return (
-    <div className="w-full py-6 select-none">
+    <div
+      className="w-full py-6 select-none [&_a]:cursor-default"
+      onClickCapture={handlePreventNavigation}
+    >
       {layoutStyle === 'cards_slider' && (
         <div className="w-full flex flex-col justify-center pb-4">
           {/* Cabecera de categoría idéntica a la Home / Public */}

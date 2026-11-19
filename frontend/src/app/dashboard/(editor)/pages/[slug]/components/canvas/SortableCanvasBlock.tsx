@@ -76,7 +76,17 @@ export function SortableCanvasBlock({
       </div>
 
       {/* Render real del bloque */}
-      <RenderBlock block={block} dbCategories={dbCategories} dbServices={dbServices} />
+      <div
+        onClickCapture={(e) => {
+          const anchor = (e.target as HTMLElement).closest('a');
+          if (anchor) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        }}
+      >
+        <RenderBlock block={block} dbCategories={dbCategories} dbServices={dbServices} />
+      </div>
     </div>
   );
 }
