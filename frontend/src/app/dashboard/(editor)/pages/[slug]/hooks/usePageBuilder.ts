@@ -504,6 +504,45 @@ export function usePageBuilder(slug: string | string[]) {
     toast.success(`Bloque "${clonedName}" duplicado`);
   };
 
+  const handleApplyAIContentToBlock = (
+    blockId: string,
+    sectionId: string,
+    columnId: string,
+    newContentData: Record<string, any>
+  ) => {
+    recordHistory();
+    const updated = sectionsRef.current.map(sec => {
+      if (sec.id !== sectionId) return sec;
+      return {
+        ...sec,
+        content_data: {
+          ...sec.content_data,
+          columns: sec.content_data.columns.map(col => {
+            if (col.id !== columnId) return col;
+            return {
+              ...col,
+              blocks: col.blocks.map(b => {
+                if (b.id !== blockId) return b;
+                return {
+                  ...b,
+                  content_data: {
+                    ...b.content_data,
+                    ...newContentData,
+                  },
+                };
+              }),
+            };
+          }),
+        },
+      };
+    });
+    setSections(updated);
+    sectionsRef.current = updated;
+    const sec = updated.find(s => s.id === sectionId);
+    if (sec) saveSectionToBackend(sec);
+    toast.success('Contenido generado con IA aplicado al bloque');
+  };
+
   const handleStartEditBlock = (block: any) => {
     setEditingBlock(block);
     setEditFormData({ ...block.content_data });
@@ -805,6 +844,7 @@ export function usePageBuilder(slug: string | string[]) {
     handleAddBlockToColumn,
     handleDeleteBlockFromColumn,
     handleCloneBlock,
+    handleApplyAIContentToBlock,
     handleStartEditBlock,
     handleSaveBlockEdit,
     handleOpenAddBlockForColumn,

@@ -15,6 +15,7 @@ interface CanvasSectionProps {
   onEditBlock: (block: any) => void;
   onDeleteBlock: (blockId: string, sectionId: string, columnId: string) => void;
   onCloneBlock: (blockId: string, sectionId: string, columnId: string) => void;
+  onOpenAIBlock: (block: any, sectionId: string, columnId: string) => void;
   onAddBlock: (sectionId: string, columnId: string) => void;
   dbCategories: any[];
   dbServices: any[];
@@ -31,6 +32,7 @@ export function CanvasSection({
   onEditBlock,
   onDeleteBlock,
   onCloneBlock,
+  onOpenAIBlock,
   onAddBlock,
   dbCategories,
   dbServices,
@@ -132,6 +134,7 @@ export function CanvasSection({
               onEdit={onEditBlock}
               onDelete={onDeleteBlock}
               onClone={onCloneBlock}
+              onOpenAI={onOpenAIBlock}
               onAddBlock={onAddBlock}
               dbCategories={dbCategories}
               dbServices={dbServices}

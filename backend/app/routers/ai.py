@@ -1,5 +1,6 @@
 import os
 import json
+import re
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from .. import schemas, database, models
@@ -300,3 +301,146 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
     except Exception as e:
         logger.error(f"Save error: {e}")
         raise HTTPException(status_code=500, detail=f"Error al guardar: {str(e)}")
+
+@router.post("/generate-block-content", response_model=schemas.BlockAIGenerateResponse)
+def generate_block_content(
+    request: schemas.BlockAIGenerateRequest,
+    db: Session = Depends(database.get_db)
+):
+    settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == database.current_tenant_var.get()).first()
+    clinic_name = settings.clinic_name if settings and settings.clinic_name else "Clínica de Estética y Bienestar"
+
+    tone_str = "Quiet Luxury refinado, médico y exclusivo"
+    if request.tone == "clinico":
+        tone_str = "riguroso, científico, médico y basado en evidencia"
+    elif request.tone == "cercano":
+        tone_str = "cálido, empático, accesible y de confianza"
+
+    block_type = request.block_type
+    current_data = request.current_data or {}
+
+    prompt_instructions = f"""
+Eres un redactor y estratega de contenido de clase mundial para clínicas de medicina estética, dermatología y bienestar de lujo.
+Estás generando contenido para un bloque web de tipo '{block_type}' para la clínica '{clinic_name}'.
+Tono solicitado: {tone_str}.
+Idioma: {request.language or 'es'}.
+
+Petición del usuario:
+\"\"\"{request.prompt}\"\"\"
+
+Datos actuales del bloque:
+{json.dumps(current_data, ensure_ascii=False)}
+
+INSTRUCCIONES DE FORMATO:
+Debes responder ÚNICAMENTE con un objeto JSON válido (sin explicaciones adicionales fuera del JSON).
+"""
+
+    if block_type in ["atomic_title", "title_heading"]:
+        prompt_instructions += """
+El JSON debe tener exactamente estos campos:
+{
+  "title": "Titular refinado, elegante y evocador (máximo 8-10 palabras)",
+  "subtitle": "Subtítulo descriptivo o complementario (1-2 frases)"
+}
+"""
+    elif block_type == "atomic_text":
+        prompt_instructions += """
+El JSON debe tener exactamente este campo:
+{
+  "content_html": "<p>Primer párrafo editorial y sensorial...</p><p>Segundo párrafo con beneficios y propuesta de valor...</p>"
+}
+"""
+    elif block_type == "accordion_faq":
+        prompt_instructions += """
+El JSON debe tener exactamente estos campos:
+{
+  "title": "Preguntas Frecuentes",
+  "faqs": [
+    {"id": "faq-1", "question": "¿Pregunta 1 relevante?", "answer": "Respuesta clara y tranquilizadora."},
+    {"id": "faq-2", "question": "¿Pregunta 2 relevante?", "answer": "Respuesta clara y tranquilizadora."},
+    {"id": "faq-3", "question": "¿Pregunta 3 relevante?", "answer": "Respuesta clara y tranquilizadora."},
+    {"id": "faq-4", "question": "¿Pregunta 4 relevante?", "answer": "Respuesta clara y tranquilizadora."}
+  ]
+}
+"""
+    elif block_type == "features_grid":
+        prompt_instructions += """
+El JSON debe tener exactamente estos campos:
+{
+  "title": "Nuestros Pilares de Excelencia",
+  "items": [
+    {"id": "feat-1", "title": "Pilar 1", "description": "Breve explicación del beneficio o tecnología."},
+    {"id": "feat-2", "title": "Pilar 2", "description": "Breve explicación del beneficio o tecnología."},
+    {"id": "feat-3", "title": "Pilar 3", "description": "Breve explicación del beneficio o tecnología."}
+  ]
+}
+"""
+    elif block_type == "hero":
+        prompt_instructions += """
+El JSON debe tener exactamente estos campos:
+{
+  "heading": "Titular de alto impacto visual (máximo 7 palabras)",
+  "subheading": "Subtítulo seductor y aspiracional (1 frase)",
+  "cta_text": "Texto del botón de acción (ej: 'Descubre el Tratamiento' o 'Reservar Consulta')"
+}
+"""
+    elif block_type == "quote_testimonial":
+        prompt_instructions += """
+El JSON debe tener exactamente estos campos:
+{
+  "quote": "Cita o testimonio en primera persona, inspirador y auténtico.",
+  "author_name": "Nombre de la persona o especialista",
+  "author_role": "Rol (ej: 'Directora Médica' o 'Paciente VIP')"
+}
+"""
+    elif block_type == "text_image_cta":
+        prompt_instructions += """
+El JSON debe tener exactamente estos campos:
+{
+  "title": "Título de la experiencia o servicio",
+  "description": "Texto descriptivo que conecta el beneficio con el bienestar del paciente.",
+  "button_text": "Texto del botón (ej: 'Ver Tratamiento')"
+}
+"""
+    else:
+        prompt_instructions += """
+Genera un objeto JSON con los campos clave apropiados para este bloque.
+"""
+
+    try:
+        gemini_key = get_tenant_ai_key(db, "gemini")
+    except Exception:
+        gemini_key = os.getenv("GEMINI_API_KEY")
+        if not gemini_key:
+            raise HTTPException(status_code=400, detail="Clave de API de IA no configurada.")
+
+    raw_text = ""
+    try:
+        genai.configure(api_key=gemini_key)
+        model = genai.GenerativeModel(
+            model_name="gemini-2.5-flash",
+            generation_config={"response_mime_type": "application/json"}
+        )
+        response = model.generate_content(prompt_instructions)
+        raw_text = response.text.strip()
+        parsed_data = json.loads(raw_text)
+
+        return schemas.BlockAIGenerateResponse(
+            block_type=block_type,
+            content_data=parsed_data,
+            explanation=f"Contenido generado con tono {tone_str}"
+        )
+    except Exception as e:
+        logger.error(f"Error en generate_block_content: {e}")
+        try:
+            match = re.search(r'\{.*\}', raw_text, re.DOTALL)
+            if match:
+                parsed_data = json.loads(match.group(0))
+                return schemas.BlockAIGenerateResponse(
+                    block_type=block_type,
+                    content_data=parsed_data,
+                    explanation="Contenido generado con éxito"
+                )
+        except Exception:
+            pass
+        raise HTTPException(status_code=500, detail=f"Error al generar contenido con IA: {str(e)}")

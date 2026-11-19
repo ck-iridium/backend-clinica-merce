@@ -11,6 +11,7 @@ interface CanvasColumnProps {
   onEdit: (block: any) => void;
   onDelete: (blockId: string, sectionId: string, columnId: string) => void;
   onClone: (blockId: string, sectionId: string, columnId: string) => void;
+  onOpenAI: (block: any, sectionId: string, columnId: string) => void;
   onAddBlock: (sectionId: string, columnId: string) => void;
   dbCategories: any[];
   dbServices: any[];
@@ -24,6 +25,7 @@ export function CanvasColumn({
   onEdit,
   onDelete,
   onClone,
+  onOpenAI,
   onAddBlock,
   dbCategories,
   dbServices,
@@ -49,6 +51,7 @@ export function CanvasColumn({
             onEdit={onEdit}
             onDelete={onDelete}
             onClone={onClone}
+            onOpenAI={onOpenAI}
             dbCategories={dbCategories}
             dbServices={dbServices}
             isBoxed={isBoxed}

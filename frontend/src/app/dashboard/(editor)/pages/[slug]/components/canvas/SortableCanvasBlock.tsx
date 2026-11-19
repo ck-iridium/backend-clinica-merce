@@ -11,6 +11,7 @@ interface SortableCanvasBlockProps {
   onEdit: (block: any) => void;
   onDelete: (blockId: string, sectionId: string, columnId: string) => void;
   onClone: (blockId: string, sectionId: string, columnId: string) => void;
+  onOpenAI?: (block: any, sectionId: string, columnId: string) => void;
   dbCategories: any[];
   dbServices: any[];
   isBoxed?: boolean;
@@ -23,6 +24,7 @@ export function SortableCanvasBlock({
   onEdit,
   onDelete,
   onClone,
+  onOpenAI,
   dbCategories,
   dbServices,
   isBoxed = false,
@@ -38,6 +40,7 @@ export function SortableCanvasBlock({
   };
 
   const isHeroBlock = block.block_type === 'hero';
+  const supportsAI = ['atomic_title', 'title_heading', 'atomic_text', 'accordion_faq', 'features_grid', 'hero', 'quote_testimonial', 'text_image_cta', 'atomic_image'].includes(block.block_type);
 
   return (
     <div 
@@ -59,6 +62,17 @@ export function SortableCanvasBlock({
             <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v.008h-.008V3.75h.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM12 3.75v.008H11.99V3.75h.01zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.875 0v.008h-.008V3.75h.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12v.008h-.008V12h.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM12 12v.008H11.99V12h.01zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.875 0v.008h-.008V12h.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-16.5 8.25v.008h-.008v-.008h.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.875 0v.008H11.99v-.008h.01zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.875 0v.008h-.008v-.008h.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
           </svg>
         </div>
+        {supportsAI && onOpenAI && (
+          <button
+            onClick={() => onOpenAI(block, sectionId, columnId)}
+            className="p-2 bg-white/95 backdrop-blur-sm border border-amber-200/90 hover:border-[#d4af37] rounded-xl text-[#d4af37] hover:bg-amber-50/70 shadow-md hover:scale-105 transition-all group/ai"
+            title="Generar o mejorar con IA"
+          >
+            <svg className="w-4 h-4 transition-transform group-hover/ai:rotate-12" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+            </svg>
+          </button>
+        )}
         <button
           onClick={() => onEdit({ ...block, sectionId, columnId })}
           className="p-2 bg-white/95 backdrop-blur-sm border border-stone-200 rounded-xl text-stone-400 hover:text-stone-900 shadow-md hover:scale-105 transition-all"

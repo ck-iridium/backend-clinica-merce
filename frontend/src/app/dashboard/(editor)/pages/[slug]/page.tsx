@@ -1,5 +1,5 @@
 "use client";
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams } from 'next/navigation';
 import {
   DndContext,
@@ -16,6 +16,7 @@ import CreatorSidebar from './components/CreatorSidebar';
 import { CanvasSection } from './components/CanvasSection';
 import BlockEditorModal from './components/BlockEditorModal';
 import AddBlockModal from './components/AddBlockModal';
+import BlockAIGeneratorModal from './components/modals/BlockAIGeneratorModal';
 import { getBlockDefinition, getBlockIcon } from './utils/blockRegistry';
 
 export default function PageEditor() {
@@ -48,6 +49,7 @@ export default function PageEditor() {
     handleAddBlockToColumn,
     handleDeleteBlockFromColumn,
     handleCloneBlock,
+    handleApplyAIContentToBlock,
     handleStartEditBlock,
     handleSaveBlockEdit,
     handleOpenAddBlockForColumn,
@@ -65,6 +67,12 @@ export default function PageEditor() {
     openGalleryFor,
     handleImageSelected,
   } = usePageBuilder(slugStr);
+
+  const [aiModalTarget, setAiModalTarget] = useState<{
+    block: any;
+    sectionId: string;
+    columnId: string;
+  } | null>(null);
 
   // Detección de colisión estricta: sólo detecta dropzones donde el cursor o el elemento realmente entra.
   // Evita que un click o drag sobre el sidebar o márgenes vacíos agregue bloques fantasma.
@@ -207,6 +215,9 @@ export default function PageEditor() {
                       onEditBlock={handleStartEditBlock}
                       onDeleteBlock={handleDeleteBlockFromColumn}
                       onCloneBlock={handleCloneBlock}
+                      onOpenAIBlock={(block, sectionId, columnId) =>
+                        setAiModalTarget({ block, sectionId, columnId })
+                      }
                       onAddBlock={handleOpenAddBlockForColumn}
                       dbCategories={dbCategories}
                       dbServices={dbServices}
@@ -286,6 +297,13 @@ export default function PageEditor() {
         dbCategories={dbCategories}
         dbServices={dbServices}
         openGalleryFor={openGalleryFor}
+      />
+
+      <BlockAIGeneratorModal
+        isOpen={!!aiModalTarget}
+        onClose={() => setAiModalTarget(null)}
+        target={aiModalTarget}
+        onApply={handleApplyAIContentToBlock}
       />
 
       {showGallery && (

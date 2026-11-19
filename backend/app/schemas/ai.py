@@ -48,6 +48,18 @@ class ConciergeOptionItem(BaseModel):
     subtitle: Optional[str] = None
     category: Optional[str] = "general"  # "location" | "service" | "modality" | "time" | "general"
     group: Optional[str] = None          # "Tratamiento", "Lugar de la cita", "Horarios disponibles", etc.
+
+class BlockAIGenerateRequest(BaseModel):
+    block_type: str
+    prompt: str
+    tone: Optional[str] = "premium"  # "premium", "clinico", "cercano"
+    current_data: Optional[dict] = None
+    language: Optional[str] = "es"
+
+class BlockAIGenerateResponse(BaseModel):
+    block_type: str
+    content_data: dict
+    explanation: Optional[str] = None
     badge: Optional[str] = None          # "17€", "Alzira", "A Domicilio"
     action_value: str
 
