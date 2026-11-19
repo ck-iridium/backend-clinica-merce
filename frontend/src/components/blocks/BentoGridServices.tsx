@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
+import { LuxuryTreatmentPlaceholder } from '@/components/ui/LuxuryTreatmentPlaceholder';
 
 // ─── Componente Encapsulado de Tarjeta Bento con Video Hover y Precarga ──────
 function BentoServiceCard({ svc, idx, gridClass, total }: { svc: any, idx: number, gridClass: string, total: number }) {
@@ -85,9 +86,7 @@ function BentoServiceCard({ svc, idx, gridClass, total }: { svc: any, idx: numbe
             loading="lazy"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-stone-900 via-stone-950 to-stone-900 flex items-center justify-center">
-            <span className="font-serif text-stone-600 italic">ProBookia</span>
-          </div>
+          <LuxuryTreatmentPlaceholder mode="dark" className="w-full h-full object-cover" alt={svc.name} />
         )}
       </div>
 

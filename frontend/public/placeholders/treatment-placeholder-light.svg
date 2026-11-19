@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" preserveAspectRatio="xMidYMid slice" width="100%" height="100%">
+  <defs>
+    <!-- Paleta Light: Marfil, Arena Cálida y Oro Champaña -->
+    <linearGradient id="bgLight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FBF9F5" />
+      <stop offset="50%" stop-color="#F4EFE8" />
+      <stop offset="100%" stop-color="#EBE4D8" />
+    </linearGradient>
+
+    <radialGradient id="lightHalo" cx="45%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.8" />
+      <stop offset="40%" stop-color="#F7EEDD" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#EDE4D6" stop-opacity="0" />
+    </radialGradient>
+
+    <linearGradient id="waveLight1" x1="15%" y1="0%" x2="85%" y2="100%">
+      <stop offset="0%" stop-color="#D4AF37" stop-opacity="0.22" />
+      <stop offset="50%" stop-color="#E6C875" stop-opacity="0.12" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.02" />
+    </linearGradient>
+
+    <linearGradient id="waveLight2" x1="85%" y1="10%" x2="15%" y2="90%">
+      <stop offset="0%" stop-color="#E2D4BF" stop-opacity="0.45" />
+      <stop offset="55%" stop-color="#F2EAE0" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#FAF6F0" stop-opacity="0.1" />
+    </linearGradient>
+
+    <linearGradient id="goldStroke" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#D4AF37" stop-opacity="0.4" />
+      <stop offset="50%" stop-color="#C5A028" stop-opacity="0.2" />
+      <stop offset="100%" stop-color="#D4AF37" stop-opacity="0.05" />
+    </linearGradient>
+
+    <filter id="softBlur" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur stdDeviation="30" />
+    </filter>
+  </defs>
+
+  <!-- Fondo base suave -->
+  <rect width="800" height="1000" fill="url(#bgLight)" />
+  <circle cx="360" cy="380" r="420" fill="url(#lightHalo)" />
+
+  <!-- Formas orgánicas de seda / duna líquida -->
+  <path d="M-60,350 C120,280 260,490 480,410 C680,330 760,180 860,220 L860,1050 L-60,1050 Z" fill="url(#waveLight2)" />
+  
+  <path d="M-80,520 C180,420 320,680 580,560 C740,480 820,530 880,590 L880,1050 L-80,1050 Z" fill="url(#waveLight1)" />
+
+  <path d="M-50,680 C140,610 290,790 520,720 C710,660 780,740 850,780 L850,1050 L-50,1050 Z" fill="#F8F3EC" fill-opacity="0.5" />
+
+  <!-- Líneas de contorno de alta costura / topográficas -->
+  <path d="M-60,350 C120,280 260,490 480,410 C680,330 760,180 860,220" fill="none" stroke="url(#goldStroke)" stroke-width="1.5" stroke-dasharray="6 3" opacity="0.6" />
+
+  <path d="M-80,520 C180,420 320,680 580,560 C740,480 820,530 880,590" fill="none" stroke="url(#goldStroke)" stroke-width="1.8" />
+
+  <path d="M-50,680 C140,610 290,790 520,720 C710,660 780,740 850,780" fill="none" stroke="url(#goldStroke)" stroke-width="1.2" opacity="0.4" />
+
+  <!-- Micro detalle central minimalista (sello abstracto de armonía) -->
+  <circle cx="400" cy="500" r="90" fill="none" stroke="#D4AF37" stroke-width="1" stroke-opacity="0.18" />
+  <circle cx="400" cy="500" r="140" fill="none" stroke="#D4AF37" stroke-width="0.8" stroke-dasharray="2 4" stroke-opacity="0.12" />
+</svg>

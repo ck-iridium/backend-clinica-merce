@@ -12,6 +12,7 @@ import Footer from '@/components/Footer';
 import CategoryHero from '@/components/CategoryHero';
 import AlternateUrlsSetter from '@/components/seo/AlternateUrlsSetter';
 import InspectableSection from '@/components/ai/webmaster/InspectableSection';
+import { LuxuryTreatmentPlaceholder } from '@/components/ui/LuxuryTreatmentPlaceholder';
 
 // Local static translations
 const categoryPageTranslations: Record<string, Record<string, string>> = {
@@ -503,11 +504,15 @@ export default async function CategoryDynamicPage({
                     >
                       {/* Imagen de Fondo */}
                       <div className="absolute inset-0 transition-transform duration-1000 group-hover:scale-110">
-                        <img
-                          src={other.image_url?.startsWith('/') && process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}${other.image_url}` : other.image_url}
-                          alt={other.name}
-                          className="w-full h-full object-cover"
-                        />
+                        {other.image_url ? (
+                          <img
+                            src={other.image_url?.startsWith('/') && process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}${other.image_url}` : other.image_url}
+                            alt={other.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <LuxuryTreatmentPlaceholder mode="dark" className="w-full h-full object-cover" alt={other.name} />
+                        )}
                       </div>
 
                       {/* Overlay */}

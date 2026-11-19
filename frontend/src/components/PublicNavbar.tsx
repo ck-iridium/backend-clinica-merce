@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import BotonReservaPro from './BotonReservaPro';
 import LanguageSelector from './LanguageSelector';
 import { useLanguage } from '@/app/contexts/LanguageContext';
+import { LuxuryTreatmentPlaceholder } from '@/components/ui/LuxuryTreatmentPlaceholder';
 
 export function getPreservedHref(rawPath: string): string {
   if (!rawPath) return '/';
@@ -106,9 +107,11 @@ function MegaMenuServiceCard({ svc, getFullUrl, onClick, isLarge, isParentOpen, 
           loading="lazy"
         />
       ) : (
-        <div className="absolute inset-0 bg-stone-100 flex items-center justify-center">
-          <span className="font-serif text-stone-300 text-xs italic">{clinicName}</span>
-        </div>
+        <LuxuryTreatmentPlaceholder
+          mode="auto"
+          className="absolute inset-0 w-full h-full object-cover"
+          alt={translatedName}
+        />
       )}
 
       {/* Vídeo Hover - Carga bajo demanda */}

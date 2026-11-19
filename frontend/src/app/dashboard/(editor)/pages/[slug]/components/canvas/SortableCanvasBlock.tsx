@@ -12,6 +12,7 @@ interface SortableCanvasBlockProps {
   onDelete: (blockId: string, sectionId: string, columnId: string) => void;
   dbCategories: any[];
   dbServices: any[];
+  isBoxed?: boolean;
 }
 
 export function SortableCanvasBlock({
@@ -22,6 +23,7 @@ export function SortableCanvasBlock({
   onDelete,
   dbCategories,
   dbServices,
+  isBoxed = false,
 }: SortableCanvasBlockProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: block.id,
@@ -85,7 +87,7 @@ export function SortableCanvasBlock({
           }
         }}
       >
-        <RenderBlock block={block} dbCategories={dbCategories} dbServices={dbServices} />
+        <RenderBlock block={block} dbCategories={dbCategories} dbServices={dbServices} isBoxed={isBoxed} />
       </div>
     </div>
   );

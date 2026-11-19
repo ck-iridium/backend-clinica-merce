@@ -16,14 +16,15 @@ interface RenderBlockProps {
   block: AtomicBlock;
   dbCategories: any[];
   dbServices: any[];
+  isBoxed?: boolean;
 }
 
-export function RenderBlock({ block, dbCategories, dbServices }: RenderBlockProps) {
+export function RenderBlock({ block, dbCategories, dbServices, isBoxed = false }: RenderBlockProps) {
   const data = block.content_data || {};
 
   switch (block.block_type) {
     case 'hero':
-      return <HeroBlockView data={data} />;
+      return <HeroBlockView data={data} isBoxed={isBoxed} />;
     case 'atomic_title':
     case 'title_heading':
       return <TitleBlockView data={data} />;

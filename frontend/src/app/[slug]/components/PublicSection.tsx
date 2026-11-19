@@ -66,19 +66,18 @@ export function PublicSection({
     ? 'bg-[#FAF7F0]'
     : 'bg-[#FAFAFA]';
 
-  const isFullWidth = struct.content_width === 'fullwidth';
-  const paddingClass =
-    hasHero || hasCardsSlider
-      ? 'px-0'
-      : isFullWidth
-      ? 'px-4 md:px-8'
-      : 'px-6 md:px-12';
-  const widthClass =
-    hasHero || hasCardsSlider
-      ? 'w-full'
-      : isFullWidth
-      ? 'w-full grid'
-      : 'max-w-7xl mx-auto grid';
+  const isBoxed = struct.content_width === 'boxed';
+  const isExplicitFullWidth = struct.content_width === 'fullwidth';
+  const isFullWidth = isExplicitFullWidth || (!isBoxed && (hasHero || hasCardsSlider));
+
+  // Alineación exacta con el Navbar (max-w-7xl mx-auto px-6)
+  const paddingClass = isFullWidth
+    ? (hasHero ? 'px-0' : hasCardsSlider ? 'px-0 py-4' : 'px-4 md:px-8')
+    : (hasHero ? 'px-0' : 'px-0');
+
+  const widthClass = isFullWidth
+    ? 'w-full'
+    : 'max-w-7xl mx-auto px-6 w-full';
   const verticalAlign = struct.vertical_alignment || 'items-start';
   const horizontalAlign = struct.horizontal_alignment || 'justify-start';
 
@@ -100,7 +99,7 @@ export function PublicSection({
       >
         <div
           className={`${widthClass} ${
-            hasHero || hasCardsSlider ? '' : gridClass
+            hasHero || hasCardsSlider ? '' : `grid ${gridClass}`
           } ${verticalAlign} ${horizontalAlign}`}
         >
           {columns.map((col, colIdx) => (
@@ -120,6 +119,7 @@ export function PublicSection({
                     slug={slug}
                     dbCategories={dbCategories}
                     dbServices={dbServices}
+                    isBoxed={isBoxed}
                   />
                 ))
               )}

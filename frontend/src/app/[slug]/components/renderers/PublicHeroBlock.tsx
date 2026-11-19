@@ -3,9 +3,10 @@ import Link from 'next/link';
 
 interface PublicHeroBlockProps {
   data: Record<string, any>;
+  isBoxed?: boolean;
 }
 
-export function PublicHeroBlock({ data }: PublicHeroBlockProps) {
+export function PublicHeroBlock({ data, isBoxed = false }: PublicHeroBlockProps) {
   const isVideo =
     data.image_url &&
     (data.image_url.includes('.mp4') ||
@@ -27,7 +28,9 @@ export function PublicHeroBlock({ data }: PublicHeroBlockProps) {
 
   return (
     <div
-      className={`relative w-full min-h-[500px] md:min-h-[620px] flex items-center ${heroOuterAlign} overflow-hidden rounded-none shadow-luxury`}
+      className={`relative w-full min-h-[500px] md:min-h-[620px] flex items-center ${heroOuterAlign} overflow-hidden ${
+        isBoxed ? 'rounded-3xl md:rounded-[2.5rem] my-4 md:my-6 shadow-luxury' : 'rounded-none shadow-luxury'
+      }`}
     >
       {data.image_url ? (
         isVideo ? (

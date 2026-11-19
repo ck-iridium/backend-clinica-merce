@@ -52,18 +52,19 @@ export function CanvasSection({
 
   const hasHero = columns.some((col: any) => (col.blocks || []).some((b: any) => b.block_type === 'hero'));
   const hasCardsSlider = columns.some((col: any) => (col.blocks || []).some((b: any) => b.block_type === 'atomic_category' && (b.content_data?.layout === 'cards_slider' || !b.content_data?.layout)));
-  const isFullWidth = struct.content_width === 'fullwidth';
   
-  // Si tiene Hero o Carrusel de tratamientos, el ancho es fullwidth para efecto edge-to-edge
-  const innerContainerClass = (hasHero || hasCardsSlider || isFullWidth)
-    ? 'w-full'
-    : 'max-w-7xl mx-auto';
+  const isBoxed = struct.content_width === 'boxed';
+  const isExplicitFullWidth = struct.content_width === 'fullwidth';
+  const isFullWidth = isExplicitFullWidth || (!isBoxed && (hasHero || hasCardsSlider));
 
-  const paddingClass = hasHero
-    ? 'p-0'
-    : hasCardsSlider
-    ? 'px-0 py-4'
-    : (isFullWidth ? 'px-6 md:px-12 py-10 md:py-14' : 'px-6 md:px-8 py-10 md:py-14');
+  // Ancho exacto alineado con el Header (max-w-7xl mx-auto px-6):
+  const innerContainerClass = isFullWidth
+    ? 'w-full'
+    : 'max-w-7xl mx-auto px-6 w-full';
+
+  const paddingClass = isFullWidth
+    ? (hasHero ? 'p-0' : hasCardsSlider ? 'px-0 py-4' : 'px-6 md:px-12 py-10 md:py-14')
+    : (hasHero ? 'py-4 md:py-6 px-0' : 'py-10 md:py-14 px-0');
 
   const gapClass = hasHero ? 'gap-0' : 'gap-6';
   const verticalAlign = struct.vertical_alignment || 'items-start';
@@ -100,6 +101,7 @@ export function CanvasSection({
               onAddBlock={onAddBlock}
               dbCategories={dbCategories}
               dbServices={dbServices}
+              isBoxed={isBoxed}
             />
           ))}
         </div>

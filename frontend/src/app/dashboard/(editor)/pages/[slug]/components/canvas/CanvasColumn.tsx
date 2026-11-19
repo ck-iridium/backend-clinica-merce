@@ -13,6 +13,7 @@ interface CanvasColumnProps {
   onAddBlock: (sectionId: string, columnId: string) => void;
   dbCategories: any[];
   dbServices: any[];
+  isBoxed?: boolean;
 }
 
 export function CanvasColumn({
@@ -24,6 +25,7 @@ export function CanvasColumn({
   onAddBlock,
   dbCategories,
   dbServices,
+  isBoxed = false,
 }: CanvasColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id: col.id });
   const blocks: AtomicBlock[] = col.blocks || [];
@@ -46,6 +48,7 @@ export function CanvasColumn({
             onDelete={onDelete}
             dbCategories={dbCategories}
             dbServices={dbServices}
+            isBoxed={isBoxed}
           />
         ))}
       </SortableContext>

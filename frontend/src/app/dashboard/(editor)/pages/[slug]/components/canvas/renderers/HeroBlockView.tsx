@@ -2,9 +2,10 @@ import React from 'react';
 
 interface HeroBlockViewProps {
   data: Record<string, any>;
+  isBoxed?: boolean;
 }
 
-export function HeroBlockView({ data }: HeroBlockViewProps) {
+export function HeroBlockView({ data, isBoxed = false }: HeroBlockViewProps) {
   const heroAlign = data.alignment || 'center';
   const heroOuterAlign = 
     heroAlign === 'left' ? 'justify-start' : 
@@ -16,7 +17,9 @@ export function HeroBlockView({ data }: HeroBlockViewProps) {
     'text-center items-center';
 
   return (
-    <div className={`relative w-full min-h-[460px] md:min-h-[580px] bg-stone-900 overflow-hidden flex items-end ${heroOuterAlign}`}>
+    <div className={`relative w-full min-h-[460px] md:min-h-[580px] bg-stone-900 overflow-hidden flex items-end ${heroOuterAlign} ${
+      isBoxed ? 'rounded-3xl md:rounded-[2.5rem] shadow-luxury my-4 md:my-6' : 'rounded-none'
+    }`}>
       {data.image_url && (
         data.image_url.match(/\.(mp4|webm)/) ? (
           <video

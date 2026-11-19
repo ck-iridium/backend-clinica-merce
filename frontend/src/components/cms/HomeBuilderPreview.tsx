@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Image as ImageIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
+import { LuxuryTreatmentPlaceholder } from '@/components/ui/LuxuryTreatmentPlaceholder';
 
 interface PreviewProps {
   formData: any;
@@ -559,11 +560,7 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
                           className="w-full h-full object-cover" 
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-stone-50 p-4 text-center">
-                           <span className="text-[10px] font-bold uppercase tracking-widest text-stone-300 leading-tight">
-                             {cleanTitle(translate(service.name, service.translations, 'name'))}
-                           </span>
-                        </div>
+                        <LuxuryTreatmentPlaceholder mode="auto" className="w-full h-full object-cover" />
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
                       <div className="absolute bottom-4 left-4 right-4">
@@ -650,11 +647,7 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
                           className="w-full h-full object-cover" 
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-stone-50 p-4 text-center">
-                           <span className="text-[10px] font-bold uppercase tracking-widest text-stone-300 leading-tight">
-                             {cleanTitle(translate(service.name, service.translations, 'name'))}
-                           </span>
-                        </div>
+                        <LuxuryTreatmentPlaceholder mode="auto" className="w-full h-full object-cover" />
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
                       <div className="absolute bottom-4 left-4 right-4">

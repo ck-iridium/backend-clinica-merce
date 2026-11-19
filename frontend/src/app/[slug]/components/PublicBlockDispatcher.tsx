@@ -18,6 +18,7 @@ interface PublicBlockDispatcherProps {
   slug: string;
   dbCategories: any[];
   dbServices: any[];
+  isBoxed?: boolean;
 }
 
 export function PublicBlockDispatcher({
@@ -25,6 +26,7 @@ export function PublicBlockDispatcher({
   slug,
   dbCategories,
   dbServices,
+  isBoxed = false,
 }: PublicBlockDispatcherProps) {
   const data = block.content_data || {};
 
@@ -104,7 +106,7 @@ export function PublicBlockDispatcher({
           pageSlug={slug}
           blockType={block.block_type}
         >
-          <PublicHeroBlock data={data} />
+          <PublicHeroBlock data={data} isBoxed={isBoxed} />
         </InspectableSection>
       );
 

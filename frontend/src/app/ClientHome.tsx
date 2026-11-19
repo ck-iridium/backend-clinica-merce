@@ -9,6 +9,7 @@ import PublicNavbar from '@/components/PublicNavbar';
 import HeroSlider from '@/components/blocks/HeroSlider';
 import InspectableSection from '@/components/ai/webmaster/InspectableSection';
 import { useLanguage } from '@/app/contexts/LanguageContext';
+import { LuxuryTreatmentPlaceholder } from '@/components/ui/LuxuryTreatmentPlaceholder';
 
 // ─── Sanitizador de Títulos "Quiet Luxury" ────────────────────────────────────
 const VOICE_TAGS_REGEX = /\[(?:with enthusiasm|fast|fluent|short pause|slower|whispering|cheerful|calm|excited)[^\]]*\]/gi;
@@ -157,9 +158,7 @@ function BentoCategoryCard({ svc, idx, gridClass, total }: { svc: any, idx: numb
             loading="lazy"
           />
         ) : (
-          <div className="w-full h-full bg-stone-100 flex items-center justify-center">
-            <span className="font-serif text-stone-300 italic">ProBookia</span>
-          </div>
+          <LuxuryTreatmentPlaceholder mode="auto" className="w-full h-full object-cover" alt={svc.name} />
         )}
       </div>
 
@@ -364,9 +363,7 @@ function MinimalistListCard({ svc, idx }: { svc: any, idx: number }) {
               className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
             />
           ) : (
-            <div className="w-full h-full bg-stone-100 flex items-center justify-center">
-              <span className="font-serif text-stone-300 italic text-[10px]">ProBookia</span>
-            </div>
+            <LuxuryTreatmentPlaceholder mode="auto" className="w-full h-full object-cover" alt={svc.name} />
           )}
         </div>
 

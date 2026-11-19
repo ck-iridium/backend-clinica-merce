@@ -5,6 +5,7 @@ import Image from 'next/image';
 import PublicNavbar from './PublicNavbar';
 import ScrollIndicator from './ScrollIndicator';
 import { useLanguage, Language } from '@/app/contexts/LanguageContext';
+import { LuxuryTreatmentPlaceholder } from '@/components/ui/LuxuryTreatmentPlaceholder';
 
 interface CategoryHeroProps {
   category: any;
@@ -67,7 +68,7 @@ export default function CategoryHero({ category, lang: propLang }: CategoryHeroP
             transition: 'transform 0.1s ease-out'
           }}
         >
-          {imageUrl && (
+          {imageUrl ? (
             <Image
               src={imageUrl}
               alt={translatedName}
@@ -76,6 +77,8 @@ export default function CategoryHero({ category, lang: propLang }: CategoryHeroP
               className="object-cover object-center animate-slow-zoom"
               sizes="100vw"
             />
+          ) : (
+            <LuxuryTreatmentPlaceholder mode="dark" className="w-full h-full object-cover object-center animate-slow-zoom" alt={translatedName} />
           )}
           {/* Capas de overlay graduado */}
           <div className="absolute inset-0 bg-stone-900/30"></div>
