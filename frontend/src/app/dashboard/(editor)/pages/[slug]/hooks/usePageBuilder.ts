@@ -84,34 +84,44 @@ export function usePageBuilder(slug: string | string[]) {
 
   // ── Historial Deshacer (Undo / Ctrl + Z) ────────────────────────
   const [history, setHistory] = useState<SectionBlock[][]>([]);
+  const sectionsRef = useRef<SectionBlock[]>(sections);
+  sectionsRef.current = sections;
   const snapshotBeforeDragRef = useRef<SectionBlock[] | null>(null);
 
   const recordHistory = useCallback(() => {
-    setSections(current => {
-      setHistory(prev => {
-        const snapshot = JSON.parse(JSON.stringify(current));
-        const next = [...prev, snapshot];
-        if (next.length > 30) return next.slice(next.length - 30);
-        return next;
-      });
-      return current;
+    const snapshot = JSON.parse(JSON.stringify(sectionsRef.current));
+    setHistory(prev => {
+      const next = [...prev, snapshot];
+      return next.length > 30 ? next.slice(next.length - 30) : next;
     });
   }, []);
 
   const handleUndo = useCallback(async () => {
     if (history.length === 0) return;
+
+    // 1. Cancelar cualquier guardado pendiente en cola de debounce
+    Object.keys(saveTimeoutRef.current).forEach(key => {
+      if (saveTimeoutRef.current[key]) {
+        clearTimeout(saveTimeoutRef.current[key]);
+        delete saveTimeoutRef.current[key];
+      }
+    });
+
+    // 2. Extraer el estado anterior
     const previous = history[history.length - 1];
     setHistory(prev => prev.slice(0, prev.length - 1));
 
-    const currentSections = sections;
+    const currentSections = sectionsRef.current;
     const currentIds = currentSections.map(s => s.id);
     const prevIds = previous.map(s => s.id);
     const toDeleteIds = currentIds.filter(id => !prevIds.includes(id));
 
+    // 3. Restaurar estado de inmediato en UI y ref
     setSections(previous);
+    sectionsRef.current = previous;
     toast.info('Acción deshecha (Ctrl + Z)');
 
-    // Persistir estado recuperado en el backend
+    // 4. Sincronizar inmediatamente en base de datos
     try {
       await Promise.all([
         ...toDeleteIds.map(id => fetch(`${API}/cms/blocks/${id}`, { method: 'DELETE' })),
@@ -133,7 +143,7 @@ export function usePageBuilder(slug: string | string[]) {
     } catch {
       toast.error('Error al sincronizar estado deshecho');
     }
-  }, [history, sections, slug]);
+  }, [history, slug]);
 
   // Atajo de teclado global Ctrl+Z / Cmd+Z
   useEffect(() => {
@@ -253,6 +263,7 @@ export function usePageBuilder(slug: string | string[]) {
           };
         });
         setSections(normalized);
+        sectionsRef.current = normalized;
       }
     } catch {
       showFeedback({ type: 'error', title: 'Error', message: 'No se pudieron cargar los bloques.' });
@@ -321,7 +332,16 @@ export function usePageBuilder(slug: string | string[]) {
       });
       if (res.ok) {
         toast.success('Sección añadida');
-        fetchBlocks();
+        const created = await res.json();
+        const normalizedSection: SectionBlock = {
+          id: created.id,
+          block_type: 'section',
+          content_data: created.content_data || defaultStructure,
+          order_index: created.order_index ?? sectionsRef.current.length,
+        };
+        const updated = [...sectionsRef.current, normalizedSection];
+        setSections(updated);
+        sectionsRef.current = updated;
       }
     } catch {
       toast.error('Error al crear sección');
@@ -401,7 +421,7 @@ export function usePageBuilder(slug: string | string[]) {
       block_type: blockType as BlockType,
       content_data: defaultContent(blockType, dbCategories),
     };
-    const updated = sections.map(sec => {
+    const updated = sectionsRef.current.map(sec => {
       if (sec.id !== sectionId) return sec;
       return {
         ...sec,
@@ -414,6 +434,7 @@ export function usePageBuilder(slug: string | string[]) {
       };
     });
     setSections(updated);
+    sectionsRef.current = updated;
     const sec = updated.find(s => s.id === sectionId);
     if (sec) saveSectionToBackend(sec);
     setShowAddModal(false);
@@ -421,7 +442,7 @@ export function usePageBuilder(slug: string | string[]) {
 
   const handleDeleteBlockFromColumn = (blockId: string, sectionId: string, columnId: string) => {
     recordHistory();
-    const updated = sections.map(sec => {
+    const updated = sectionsRef.current.map(sec => {
       if (sec.id !== sectionId) return sec;
       return {
         ...sec,
@@ -434,6 +455,7 @@ export function usePageBuilder(slug: string | string[]) {
       };
     });
     setSections(updated);
+    sectionsRef.current = updated;
     const sec = updated.find(s => s.id === sectionId);
     if (sec) saveSectionToBackend(sec);
   };
@@ -447,7 +469,7 @@ export function usePageBuilder(slug: string | string[]) {
     if (!editingBlock) return;
     recordHistory();
     setSavingBlock(true);
-    const updated = sections.map(sec => ({
+    const updated = sectionsRef.current.map(sec => ({
       ...sec,
       content_data: {
         ...sec.content_data,
@@ -460,6 +482,7 @@ export function usePageBuilder(slug: string | string[]) {
       },
     }));
     setSections(updated);
+    sectionsRef.current = updated;
     const affectedSec = updated.find(s =>
       s.content_data.columns.some(c => c.blocks.some(b => b.id === editingBlock.id))
     );
@@ -606,12 +629,7 @@ export function usePageBuilder(slug: string | string[]) {
       }
 
       // Guardar en el historial antes de insertar
-      if (snapshotBeforeDragRef.current) {
-        setHistory(prev => {
-          const next = [...prev, snapshotBeforeDragRef.current!];
-          return next.length > 30 ? next.slice(next.length - 30) : next;
-        });
-      }
+      recordHistory();
       snapshotBeforeDragRef.current = null;
 
       const newBlock: AtomicBlock = {
@@ -638,6 +656,7 @@ export function usePageBuilder(slug: string | string[]) {
             },
           };
         });
+        sectionsRef.current = updated;
         const sec = updated.find(s => s.id === destContainer.sectionId);
         if (sec) saveSectionToBackend(sec);
         return updated;

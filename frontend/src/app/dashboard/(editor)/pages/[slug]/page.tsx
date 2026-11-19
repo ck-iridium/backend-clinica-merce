@@ -98,15 +98,15 @@ export default function PageEditor() {
         />
 
         {/* ── CANVAS DERECHO (WYSIWYG) ─────────────────────────── */}
-        <main className="flex-1 h-full overflow-y-auto bg-stone-50/50 flex flex-col">
+        <main className="flex-1 h-full overflow-y-auto bg-stone-50 flex flex-col">
 
           {/* Barra de título del canvas */}
-          <div className="sticky top-0 z-20 bg-white/90 backdrop-blur-md border-b border-stone-200 px-8 py-3.5 flex items-center gap-3 shadow-sm shrink-0">
+          <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-stone-200 px-8 py-3.5 flex items-center gap-3 shadow-xs shrink-0">
             <span className="text-xs font-black uppercase tracking-widest text-[#d4af37]">
               Vista previa en vivo
             </span>
             <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider bg-stone-100 px-2.5 py-1 rounded-md border border-stone-200/40">
-              Escritorio (Ancho Máx: 1300px)
+              Escritorio (Ancho Completo Real)
             </span>
 
             {/* Botón Deshacer en el Canvas Header */}
@@ -136,9 +136,9 @@ export default function PageEditor() {
             </div>
           </div>
 
-          {/* Contenedor del lienzo flotante */}
-          <div className="flex-1 p-6 md:p-12 overflow-y-auto flex justify-center items-start">
-            <div className="w-full max-w-[1300px] bg-white rounded-[2.5rem] shadow-[0_30px_70px_rgba(0,0,0,0.04)] border border-stone-200/50 overflow-hidden min-h-[85vh] flex flex-col relative">
+          {/* Contenedor del lienzo Full Width real (idéntico a la web pública) */}
+          <div className="flex-1 overflow-y-auto w-full flex flex-col bg-white">
+            <div className="w-full flex-1 flex flex-col relative min-h-[85vh]">
               
               {loading ? (
                 <div className="flex-1 flex items-center justify-center p-12">
@@ -167,7 +167,7 @@ export default function PageEditor() {
                   </button>
                 </div>
               ) : (
-                <div className="divide-y divide-stone-200/60 flex-1">
+                <div className="w-full flex-1 flex flex-col">
                   {sections.map((section, index) => (
                     <CanvasSection
                       key={section.id}
