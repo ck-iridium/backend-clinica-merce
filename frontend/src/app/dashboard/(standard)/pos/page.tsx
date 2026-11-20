@@ -309,10 +309,10 @@ export default function POSPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] py-12 px-4 md:px-8 font-sans text-stone-800 animate-in fade-in duration-700 pb-32 lg:pb-12">
-      <div className="max-w-7xl mx-auto space-y-10">
+    <div className="w-full font-sans text-stone-800 animate-in fade-in duration-500 pb-28 lg:pb-8">
+      <div className="w-full space-y-8">
         {/* Cabecera Principal */}
-        <header className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-stone-200/60 pb-8 relative">
+        <header className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-stone-200/60 pb-6 relative">
           <div className="space-y-2">
             <div className="flex items-center gap-3.5">
               <span className="w-12 h-12 rounded-2xl bg-stone-900 border border-amber-400/20 text-[#D4AF37] flex items-center justify-center shadow-md shrink-0">
