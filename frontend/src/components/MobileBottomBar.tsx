@@ -23,6 +23,7 @@ import {
   DropdownMenuPortal,
 } from '@/components/ui/dropdown-menu';
 import { useAuthRole } from '@/hooks/useAuthRole';
+import { FlagIcon } from './LanguageSelector';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 
@@ -501,22 +502,23 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
                           {/* Selector de idioma inline en el menú móvil */}
                           <div className="px-4 py-2 flex items-center justify-between bg-stone-950/40 rounded-xl border border-stone-800/85 mx-2 my-1.5">
                             <span className="text-xs font-bold text-stone-400">{t('dashboard.menu.language') || 'Idioma'}</span>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1.5">
                               {[
-                                { code: 'es', flag: '🇪🇸' },
-                                { code: 'en', flag: '🇬🇧' },
-                                { code: 'fr', flag: '🇫🇷' }
+                                { code: 'es', label: 'ES' },
+                                { code: 'en', label: 'EN' },
+                                { code: 'fr', label: 'FR' }
                               ].map((l) => (
                                 <button
                                   key={l.code}
                                   onClick={() => setLanguage(l.code as any)}
-                                  className={`w-7 h-7 flex items-center justify-center rounded-lg text-sm transition-all ${
+                                  className={`px-2 py-1 flex items-center gap-1.5 rounded-lg text-xs font-bold transition-all ${
                                     language === l.code
-                                      ? 'bg-stone-800 border border-[#d4af37]/40 scale-110 shadow-sm'
-                                      : 'opacity-40 hover:opacity-100'
+                                      ? 'bg-stone-800 border border-[#d4af37]/60 shadow-xs text-white'
+                                      : 'opacity-50 hover:opacity-100 text-stone-400'
                                   }`}
                                 >
-                                  {l.flag}
+                                  <FlagIcon code={l.code} className="w-4 h-2.5" />
+                                  <span className="text-[10px] tracking-wide">{l.label}</span>
                                 </button>
                               ))}
                             </div>

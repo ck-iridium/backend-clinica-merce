@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
+import { Sparkles, Camera } from 'lucide-react';
 import type { AtomicBlock } from '../../types';
 import { getBlockDefinition, getBlockIcon } from '../../utils/blockRegistry';
 import { toast } from 'sonner';
@@ -351,19 +352,19 @@ export default function BlockAIGeneratorModal({
               Indica qué deseas transmitir y la IA adaptará el bloque al estilo de tu negocio.
             </p>
             {!(supportsImage && blockType !== 'atomic_image') && (
-              <div className="mt-2">
+              <div className="mt-2.5">
                 {activeTab === 'text' ? (
-                  <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border text-[10px] font-bold ${
-                    isTextExhausted ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-white text-stone-600 border-stone-200'
+                  <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-semibold ${
+                    isTextExhausted ? 'bg-amber-50 text-amber-800 border-amber-200/90' : 'bg-stone-50 text-stone-700 border-stone-200 shadow-2xs'
                   }`}>
-                    <span>⚡</span>
+                    <Sparkles className="w-3.5 h-3.5 text-amber-600 shrink-0" />
                     <span>{isTextUnlimited ? 'Ilimitadas (∞)' : `${textRemaining}/${textLimit} hoy`}</span>
                   </span>
                 ) : (
-                  <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border text-[10px] font-bold ${
-                    isImageExhausted ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-white text-stone-600 border-stone-200'
+                  <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-semibold ${
+                    isImageExhausted ? 'bg-amber-50 text-amber-800 border-amber-200/90' : 'bg-stone-50 text-stone-700 border-stone-200 shadow-2xs'
                   }`}>
-                    <span>📸</span>
+                    <Camera className="w-3.5 h-3.5 text-stone-700 shrink-0" />
                     <span>{isImageUnlimited ? '∞ con tu clave' : isTrial ? `${imageRemaining}/${imageLimit} prueba` : `${imageRemaining}/${imageLimit} este mes`}</span>
                   </span>
                 )}
@@ -414,19 +415,19 @@ export default function BlockAIGeneratorModal({
             </div>
 
             {/* Chip de saldo en barra de pestañas */}
-            <div className="text-[11px] font-medium text-stone-500 hidden sm:flex items-center gap-1.5">
+            <div className="text-xs font-medium text-stone-500 hidden sm:flex items-center gap-2">
               {activeTab === 'text' ? (
-                <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border text-[10px] font-bold ${
-                  isTextExhausted ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-white text-stone-600 border-stone-200'
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-semibold transition-all ${
+                  isTextExhausted ? 'bg-amber-50 text-amber-800 border-amber-200/90' : 'bg-white text-stone-700 border-stone-200/90 shadow-2xs'
                 }`}>
-                  <span>⚡</span>
+                  <Sparkles className="w-3.5 h-3.5 text-amber-600 shrink-0" />
                   <span>{isTextUnlimited ? 'Ilimitadas (∞)' : `${textRemaining}/${textLimit} hoy`}</span>
                 </span>
               ) : (
-                <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border text-[10px] font-bold ${
-                  isImageExhausted ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-white text-stone-600 border-stone-200'
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-semibold transition-all ${
+                  isImageExhausted ? 'bg-amber-50 text-amber-800 border-amber-200/90' : 'bg-white text-stone-700 border-stone-200/90 shadow-2xs'
                 }`}>
-                  <span>📸</span>
+                  <Camera className="w-3.5 h-3.5 text-stone-700 shrink-0" />
                   <span>{isImageUnlimited ? '∞ con tu clave' : isTrial ? `${imageRemaining}/${imageLimit} prueba` : `${imageRemaining}/${imageLimit} este mes`}</span>
                 </span>
               )}

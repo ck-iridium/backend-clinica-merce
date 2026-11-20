@@ -555,13 +555,13 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
                 </Link>
               );
             })}
-            <div className="flex items-center gap-4">
-              <LanguageSelector />
+            <div className="flex items-center gap-3">
               <BotonReservaPro
                 texto={btnText}
                 href={getPreservedHref(btnLink)}
                 className="scale-90 origin-right"
               />
+              <LanguageSelector />
             </div>
           </div>
 
@@ -848,13 +848,13 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
           <div className="w-full h-px bg-stone-100 my-2 max-w-[150px] mx-auto"></div>
 
           <div className="flex flex-col items-center gap-4 w-full">
-            <LanguageSelector />
             <BotonReservaPro
               texto={btnText}
               href={getPreservedHref(btnLink)}
               onClick={() => setIsOpen(false)}
               className="w-full max-w-xs mx-auto"
             />
+            <LanguageSelector />
           </div>
 
           {/* Información de contacto */}

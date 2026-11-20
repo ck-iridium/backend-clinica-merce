@@ -124,10 +124,10 @@ export default function AIImageGeneratorModal({
         setReferenceImage(optimizedB64);
         toast.success(
           language === 'fr' 
-            ? "📸 Image optimisée et chargée" 
+            ? "Image optimisée et chargée" 
             : language === 'en' 
-              ? "📸 Image optimized and loaded" 
-              : "📸 Imagen optimizada y cargada"
+              ? "Image optimized and loaded" 
+              : "Imagen optimizada y cargada"
         );
       };
       img.src = e.target?.result as string;
