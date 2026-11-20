@@ -5,6 +5,32 @@ import { useFeedback } from '@/app/contexts/FeedbackContext';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+  return null;
+}
+
+function getAuthHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (typeof window === 'undefined') return headers;
+  let tenantId = getCookie('tenant_id') || getCookie('impersonate_tenant_id') || '';
+  let authToken = '';
+  try {
+    const raw = localStorage.getItem('user');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (!tenantId) tenantId = parsed.tenant_id || '';
+      authToken = parsed.access_token || parsed.token || '';
+    }
+  } catch {}
+  if (tenantId) headers['X-Tenant-ID'] = tenantId;
+  if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+  return headers;
+}
+
 interface ConsentTemplate {
   id: string;
   title: string;
@@ -27,7 +53,9 @@ export default function ConsentsTab() {
   const fetchTemplates = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/consent-templates/`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/consent-templates/`, {
+        headers: getAuthHeaders(),
+      });
       if (res.ok) {
         const data = await res.json();
         setTemplates(data);
@@ -59,7 +87,7 @@ export default function ConsentsTab() {
 
       const res = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           title: editingTemplate.title,
           body_text: editingTemplate.body_text
@@ -89,7 +117,8 @@ export default function ConsentsTab() {
       onConfirm: async () => {
         try {
           const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/consent-templates/${id}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: getAuthHeaders(),
           });
           if (res.ok) {
             toast.success('Plantilla eliminada correctamente');

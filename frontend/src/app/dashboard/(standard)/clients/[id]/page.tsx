@@ -487,7 +487,7 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
         >
           Bonos ({vouchers.length})
         </button>
-        {(businessSector === 'clinical' || businessSector === 'beauty') && enableConsents && (
+        {enableConsents && (
           <button 
             id="tab-consents-btn"
             onClick={() => setActiveTab('consents')} 
