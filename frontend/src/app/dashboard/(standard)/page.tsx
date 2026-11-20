@@ -4,13 +4,11 @@ import { useRouter } from 'next/navigation';
 import { 
   CalendarDays, Users, Banknote, Activity, Plus, UserPlus, 
   Zap, ChevronRight, CalendarCheck, Clock, Sparkles, Bot, 
-  Tag, Globe, ArrowUpRight, ShieldAlert, CheckCircle2, 
-  Scissors, HeartPulse, ShieldCheck
+  Tag, Globe, ArrowUpRight, ShieldAlert, CheckCircle2
 } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { useAuthRole } from '@/hooks/useAuthRole';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 
@@ -71,7 +69,7 @@ export default function DashboardPage() {
   const confirmedAppointmentsCount = todayAppointments.filter((a: any) => a.status === 'confirmed').length;
   const pendingAppointmentsCount = todayAppointments.length - confirmedAppointmentsCount;
 
-  // Próxima cita no transcurrida hoy
+  // Próxima cita hoy
   const nowTs = Date.now();
   const nextAppointment = todayAppointments.find((a: any) => {
     const d = new Date(a.start_time.endsWith('Z') ? a.start_time.slice(0, -1) : a.start_time);
@@ -81,7 +79,7 @@ export default function DashboardPage() {
   const clientMap = new Map(clients.map((c: any) => [c.id, c.name]));
   const serviceMap = new Map(services.map((s: any) => [s.id, s.name]));
 
-  // Lógica dinámica de métricas aisladas por inquilino
+  // Métricas
   const servicePriceMap = new Map(services.map((s: any) => [s.id, Number(s.price) || 0]));
   const estimatedRevenueValue = todayAppointments.reduce((sum: number, appt: any) => {
     const price = servicePriceMap.get(appt.service_id) || 0;
@@ -94,10 +92,10 @@ export default function DashboardPage() {
     return sum + duration;
   }, 0);
   
-  // Asumiendo una jornada laboral estándar de 8 horas (480 minutos)
+  // Ocupación estándar de jornada (8h = 480m)
   const occupancyRateValue = totalBookedMinutes > 0 ? Math.min(100, Math.round((totalBookedMinutes / 480) * 100)) : 0;
 
-  // Saludo dinámico según la hora del día
+  // Saludo dinámico según la hora
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour >= 6 && hour < 13) {
@@ -109,7 +107,7 @@ export default function DashboardPage() {
     }
   };
 
-  // Limpieza elegante de nombres cuando se está en Modo Soporte
+  // Limpieza de nombre en modo soporte
   const isSupportMode = userName.toLowerCase().includes('soporte');
   const cleanDisplayName = isSupportMode 
     ? userName.replace(/modo\s*soporte:\s*/i, '').trim() || 'Modo Soporte'
@@ -133,10 +131,10 @@ export default function DashboardPage() {
       value: todayAppointments.length.toString(),
       sublabel: `${confirmedAppointmentsCount} confirmadas · ${pendingAppointmentsCount} pendientes`,
       icon: CalendarDays,
-      color: 'text-[#B38F26]',
-      bg: 'bg-amber-500/10',
-      border: 'border-amber-200/50',
-      glow: 'from-amber-500/10 to-transparent',
+      color: 'text-[#FF6B00]',
+      bg: 'bg-orange-500/10',
+      border: 'border-orange-200/60',
+      glow: 'from-orange-500/10 to-transparent',
       onClick: () => router.push('/dashboard/calendar'),
     },
     {
@@ -169,10 +167,10 @@ export default function DashboardPage() {
       value: `${occupancyRateValue}%`,
       sublabel: `${Math.floor(totalBookedMinutes / 60)}h ${totalBookedMinutes % 60}m reservadas (8h)`,
       icon: Activity,
-      color: 'text-[#D4AF37]',
-      bg: 'bg-stone-900/5',
-      border: 'border-stone-200/60',
-      glow: 'from-amber-400/10 to-transparent',
+      color: 'text-stone-700',
+      bg: 'bg-stone-100',
+      border: 'border-stone-200/70',
+      glow: 'from-orange-500/5 to-transparent',
       onClick: () => router.push('/dashboard/calendar'),
     },
   ].filter(m => {
@@ -183,19 +181,19 @@ export default function DashboardPage() {
   });
 
   return (
-    <div className="animate-in fade-in duration-500 space-y-8">
+    <div className="animate-in fade-in duration-500 space-y-8 font-sans">
 
-      {/* ── 1. Hero Card Ejecutivo & Acciones Rápidas (Quiet Luxury 2026) ── */}
-      <div className="relative overflow-hidden rounded-[2.5rem] border border-stone-200/80 bg-white/90 backdrop-blur-xl p-6 sm:p-8 lg:p-9 shadow-[0_10px_35px_-15px_rgba(0,0,0,0.04)]">
-        {/* Halo dorado sutil de fondo */}
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-gradient-to-br from-[#D4AF37]/10 via-[#D4AF37]/5 to-transparent rounded-full blur-3xl pointer-events-none" />
+      {/* ── 1. Hero Card Ejecutivo & Hub de Acciones ProBookia ── */}
+      <div className="relative overflow-hidden rounded-[2.5rem] border border-stone-200/80 bg-white/95 backdrop-blur-xl p-6 sm:p-8 lg:p-9 shadow-sm">
+        {/* Halo sutil de fondo ProBookia */}
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-gradient-to-br from-orange-500/5 via-stone-50/50 to-transparent rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6">
           {/* Izquierda: Saludo y Estado */}
           <div className="space-y-3 max-w-2xl">
             <div className="flex items-center gap-2.5 flex-wrap">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-stone-100 border border-stone-200/70 text-[10px] font-bold uppercase tracking-widest text-stone-600">
-                <Sparkles className="w-3 h-3 text-[#D4AF37]" />
+                <Sparkles className="w-3 h-3 text-[#FF6B00]" />
                 <span>{t('dashboard.home.control_panel') || 'Panel de Control'}</span>
               </span>
               {isSupportMode && (
@@ -204,7 +202,7 @@ export default function DashboardPage() {
                   Modo Soporte Activo
                 </span>
               )}
-              <span className="text-stone-400 font-sans font-medium text-xs capitalize">
+              <span className="text-stone-400 font-medium text-xs capitalize">
                 • {getFormattedDate()}
               </span>
             </div>
@@ -212,60 +210,60 @@ export default function DashboardPage() {
             <div>
               <h1 className="text-3xl sm:text-4xl font-serif font-bold text-stone-900 tracking-tight leading-tight">
                 {getGreeting()},{' '}
-                <span className="text-[#B38F26]">{cleanDisplayName}</span>
+                <span className="text-[#1E2540]">{cleanDisplayName}</span>
               </h1>
-              <p className="text-stone-500 font-sans text-sm mt-1.5 leading-relaxed">
+              <p className="text-stone-500 text-sm mt-1.5 leading-relaxed">
                 {todayAppointments.length === 0
-                  ? 'Tu agenda está despejada hoy. Tienes la jornada libre para organizar la clínica, emitir facturas o revisar tu web.'
+                  ? 'Tu agenda está libre hoy. Puedes registrar citas, emitir tickets en caja o gestionar tu catálogo.'
                   : `Tienes ${todayAppointments.length} ${todayAppointments.length === 1 ? 'cita programada' : 'citas programadas'} hoy · Ocupación estimada al ${occupancyRateValue}%.`}
               </p>
             </div>
           </div>
 
-          {/* Derecha: Hub de Acciones Rápidas */}
+          {/* Derecha: Hub de Acciones Rápidas ProBookia (Estilo Limpio y Homogéneo) */}
           <div className="flex items-center gap-3 flex-wrap xl:justify-end shrink-0">
-            <Button
+            {/* CTA Primario ProBookia */}
+            <button
+              type="button"
               onClick={() => router.push('/dashboard/calendar')}
-              variant="luxury"
-              size="default"
-              className="gap-2 shadow-luxury h-11 px-5 rounded-xl font-semibold text-sm transition-transform active:scale-95"
+              className="inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-[#FF6B00] hover:bg-[#EA5E00] text-white font-semibold text-sm shadow-sm transition-all active:scale-95"
             >
               <Plus className="w-4 h-4" strokeWidth={2.5} />
               <span>{t('dashboard.home.new_appointment') || 'Nueva Cita'}</span>
-            </Button>
+            </button>
 
+            {/* Cobro Rápido TPV (Armónico y elegante) */}
             {role?.toLowerCase() !== 'especialista' && (
-              <Button
+              <button
+                type="button"
                 onClick={() => router.push('/dashboard/pos')}
-                variant="outline"
-                size="default"
-                className="gap-2 h-11 px-4.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-white hover:text-amber-300 border-stone-800 font-semibold text-sm shadow-sm transition-all active:scale-95"
+                className="inline-flex items-center gap-2 h-11 px-4 rounded-xl bg-white hover:bg-stone-50 text-stone-700 border border-stone-200/90 font-semibold text-sm shadow-2xs transition-all active:scale-95 group"
               >
-                <Zap className="w-4 h-4 text-amber-400" strokeWidth={2.5} />
-                <span>{t('dashboard.home.quick_sale') || 'Venta Rápida'}</span>
-              </Button>
+                <Zap className="w-4 h-4 text-[#FF6B00] group-hover:scale-110 transition-transform" strokeWidth={2.5} />
+                <span>{t('dashboard.home.quick_sale') || 'Cobro Rápido'}</span>
+              </button>
             )}
 
-            <Button
+            {/* Nuevo Cliente */}
+            <button
+              type="button"
               onClick={() => router.push('/dashboard/clients')}
-              variant="outline"
-              size="default"
-              className="gap-2 h-11 px-4 rounded-xl bg-white hover:bg-stone-50 text-stone-700 border-stone-200/90 font-semibold text-sm shadow-2xs transition-all active:scale-95"
+              className="inline-flex items-center gap-2 h-11 px-4 rounded-xl bg-white hover:bg-stone-50 text-stone-700 border border-stone-200/90 font-semibold text-sm shadow-2xs transition-all active:scale-95"
             >
               <UserPlus className="w-4 h-4 text-stone-500" strokeWidth={2} />
               <span>{t('dashboard.home.new_client') || 'Nuevo Cliente'}</span>
-            </Button>
+            </button>
 
-            <Button
+            {/* Co-Piloto IA */}
+            <button
+              type="button"
               onClick={handleOpenCopilot}
-              variant="outline"
-              size="default"
-              className="gap-2 h-11 px-4 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-[#B38F26] border-amber-300/50 font-semibold text-sm shadow-2xs transition-all active:scale-95"
+              className="inline-flex items-center gap-2 h-11 px-4 rounded-xl bg-orange-500/10 hover:bg-orange-500/20 text-[#EA5E00] border border-orange-200/80 font-semibold text-sm shadow-2xs transition-all active:scale-95"
               title="Abrir Co-Piloto Operativo IA"
             >
-              <Bot className="w-4 h-4 text-[#D4AF37]" strokeWidth={2} />
+              <Bot className="w-4 h-4 text-[#FF6B00]" strokeWidth={2} />
               <span className="hidden sm:inline">Co-Piloto IA</span>
-            </Button>
+            </button>
           </div>
         </div>
       </div>
@@ -292,7 +290,7 @@ export default function DashboardPage() {
               <Card
                 key={m.id}
                 onClick={m.onClick}
-                className="relative overflow-hidden rounded-[2rem] border border-stone-200/70 bg-white/90 backdrop-blur-xl p-6 shadow-sm hover:shadow-luxury hover:-translate-y-0.5 transition-all duration-300 group cursor-pointer"
+                className="relative overflow-hidden rounded-[2rem] border border-stone-200/70 bg-white/90 backdrop-blur-xl p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group cursor-pointer"
               >
                 <div className={`absolute top-0 right-0 w-28 h-28 bg-gradient-to-bl ${m.glow} rounded-bl-full pointer-events-none opacity-60 group-hover:opacity-100 transition-opacity`} />
                 
@@ -317,7 +315,7 @@ export default function DashboardPage() {
                   {m.id === 'occupancy_rate' && (
                     <div className="w-full bg-stone-100 rounded-full h-1.5 overflow-hidden mt-1">
                       <div 
-                        className="bg-gradient-to-r from-amber-500 to-[#D4AF37] h-full rounded-full transition-all duration-700" 
+                        className="bg-gradient-to-r from-orange-500 to-amber-500 h-full rounded-full transition-all duration-700" 
                         style={{ width: `${occupancyRateValue}%` }}
                       />
                     </div>
@@ -329,12 +327,12 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* ── 3. Layout Asimétrico Bento (2 Columnas: Agenda en Vivo + Hub Operativo) ── */}
+      {/* ── 3. Layout Asimétrico Bento (Agenda en Vivo + Hub Operativo) ── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
         {/* ── Columna Izquierda (8 cols): Tu Día de un Vistazo ── */}
         <div className="lg:col-span-8">
-          <Card className="rounded-[2.2rem] border border-stone-200/70 bg-white/90 backdrop-blur-xl p-6 sm:p-8 shadow-sm">
+          <Card className="rounded-[2.2rem] border border-stone-200/70 bg-white/95 backdrop-blur-xl p-6 sm:p-8 shadow-sm">
             <div className="flex items-center justify-between pb-6 border-b border-stone-100/80">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
@@ -343,10 +341,10 @@ export default function DashboardPage() {
                     {t('dashboard.home.day_at_glance') || 'Tu Día de un Vistazo'}
                   </h2>
                 </div>
-                <p className="text-xs text-stone-400 font-sans font-medium">Programación del día en tiempo real</p>
+                <p className="text-xs text-stone-400 font-medium">Programación de la jornada en tiempo real</p>
               </div>
               <span className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-stone-600 bg-stone-100/90 px-3.5 py-1.5 rounded-full border border-stone-200/60 shadow-xs">
-                <Clock className="w-3.5 h-3.5 text-[#D4AF37]" />
+                <Clock className="w-3.5 h-3.5 text-[#FF6B00]" />
                 {todayAppointments.length} {t('dashboard.home.citas_hoy') || 'citas hoy'}
               </span>
             </div>
@@ -365,39 +363,37 @@ export default function DashboardPage() {
                 ))}
               </div>
             ) : todayAppointments.length === 0 ? (
-              // ── Empty State Quiet Luxury ──
+              // ── Empty State Limpio ──
               <div className="flex flex-col items-center justify-center py-16 px-4 gap-4 text-center">
-                <div className="w-18 h-18 rounded-3xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-[#D4AF37] shadow-xs">
-                  <CalendarCheck className="w-9 h-9 text-[#B38F26]" strokeWidth={1.5} />
+                <div className="w-18 h-18 rounded-3xl bg-orange-500/10 border border-orange-200/70 flex items-center justify-center text-[#FF6B00] shadow-xs">
+                  <CalendarCheck className="w-9 h-9 text-[#FF6B00]" strokeWidth={1.5} />
                 </div>
                 <div className="space-y-1.5 max-w-md">
                   <p className="text-stone-900 font-serif font-bold text-xl">
                     {t('dashboard.home.no_appointments') || 'Agenda despejada para hoy'}
                   </p>
-                  <p className="text-stone-400 font-sans text-xs leading-relaxed">
-                    {t('dashboard.home.rest_or_manage') || 'No tienes citas registradas para esta jornada. Aprovecha para agendar nuevas reservas, organizar expedientes o registrar ventas directas en caja.'}
+                  <p className="text-stone-400 text-xs leading-relaxed">
+                    {t('dashboard.home.rest_or_manage') || 'No tienes citas registradas para esta jornada. Puedes registrar citas manuales, consultar expedientes o realizar ventas directas desde la caja.'}
                   </p>
                 </div>
                 <div className="flex items-center gap-3 mt-3 flex-wrap justify-center">
-                  <Button
+                  <button
+                    type="button"
                     onClick={() => router.push('/dashboard/calendar')}
-                    variant="luxury"
-                    size="default"
-                    className="gap-2 shadow-luxury"
+                    className="inline-flex items-center gap-2 h-10 px-5 rounded-xl bg-[#FF6B00] hover:bg-[#EA5E00] text-white font-semibold text-xs shadow-sm transition-all active:scale-95"
                   >
                     <Plus className="w-4 h-4" strokeWidth={2} />
                     <span>{t('dashboard.home.new_appointment') || 'Nueva Cita'}</span>
-                  </Button>
+                  </button>
                   {role?.toLowerCase() !== 'especialista' && (
-                    <Button
+                    <button
+                      type="button"
                       onClick={() => router.push('/dashboard/pos')}
-                      variant="outline"
-                      size="default"
-                      className="gap-2 bg-white hover:bg-stone-50 text-stone-700 border-stone-200/90 shadow-2xs"
+                      className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-white hover:bg-stone-50 text-stone-700 border border-stone-200/90 font-semibold text-xs shadow-2xs transition-all active:scale-95"
                     >
-                      <Zap className="w-4 h-4 text-amber-500" strokeWidth={2} />
+                      <Zap className="w-4 h-4 text-[#FF6B00]" strokeWidth={2} />
                       <span>Cobro en Caja TPV</span>
-                    </Button>
+                    </button>
                   )}
                 </div>
               </div>
@@ -422,7 +418,7 @@ export default function DashboardPage() {
                       className="flex items-center gap-4 sm:gap-6 py-4.5 cursor-pointer group hover:bg-stone-50/70 -mx-3 px-3 sm:-mx-4 sm:px-4 rounded-2xl transition-all duration-200"
                     >
                       {/* Hora */}
-                      <div className="w-16 shrink-0 text-center bg-stone-50/80 border border-stone-200/50 py-2 rounded-xl group-hover:border-[#D4AF37]/40 transition-colors">
+                      <div className="w-16 shrink-0 text-center bg-stone-50/80 border border-stone-200/50 py-2 rounded-xl group-hover:border-orange-300 transition-colors">
                         <span className="text-base font-bold text-stone-900 leading-none font-mono">{hora}</span>
                         <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest mt-0.5">hrs</p>
                       </div>
@@ -430,7 +426,7 @@ export default function DashboardPage() {
                       {/* Cliente + Tratamiento */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="font-semibold text-stone-900 truncate text-sm sm:text-base group-hover:text-stone-950 transition-colors">
+                          <p className="font-semibold text-stone-900 truncate text-sm sm:text-base group-hover:text-[#1E2540] transition-colors">
                             {clientName}
                           </p>
                           <span className="text-[11px] text-stone-400 font-mono">
@@ -469,10 +465,10 @@ export default function DashboardPage() {
 
           {/* Tarjeta de Próxima Cita en Cabina */}
           {nextAppointment ? (
-            <Card className="rounded-[2.2rem] border border-stone-200/70 bg-gradient-to-br from-amber-500/10 via-white to-white p-6 shadow-sm space-y-4">
+            <Card className="rounded-[2.2rem] border border-stone-200/70 bg-gradient-to-br from-orange-500/10 via-white to-white p-6 shadow-sm space-y-4">
               <div className="flex items-center justify-between">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-[#B38F26] text-[10px] font-extrabold uppercase tracking-wider">
-                  <Clock className="w-3 h-3 text-[#D4AF37]" />
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/15 text-[#EA5E00] text-[10px] font-extrabold uppercase tracking-wider">
+                  <Clock className="w-3 h-3 text-[#FF6B00]" />
                   Próxima en Cabina
                 </span>
                 <span className="text-xs font-mono font-bold text-stone-700">
@@ -489,24 +485,23 @@ export default function DashboardPage() {
                 </p>
               </div>
 
-              <Button
+              <button
+                type="button"
                 onClick={() => router.push('/dashboard/calendar')}
-                variant="outline"
-                size="sm"
-                className="w-full gap-2 rounded-xl bg-white hover:bg-stone-50 text-stone-800 border-stone-200 text-xs font-semibold"
+                className="w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-white hover:bg-stone-50 text-stone-800 border border-stone-200 text-xs font-semibold transition-all shadow-2xs"
               >
                 <span>Ver detalles en Agenda</span>
                 <ArrowUpRight className="w-3.5 h-3.5 text-stone-400" />
-              </Button>
+              </button>
             </Card>
           ) : (
-            <Card className="rounded-[2.2rem] border border-stone-200/70 bg-white/90 backdrop-blur-xl p-6 shadow-sm space-y-3">
+            <Card className="rounded-[2.2rem] border border-stone-200/70 bg-white/95 backdrop-blur-xl p-6 shadow-sm space-y-3">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
                 <h3 className="font-serif font-bold text-base text-stone-900">Centro Operativo Activo</h3>
               </div>
               <p className="text-xs text-stone-500 leading-relaxed">
-                Todo en orden. Tu plataforma está lista para recibir reservas en tiempo real y emitir tickets de caja.
+                Plataforma conectada y lista para recibir reservas en tiempo real y emitir tickets de caja.
               </p>
               <div className="pt-2 flex items-center justify-between text-xs text-stone-500 border-t border-stone-100">
                 <span>Catálogo de servicios</span>
@@ -516,7 +511,7 @@ export default function DashboardPage() {
           )}
 
           {/* Atajos Operativos Frecuentes */}
-          <Card className="rounded-[2.2rem] border border-stone-200/70 bg-white/90 backdrop-blur-xl p-6 shadow-sm space-y-4">
+          <Card className="rounded-[2.2rem] border border-stone-200/70 bg-white/95 backdrop-blur-xl p-6 shadow-sm space-y-4">
             <h3 className="text-xs font-bold uppercase tracking-wider text-stone-400">
               Accesos Operativos Frecuentes
             </h3>
@@ -524,15 +519,16 @@ export default function DashboardPage() {
             <div className="space-y-2">
               {role?.toLowerCase() !== 'especialista' && (
                 <button
+                  type="button"
                   onClick={() => router.push('/dashboard/pos')}
                   className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-stone-50 border border-transparent hover:border-stone-200/60 transition-all text-left group"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-stone-900 text-amber-400 flex items-center justify-center shrink-0">
+                    <div className="w-9 h-9 rounded-xl bg-stone-900 text-[#FF6B00] flex items-center justify-center shrink-0">
                       <Zap className="w-4 h-4" />
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-stone-900 group-hover:text-[#B38F26] transition-colors">
+                      <p className="text-xs font-bold text-stone-900 group-hover:text-[#FF6B00] transition-colors">
                         Caja & Venta Rápida (TPV)
                       </p>
                       <p className="text-[11px] text-stone-400">Cobro directo y ticket instantáneo</p>
@@ -543,6 +539,7 @@ export default function DashboardPage() {
               )}
 
               <button
+                type="button"
                 onClick={() => router.push('/dashboard/clients')}
                 className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-stone-50 border border-transparent hover:border-stone-200/60 transition-all text-left group"
               >
@@ -561,6 +558,7 @@ export default function DashboardPage() {
               </button>
 
               <button
+                type="button"
                 onClick={() => router.push('/dashboard/pages')}
                 className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-stone-50 border border-transparent hover:border-stone-200/60 transition-all text-left group"
               >
@@ -579,15 +577,16 @@ export default function DashboardPage() {
               </button>
 
               <button
+                type="button"
                 onClick={() => router.push('/dashboard/services')}
                 className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-stone-50 border border-transparent hover:border-stone-200/60 transition-all text-left group"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-amber-50 text-[#B38F26] border border-amber-100 flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 rounded-xl bg-orange-50 text-[#FF6B00] border border-orange-100 flex items-center justify-center shrink-0">
                     <Sparkles className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-stone-900 group-hover:text-[#B38F26] transition-colors">
+                    <p className="text-xs font-bold text-stone-900 group-hover:text-[#FF6B00] transition-colors">
                       Catálogo de Servicios
                     </p>
                     <p className="text-[11px] text-stone-400">Tarifas y duraciones de cabina</p>
@@ -598,17 +597,17 @@ export default function DashboardPage() {
             </div>
           </Card>
 
-          {/* Tarjeta Co-Piloto Operativo IA */}
-          <div className="rounded-[2.2rem] bg-gradient-to-br from-stone-950 via-stone-900 to-stone-950 text-white p-6 sm:p-7 border border-stone-800 shadow-luxury relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-[#D4AF37]/10 rounded-bl-full pointer-events-none group-hover:bg-[#D4AF37]/20 transition-all" />
+          {/* Tarjeta Co-Piloto Operativo IA ProBookia */}
+          <div className="rounded-[2.2rem] bg-gradient-to-br from-[#162033] via-[#1B2742] to-[#141B2D] text-white p-6 sm:p-7 border border-stone-800 shadow-md relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-[#FF6B00]/15 rounded-bl-full pointer-events-none group-hover:bg-[#FF6B00]/25 transition-all" />
             
             <div className="relative z-10 space-y-4">
               <div className="flex items-center gap-2.5">
-                <span className="w-9 h-9 rounded-xl bg-[#D4AF37]/20 border border-[#D4AF37]/30 text-[#D4AF37] flex items-center justify-center shadow-inner">
+                <span className="w-9 h-9 rounded-xl bg-[#FF6B00]/20 border border-[#FF6B00]/30 text-[#FF6B00] flex items-center justify-center shadow-inner">
                   <Bot className="w-5 h-5" />
                 </span>
                 <div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#D4AF37]">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#FF6B00]">
                     Co-Piloto Operativo IA
                   </h4>
                   <p className="text-[11px] text-stone-400">Asistente en tiempo real</p>
@@ -616,19 +615,17 @@ export default function DashboardPage() {
               </div>
 
               <p className="text-xs text-stone-300 leading-relaxed">
-                Pídele al Co-Piloto que agende citas, consulte tus ingresos o redacte textos y fotografías para tu web.
+                Pídele al Co-Piloto agendar citas, consultar tus métricas o redactar textos y fotos de servicios para tu web.
               </p>
 
-              <Button
+              <button
                 type="button"
                 onClick={handleOpenCopilot}
-                variant="luxury"
-                size="sm"
-                className="w-full gap-2 rounded-xl text-xs font-bold shadow-luxury active:scale-95"
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#FF6B00] hover:bg-[#EA5E00] text-white text-xs font-bold shadow-sm transition-all active:scale-95 cursor-pointer"
               >
-                <Bot className="w-3.5 h-3.5" />
+                <Bot className="w-4 h-4" />
                 <span>Abrir Co-Piloto IA</span>
-              </Button>
+              </button>
             </div>
           </div>
 

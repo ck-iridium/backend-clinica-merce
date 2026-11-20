@@ -12,7 +12,7 @@ const badgeVariants = cva(
         secondary:
           "border-transparent bg-stone-100 text-stone-800 hover:bg-stone-200/80",
         luxury:
-          "border border-[#D4AF37]/30 bg-[#D4AF37]/10 text-[#94761e] shadow-2xs font-bold",
+          "border border-orange-500/30 bg-orange-500/10 text-orange-700 shadow-2xs font-bold",
         outline:
           "border border-stone-200 text-stone-600 bg-white/70",
         success:

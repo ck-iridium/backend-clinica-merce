@@ -4,14 +4,14 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-xl text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold/50 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 select-none",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-xl text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/50 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 select-none",
   {
     variants: {
       variant: {
         default:
           "bg-stone-900 text-white shadow-sm hover:bg-stone-800 active:scale-[0.99]",
         luxury:
-          "bg-gradient-to-r from-[#D4AF37] via-[#c9a331] to-[#B38F26] text-white font-medium shadow-md shadow-[#D4AF37]/20 hover:shadow-lg hover:shadow-[#D4AF37]/30 hover:brightness-[1.03] active:scale-[0.99] border border-amber-300/20",
+          "bg-gradient-to-r from-[#FF6B00] via-[#F97316] to-[#EA580C] text-white font-semibold shadow-md shadow-orange-500/20 hover:shadow-lg hover:shadow-orange-500/30 hover:brightness-105 active:scale-[0.99] border border-orange-400/20",
         outline:
           "border border-stone-200 bg-white/90 text-stone-700 hover:bg-stone-50 hover:text-stone-900 shadow-sm active:scale-[0.99]",
         secondary:

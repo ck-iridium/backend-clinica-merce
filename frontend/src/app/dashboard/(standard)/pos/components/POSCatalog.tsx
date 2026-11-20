@@ -45,8 +45,8 @@ export function POSCatalog({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-stone-100 pb-5">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse" />
-            <span className="text-[11px] font-bold text-[#B38F26] uppercase tracking-[0.2em]">
+            <span className="w-2 h-2 rounded-full bg-[#FF6B00] animate-pulse" />
+            <span className="text-[11px] font-bold text-[#FF6B00] uppercase tracking-[0.2em]">
               {t('dashboard.pos.step_identification') || '1. Catálogo de Servicios'}
             </span>
           </div>
@@ -80,7 +80,7 @@ export function POSCatalog({
               setShowServiceDropdown(true);
             }}
             onFocus={() => setShowServiceDropdown(true)}
-            className="w-full pl-12 pr-10 py-3.5 rounded-2xl border border-stone-200/90 focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 outline-none bg-stone-50/60 hover:bg-stone-50 focus:bg-white transition-all font-medium text-sm text-stone-800 placeholder:text-stone-400 shadow-2xs"
+            className="w-full pl-12 pr-10 py-3.5 rounded-2xl border border-stone-200/90 focus:border-[#FF6B00] focus:ring-2 focus:ring-orange-500/20 outline-none bg-stone-50/60 hover:bg-stone-50 focus:bg-white transition-all font-medium text-sm text-stone-800 placeholder:text-stone-400 shadow-2xs"
           />
           {serviceSearch && (
             <button
@@ -119,10 +119,10 @@ export function POSCatalog({
                       )}
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
-                      <span className="font-bold text-stone-800 font-mono text-sm bg-stone-100 px-2 py-0.5 rounded-lg group-hover:bg-[#D4AF37]/20 group-hover:text-amber-950 transition-colors">
+                      <span className="font-bold text-stone-800 font-mono text-sm bg-stone-100 px-2 py-0.5 rounded-lg group-hover:bg-orange-50 group-hover:text-orange-950 transition-colors">
                         {Number(s.price).toFixed(2)}€
                       </span>
-                      <span className="w-7 h-7 bg-stone-100 text-stone-600 rounded-lg group-hover:bg-[#D4AF37] group-hover:text-stone-950 transition-all flex items-center justify-center shadow-xs">
+                      <span className="w-7 h-7 bg-stone-100 text-stone-600 rounded-lg group-hover:bg-[#FF6B00] group-hover:text-white transition-all flex items-center justify-center shadow-xs">
                         <Plus size={14} />
                       </span>
                     </div>
@@ -141,7 +141,7 @@ export function POSCatalog({
       {/* Filtros por Categoría */}
       <div className="space-y-2.5">
         <label className="text-xs font-bold uppercase tracking-wider text-stone-500 flex items-center gap-1.5">
-          <Layers size={13} className="text-[#D4AF37]" />
+          <Layers size={13} className="text-[#FF6B00]" />
           <span>{t('dashboard.pos.category_filters') || 'Filtrar por Categoría'}</span>
         </label>
         <div className="flex flex-wrap gap-2">
@@ -163,7 +163,7 @@ export function POSCatalog({
               onClick={() => setSelectedCategory(cat.id)}
               className={`px-3.5 py-2 rounded-xl text-xs font-medium transition-all duration-200 shadow-2xs ${
                 selectedCategory === cat.id
-                  ? 'bg-gradient-to-r from-[#D4AF37] to-[#B38F26] text-stone-950 font-bold shadow-sm'
+                  ? 'bg-[#FF6B00] text-white font-bold shadow-sm'
                   : 'bg-stone-50 text-stone-600 hover:bg-stone-100 border border-stone-200/50'
               }`}
             >
@@ -189,21 +189,21 @@ export function POSCatalog({
             <div
               key={s.id}
               onClick={() => onAddToCart(s)}
-              className="group p-4 bg-white/90 border border-stone-200/70 hover:border-[#D4AF37]/60 hover:bg-amber-50/15 rounded-2xl cursor-pointer transition-all duration-300 flex justify-between items-center shadow-2xs hover:shadow-luxury hover:-translate-y-0.5"
+              className="group p-4 bg-white/90 border border-stone-200/70 hover:border-orange-300 hover:bg-orange-50/20 rounded-2xl cursor-pointer transition-all duration-300 flex justify-between items-center shadow-2xs hover:shadow-md hover:-translate-y-0.5"
             >
               <div className="space-y-1.5 pr-2 max-w-[70%]">
-                <h4 className="font-serif font-semibold text-stone-900 text-xs sm:text-sm truncate group-hover:text-amber-950">
+                <h4 className="font-serif font-semibold text-stone-900 text-xs sm:text-sm truncate group-hover:text-stone-950">
                   {s.name}
                 </h4>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-mono font-bold text-stone-800 bg-stone-100 group-hover:bg-[#D4AF37]/20 group-hover:text-amber-950 px-2 py-0.5 rounded-md transition-colors">
+                  <span className="text-xs font-mono font-bold text-stone-800 bg-stone-100 group-hover:bg-orange-50 group-hover:text-orange-950 px-2 py-0.5 rounded-md transition-colors">
                     {Number(s.price).toFixed(2)}€
                   </span>
                 </div>
               </div>
               <button
                 type="button"
-                className="w-8 h-8 rounded-xl bg-stone-100 text-stone-600 border border-stone-200/60 flex items-center justify-center group-hover:bg-[#D4AF37] group-hover:text-stone-950 group-hover:border-transparent transition-all duration-300 shadow-2xs active:scale-90 shrink-0"
+                className="w-8 h-8 rounded-xl bg-stone-100 text-stone-600 border border-stone-200/60 flex items-center justify-center group-hover:bg-[#FF6B00] group-hover:text-white group-hover:border-transparent transition-all duration-300 shadow-2xs active:scale-90 shrink-0"
               >
                 <Plus size={14} />
               </button>

@@ -380,7 +380,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
                 {getTranslatedLabel(link.href, link.label)}
               </span>
               {active && (
-                <div className="absolute -left-1 w-1.5 h-6 bg-[#D4AF37] rounded-r-full shadow-[0_0_12px_rgba(212,175,55,0.7)]"></div>
+                <div className="absolute -left-1 w-1.5 h-6 bg-[#FF6B00] rounded-r-full shadow-[0_0_12px_rgba(255,107,0,0.7)]"></div>
               )}
             </Link>
           );
@@ -398,7 +398,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
                   {t('dashboard.menu.management')}
                 </span>
                 {filteredGestion.some(l => isActive(l.href)) && (
-                  <div className="absolute -left-1 w-1.5 h-6 bg-[#D4AF37] rounded-r-full shadow-[0_0_12px_rgba(212,175,55,0.7)]"></div>
+                  <div className="absolute -left-1 w-1.5 h-6 bg-[#FF6B00] rounded-r-full shadow-[0_0_12px_rgba(255,107,0,0.7)]"></div>
                 )}
               </button>
             </DropdownMenuTrigger>
@@ -437,7 +437,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
                   {t('dashboard.menu.configuration')}
                 </span>
                 {filteredConfig.some(l => isActive(l.href)) && (
-                  <div className="absolute -left-1 w-1.5 h-6 bg-[#D4AF37] rounded-r-full shadow-[0_0_12px_rgba(212,175,55,0.7)]"></div>
+                  <div className="absolute -left-1 w-1.5 h-6 bg-[#FF6B00] rounded-r-full shadow-[0_0_12px_rgba(255,107,0,0.7)]"></div>
                 )}
               </button>
             </DropdownMenuTrigger>
@@ -485,7 +485,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
               {logoUrl ? (
                 <img src={logoUrl} alt={clinicName} className="w-full h-full object-cover" />
               ) : (
-                <span className="font-serif italic text-2xl font-bold text-[#d4af37] drop-shadow-[0_0_8px_rgba(212,175,55,0.6)] select-none">
+                <span className="font-serif italic text-2xl font-bold text-[#FF6B00] drop-shadow-[0_0_8px_rgba(255,107,0,0.6)] select-none">
                   {clinicName.charAt(0).toUpperCase()}
                 </span>
               )}
@@ -546,7 +546,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
                       </div>
                       <button
                         onClick={handleExitImpersonation}
-                        className="w-full flex items-center justify-center gap-2 bg-[#d4af37] hover:bg-[#b08e23] text-stone-950 font-sans font-bold text-[11px] uppercase tracking-wider py-2 px-3 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
+                        className="w-full flex items-center justify-center gap-2 bg-[#FF6B00] hover:bg-[#EA5E00] text-white font-sans font-bold text-[11px] uppercase tracking-wider py-2 px-3 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
                       >
                         <LogOut size={13} strokeWidth={2.5} />
                         <span>Salir y Volver</span>
@@ -561,7 +561,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
                     <span className="text-stone-500 text-[9px] leading-none truncate max-w-[110px]">{role || 'Personal'}</span>
                   </div>
                   {planType && (
-                    <span className="bg-[#d4af37]/15 text-[#e4c257] text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-md border border-[#d4af37]/20 flex items-center gap-1 select-none shrink-0">
+                    <span className="bg-orange-500/15 text-orange-400 text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-md border border-orange-500/20 flex items-center gap-1 select-none shrink-0">
                       {planType === 'gold' ? 'Plan Gold' : planType === 'pro' ? 'Plan Pro' : planType === 'basic' ? 'Plan Básico' : 'Plan Demo'}
                     </span>
                   )}
@@ -572,7 +572,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
                   <span className="font-bold text-sm">{t('dashboard.menu.profile')}</span>
                 </DropdownMenuItem>
                 {(role?.toLowerCase() === 'admin' || role?.toLowerCase() === 'administrador') && (
-                  <DropdownMenuItem onClick={() => router.push('/dashboard/settings?tab=subscription')} className="flex items-center gap-3 px-4 py-3 rounded-xl focus:bg-stone-800 focus:text-white cursor-pointer text-[#d4af37] focus:text-[#e4c257] focus:bg-stone-800">
+                  <DropdownMenuItem onClick={() => router.push('/dashboard/settings?tab=subscription')} className="flex items-center gap-3 px-4 py-3 rounded-xl focus:bg-stone-800 focus:text-white cursor-pointer text-orange-400 focus:text-orange-300 focus:bg-stone-800">
                     <CreditCard size={16} />
                     <span className="font-bold text-sm">Plan & Suscripción</span>
                   </DropdownMenuItem>
@@ -592,7 +592,7 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
                       onClick={() => setLanguage(lang)}
                       className={`py-1.5 text-[10px] font-black rounded-xl transition-all ${
                         language === lang
-                          ? 'bg-[#d4af37] text-stone-950 shadow-md'
+                          ? 'bg-[#FF6B00] text-white shadow-md'
                           : 'text-stone-400 hover:bg-stone-800 hover:text-white'
                       }`}
                     >

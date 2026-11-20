@@ -315,8 +315,8 @@ export default function POSPage() {
         <header className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-stone-200/60 pb-6 relative">
           <div className="space-y-2">
             <div className="flex items-center gap-3.5">
-              <span className="w-12 h-12 rounded-2xl bg-stone-900 border border-amber-400/20 text-[#D4AF37] flex items-center justify-center shadow-md shrink-0">
-                <Tag size={22} className="text-[#D4AF37]" />
+              <span className="w-12 h-12 rounded-2xl bg-stone-900 border border-orange-500/30 text-[#FF6B00] flex items-center justify-center shadow-md shrink-0">
+                <Tag size={22} className="text-[#FF6B00]" />
               </span>
               <div>
                 <div className="flex items-center gap-2.5">
@@ -369,15 +369,15 @@ export default function POSPage() {
             />
 
             {/* Columna Derecha: Ticket de Escritorio */}
-            <div className="hidden lg:block lg:col-span-5 bg-[#141416] text-white rounded-[2rem] p-7 sm:p-8 border border-stone-800/80 shadow-luxury space-y-6 relative overflow-hidden backdrop-blur-2xl">
-              <div className="absolute top-[-60px] right-[-60px] w-72 h-72 bg-[#D4AF37]/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="hidden lg:block lg:col-span-5 bg-[#141416] text-white rounded-[2rem] p-7 sm:p-8 border border-stone-800/80 shadow-md space-y-6 relative overflow-hidden backdrop-blur-2xl">
+              <div className="absolute top-[-60px] right-[-60px] w-72 h-72 bg-[#FF6B00]/10 rounded-full blur-3xl pointer-events-none" />
 
               <div className="flex justify-between items-center border-b border-white/10 pb-4">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-[#D4AF37]/20 border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37]">
+                  <div className="w-8 h-8 rounded-xl bg-[#FF6B00]/20 border border-[#FF6B00]/30 flex items-center justify-center text-[#FF6B00]">
                     <ShoppingCart size={16} />
                   </div>
-                  <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-[#D4AF37]">
+                  <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-[#FF6B00]">
                     {t('dashboard.pos.ticket_summary') || '2. Resumen & Ticket'}
                   </h3>
                 </div>
@@ -396,7 +396,7 @@ export default function POSPage() {
 
         {/* Aviso Legal y Fiscalidad */}
         <footer className="p-6 bg-white/80 backdrop-blur-xl border border-stone-200/70 rounded-3xl flex items-start gap-4 text-stone-500 max-w-4xl mx-auto shadow-2xs">
-          <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-300/30 flex items-center justify-center text-[#B38F26] shrink-0 font-serif font-bold text-sm">
+          <div className="w-9 h-9 rounded-xl bg-stone-100 border border-stone-200 flex items-center justify-center text-stone-700 shrink-0 font-serif font-bold text-sm">
             §
           </div>
           <div className="space-y-1">
