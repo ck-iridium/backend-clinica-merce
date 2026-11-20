@@ -263,7 +263,13 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
                 break
         except Exception as e:
             logger.error(f"Imagen 3 error: {e}")
-            raise HTTPException(status_code=500, detail=f"Error en Google Imagen: {str(e)}")
+            err_msg = str(e)
+            if "quota" in err_msg.lower() or "403" in err_msg or "permission" in err_msg.lower() or "api_key" in err_msg.lower() or "not found" in err_msg.lower():
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"La generación fotorrealista con la clave de la plataforma está en preparación o sin cuota en este momento. Puedes conectar tu propia API Key de Google Gemini u OpenAI en Ajustes > Avanzado para generar sin interrupciones."
+                )
+            raise HTTPException(status_code=500, detail=f"Error en Google Imagen: {err_msg}")
 
     elif ai_provider == "openai":
         try:

@@ -181,8 +181,11 @@ def check_and_reset_ai_quotas(db: Session, tenant: models.Tenant):
         tenant.ai_last_action_date = today
         needs_commit = True
 
-    # 2. Inicialización / Reset mensual de imágenes
-    if tenant.plan_type != "free":
+    # 2. Inicialización / Reset mensual de imágenes (solo para cuentas de pago activas, no en trial)
+    status = (tenant.subscription_status or "").lower()
+    is_trial = status in ["trial", "trialing"] or (tenant.plan_type or "free").lower() == "free"
+
+    if not is_trial:
         if not tenant.ai_images_reset_at:
             tenant.ai_images_reset_at = now + timedelta(days=30)
             tenant.ai_monthly_images_used = 0
@@ -237,6 +240,8 @@ def check_and_deduct_image_quota(db: Session, tenant: models.Tenant, settings: m
     check_and_reset_ai_quotas(db, tenant)
 
     plan = (tenant.plan_type or "free").lower()
+    status = (tenant.subscription_status or "").lower()
+    is_trial = status in ["trial", "trialing"] or plan == "free"
     has_byok = bool(settings and (
         (settings.ai_provider == "gemini" and settings.gemini_api_key and settings.gemini_api_key.strip()) or
         (settings.ai_provider == "openai" and settings.openai_api_key and settings.openai_api_key.strip())
@@ -252,11 +257,9 @@ def check_and_deduct_image_quota(db: Session, tenant: models.Tenant, settings: m
             "reset_at": tenant.ai_images_reset_at.isoformat() if tenant.ai_images_reset_at else None
         }
 
-    limits = get_tenant_limits(plan)
-    max_images = limits.get("ai_images_monthly", 30)
-
-    if plan == "free":
-        # En trial son 5 imágenes en total durante todo el trial
+    if is_trial:
+        # En trial son exactamente 5 imágenes en total durante todo el trial
+        max_images = 5
         used = tenant.ai_trial_images_used or 0
         if used >= max_images:
             raise HTTPException(
@@ -275,7 +278,9 @@ def check_and_deduct_image_quota(db: Session, tenant: models.Tenant, settings: m
             "is_trial": True
         }
     else:
-        # En planes de pago (basic, pro, gold)
+        # En planes de pago activos (basic, pro, gold)
+        limits = get_tenant_limits(plan)
+        max_images = limits.get("ai_images_monthly", 30)
         used = tenant.ai_monthly_images_used or 0
         if used >= max_images:
             raise HTTPException(

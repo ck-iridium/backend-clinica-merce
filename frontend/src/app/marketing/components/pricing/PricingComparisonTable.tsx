@@ -311,8 +311,9 @@ export function PricingComparisonTable({
                 <span className="text-[11px] text-stone-400 font-medium">Facturas oficiales con desglose de impuestos y descarga en PDF</span>
               </td>
               <td className="py-3.5 px-6">
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-stone-600 bg-stone-100 px-2.5 py-1 rounded-full">
-                  <span>Solo ticket de caja</span>
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-stone-800 bg-stone-100 px-2.5 py-1 rounded-full border border-stone-200/60">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5]" />
+                  <span>Facturas oficiales (PDF)</span>
                 </span>
               </td>
               <td className="py-3.5 px-6 border-x border-[#D4AF37]/25" style={{ backgroundColor: `${accentColor}06` }}>
@@ -340,22 +341,25 @@ export function PricingComparisonTable({
 
             <tr className="hover:bg-stone-50/50 transition-colors">
               <td className="py-3.5 px-6">
-                <span className="font-bold text-stone-900 block text-xs md:text-sm">Web corporativa con CMS y Dominio propio</span>
+                <span className="font-bold text-stone-900 block text-xs md:text-sm">Web corporativa con CMS y reservas</span>
                 <span className="text-[11px] text-stone-400 font-medium">Página visual de alta gama con motor de reservas integrado</span>
               </td>
-              <td className="py-3.5 px-6 text-stone-600 text-[11px]">
-                Subdominio estándar
+              <td className="py-3.5 px-6">
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-stone-800 bg-stone-100 px-2.5 py-1 rounded-full border border-stone-200/60">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5]" />
+                  <span>Subdominio + Dominio propio</span>
+                </span>
               </td>
               <td className="py-3.5 px-6 border-x border-[#D4AF37]/25" style={{ backgroundColor: `${accentColor}06` }}>
                 <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-stone-800 bg-stone-100 px-2.5 py-1 rounded-full border border-stone-200/60">
                   <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5]" />
-                  <span>Web de lujo + Dominio propio</span>
+                  <span>Subdominio + Dominio propio</span>
                 </span>
               </td>
               <td className="py-3.5 px-6">
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-stone-900 bg-stone-100 px-2.5 py-1 rounded-full border border-stone-300">
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-stone-800 bg-stone-100 px-2.5 py-1 rounded-full border border-stone-200/60">
                   <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5]" />
-                  <span>Marca blanca 100% invisible</span>
+                  <span>Subdominio + Dominio propio</span>
                 </span>
               </td>
             </tr>
@@ -430,11 +434,11 @@ export function PricingComparisonTable({
               <td className="py-3.5 px-6 text-stone-600 text-[11px]">
                 Soporte por email
               </td>
-              <td className="py-3.5 px-6 border-x border-[#D4AF37]/25 font-bold text-stone-950 text-[11px]" style={{ backgroundColor: `${accentColor}06` }}>
-                Soporte prioritario &lt; 12h
+              <td className="py-3.5 px-6 border-x border-[#D4AF37]/25 text-stone-900 font-medium text-[11px]" style={{ backgroundColor: `${accentColor}06` }}>
+                Soporte por email
               </td>
-              <td className="py-3.5 px-6 font-bold text-stone-950 text-[11px]">
-                Soporte VIP 24/7 + Onboarding asistido
+              <td className="py-3.5 px-6 text-stone-900 font-medium text-[11px]">
+                Soporte por email
               </td>
             </tr>
 

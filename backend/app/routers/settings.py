@@ -59,12 +59,17 @@ def read_tenant_limits(db: Session = Depends(database.get_db)):
     admin_user = db.query(models.User).filter(models.User.tenant_id == tenant_id, models.User.role == "admin").first()
     email_verified = admin_user.email_verified if admin_user else True
 
-    images_monthly_limit = limits.get("ai_images_monthly", 30)
+    status = (tenant.subscription_status or "").lower()
+    is_trial = status in ["trial", "trialing"] or plan == "free"
+
     if has_own_key:
         images_remaining = 999999
-    elif plan == "free":
+        images_monthly_limit = 5 if is_trial else limits.get("ai_images_monthly", 30)
+    elif is_trial:
+        images_monthly_limit = 5
         images_remaining = max(0, 5 - (tenant.ai_trial_images_used or 0))
     else:
+        images_monthly_limit = limits.get("ai_images_monthly", 30)
         images_remaining = max(0, images_monthly_limit - (tenant.ai_monthly_images_used or 0))
 
     return {
@@ -72,6 +77,7 @@ def read_tenant_limits(db: Session = Depends(database.get_db)):
         "tenant_slug": tenant.slug,
         "custom_domain": tenant.custom_domain,
         "plan_type": plan,
+        "is_trial": is_trial,
         "subscription_status": tenant.subscription_status,
         "subscription_expires_at": tenant.subscription_expires_at.isoformat() if tenant.subscription_expires_at else None,
         "created_at": tenant.created_at.isoformat() if tenant.created_at else None,
@@ -89,6 +95,7 @@ def read_tenant_limits(db: Session = Depends(database.get_db)):
             "ai_smart_actions_daily": limits.get("ai_smart_actions_daily", 0),
             "ai_images_monthly": images_monthly_limit,
             "ai_images_remaining": images_remaining,
+            "is_trial": is_trial,
             "ai_allowed": ai_allowed,
             "ai_requires_byok": ai_requires_byok
         },

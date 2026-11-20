@@ -36,8 +36,11 @@ export const PRICING_PLANS: PricingPlan[] = [
       { text: 'Agenda interactiva & turnos' },
       { text: 'Firma en tablet y consentimientos LOPD' },
       { text: 'Emisión y control de Bonos (/vouchers)' },
+      { text: 'Facturación oficial correlativa e IVA (/invoices)' },
       { text: 'Caja rápida TPV (tickets de venta)' },
-      { text: 'Fianza anti-plantones Stripe Connect' }
+      { text: 'Web con CMS + Subdominio (y dominio propio)' },
+      { text: 'Fianza anti-plantones Stripe Connect' },
+      { text: 'Soporte técnico por email' }
     ],
     buttonText: 'Comenzar con Plan Individual'
   },
@@ -58,8 +61,9 @@ export const PRICING_PLANS: PricingPlan[] = [
       { text: 'Firma digital LOPD para todo el equipo' },
       { text: 'Emisión y control de Bonos (/vouchers)' },
       { text: 'Facturación oficial correlativa e IVA (/invoices)' },
-      { text: 'Web de lujo con CMS + Dominio propio' },
-      { text: 'Servicios y catálogo ilimitados' }
+      { text: 'Web con CMS + Subdominio (y dominio propio)' },
+      { text: 'Servicios y catálogo ilimitados' },
+      { text: 'Soporte técnico por email' }
     ],
     buttonText: 'Comenzar Prueba Gratuita (14 Días)'
   },
@@ -78,8 +82,8 @@ export const PRICING_PLANS: PricingPlan[] = [
       { text: 'Co-Piloto & Diseñador Web IA (Acciones ilimitadas ∞)', isBold: true },
       { text: '250 fotos/mes con IA incluidas (Ilimitadas con tu clave)', isSpecial: true },
       { text: 'Todo lo incluido en el Plan Pro' },
-      { text: 'Marca blanca 100% invisible' },
-      { text: 'Soporte prioritario VIP 24/7' }
+      { text: 'Web con CMS + Subdominio (y dominio propio)' },
+      { text: 'Soporte técnico por email' }
     ],
     buttonText: 'Solicitar Plan Elite'
   }

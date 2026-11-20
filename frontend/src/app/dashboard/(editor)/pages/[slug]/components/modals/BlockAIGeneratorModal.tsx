@@ -91,7 +91,7 @@ export default function BlockAIGeneratorModal({
         const ownKey = !!d.has_own_key;
         const dailyLimit = d.limits?.ai_smart_actions_daily ?? (plan === 'basic' ? 15 : 35);
         const dailyUsed = d.ai_daily_actions_used ?? 0;
-        const isTrial = plan === 'free';
+        const isTrial = !!(d.is_trial ?? (d.subscription_status === 'trial' || d.subscription_status === 'trialing' || plan === 'free'));
         const imgLimit = d.limits?.ai_images_monthly ?? (isTrial ? 5 : 30);
         const imgRemaining = d.limits?.ai_images_remaining ?? (isTrial ? 5 : 30);
         const imgUsed = isTrial ? (d.ai_trial_images_used ?? 0) : (d.ai_monthly_images_used ?? 0);
@@ -350,6 +350,25 @@ export default function BlockAIGeneratorModal({
             <p className="text-stone-400 text-xs mt-0.5 font-sans">
               Indica qué deseas transmitir y la IA adaptará el bloque al estilo de tu negocio.
             </p>
+            {!(supportsImage && blockType !== 'atomic_image') && (
+              <div className="mt-2">
+                {activeTab === 'text' ? (
+                  <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border text-[10px] font-bold ${
+                    isTextExhausted ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-white text-stone-600 border-stone-200'
+                  }`}>
+                    <span>⚡</span>
+                    <span>{isTextUnlimited ? 'Ilimitadas (∞)' : `${textRemaining}/${textLimit} hoy`}</span>
+                  </span>
+                ) : (
+                  <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border text-[10px] font-bold ${
+                    isImageExhausted ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-white text-stone-600 border-stone-200'
+                  }`}>
+                    <span>📸</span>
+                    <span>{isImageUnlimited ? '∞ con tu clave' : isTrial ? `${imageRemaining}/${imageLimit} prueba` : `${imageRemaining}/${imageLimit} este mes`}</span>
+                  </span>
+                )}
+              </div>
+            )}
           </div>
           <button
             onClick={onClose}
