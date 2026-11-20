@@ -69,7 +69,7 @@ const DEFAULT_FORM_DATA: ServiceFormData = {
   layout_preferences: {
     alignment: 'left',
     headerStyle: 'split_image',
-    accentColor: '#d4af37'
+    accentColor: '#FF6B00'
   },
   requires_deposit: false,
   deposit_amount: 0,
@@ -91,7 +91,7 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showAIModal, setShowAIModal] = useState<'short_description' | 'rich_content' | null>(null);
-  const [brandAccentColor, setBrandAccentColor] = useState('#d4af37');
+  const [brandAccentColor, setBrandAccentColor] = useState('#FF6B00');
 
   // Cambio automático de pestaña basado en el hint recibido en la URL
   const searchParams = useSearchParams();
@@ -132,7 +132,7 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
   const formValues = watch();
   const serviceName = formValues.name;
 
-  const activeAccentColor = (formValues.layout_preferences?.accentColor && formValues.layout_preferences.accentColor !== '#d4af37') 
+  const activeAccentColor = (formValues.layout_preferences?.accentColor && formValues.layout_preferences.accentColor !== '#FF6B00') 
     ? formValues.layout_preferences.accentColor 
     : brandAccentColor;
 
@@ -389,7 +389,7 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
                 size="sm"
                 disabled={saving || isGeneratingAI || (!isDirty && !isNew)}
                 onClick={() => setExitAfterSave(true)}
-                className="rounded-xl text-xs font-bold h-9 px-3.5 shadow-luxury text-stone-950 transition-all"
+                className="rounded-xl text-xs font-bold h-9 px-3.5 shadow-sm text-white bg-[#FF6B00] hover:bg-[#EA5E00] transition-all"
                 title={isGeneratingAI ? t('dashboard.services.no_save_ai_generating') : ""}
               >
                 {saving && exitAfterSave ? t('dashboard.services.saving') : t('dashboard.services.save_and_exit')}
@@ -399,10 +399,10 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
 
           {/* Pestañas de Navegación */}
           <div className="flex px-6 pt-4 gap-4 border-b border-stone-100 shrink-0">
-            <button id="service-editor-tab-general" type="button" onClick={() => setActiveTab('general')} className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === 'general' ? 'border-[#d4af37] text-stone-800' : 'border-transparent text-stone-400 hover:text-stone-600'}`}>{t('dashboard.services.tabs.general')}</button>
-            <button id="service-editor-tab-content" type="button" onClick={() => setActiveTab('content')} className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === 'content' ? 'border-[#d4af37] text-stone-800' : 'border-transparent text-stone-400 hover:text-stone-600'}`}>{t('dashboard.services.tabs.content')}</button>
-            <button id="service-editor-tab-design" type="button" onClick={() => setActiveTab('design')} className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === 'design' ? 'border-[#d4af37] text-stone-800' : 'border-transparent text-stone-400 hover:text-stone-600'}`}>{t('dashboard.services.tabs.design')}</button>
-            <button id="service-editor-tab-seo" type="button" onClick={() => setActiveTab('seo')} className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === 'seo' ? 'border-[#d4af37] text-stone-800' : 'border-transparent text-stone-400 hover:text-stone-600'}`}>{t('dashboard.services.tabs.seo')}</button>
+            <button id="service-editor-tab-general" type="button" onClick={() => setActiveTab('general')} className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === 'general' ? 'border-[#FF6B00] text-stone-900' : 'border-transparent text-stone-400 hover:text-stone-600'}`}>{t('dashboard.services.tabs.general')}</button>
+            <button id="service-editor-tab-content" type="button" onClick={() => setActiveTab('content')} className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === 'content' ? 'border-[#FF6B00] text-stone-900' : 'border-transparent text-stone-400 hover:text-stone-600'}`}>{t('dashboard.services.tabs.content')}</button>
+            <button id="service-editor-tab-design" type="button" onClick={() => setActiveTab('design')} className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === 'design' ? 'border-[#FF6B00] text-stone-900' : 'border-transparent text-stone-400 hover:text-stone-600'}`}>{t('dashboard.services.tabs.design')}</button>
+            <button id="service-editor-tab-seo" type="button" onClick={() => setActiveTab('seo')} className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === 'seo' ? 'border-[#FF6B00] text-stone-900' : 'border-transparent text-stone-400 hover:text-stone-600'}`}>{t('dashboard.services.tabs.seo')}</button>
           </div>
 
           {/* Cuerpo del Formulario */}

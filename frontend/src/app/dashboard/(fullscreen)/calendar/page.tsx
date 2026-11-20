@@ -248,7 +248,7 @@ function CalendarContent() {
           {isPanelOpen ? (
             <PanelLeftClose size={18} className="group-hover:-translate-x-0.5 transition-transform" />
           ) : (
-            <PanelLeftOpen size={18} className="text-[#D4AF37]" />
+            <PanelLeftOpen size={18} className="text-[#FF6B00]" />
           )}
         </button>
 
@@ -286,19 +286,19 @@ function CalendarContent() {
                     key={i}
                     type="button"
                     onClick={() => c.handleDayHeaderClick(date)}
-                    className={`py-3 px-2 text-center border-r border-stone-200/70 last:border-r-0 transition-all group hover:bg-amber-50/40 cursor-pointer flex flex-col items-center justify-center ${isToday ? 'bg-amber-50/20' : ''}`}
+                    className={`py-3 px-2 text-center border-r border-stone-200/70 last:border-r-0 transition-all group hover:bg-orange-50/40 cursor-pointer flex flex-col items-center justify-center ${isToday ? 'bg-orange-50/20' : ''}`}
                     title="Ver día completo por especialistas"
                   >
-                    <p className={`text-[10px] font-bold uppercase tracking-[0.2em] mb-0.5 group-hover:text-[#B38F26] transition-colors ${isToday ? 'text-[#B38F26]' : 'text-stone-400'}`}>
+                    <p className={`text-[10px] font-bold uppercase tracking-[0.2em] mb-0.5 group-hover:text-[#FF6B00] transition-colors ${isToday ? 'text-[#FF6B00]' : 'text-stone-400'}`}>
                       {date.toLocaleDateString(getLocaleString(), { weekday: 'short' })}
                     </p>
-                    <span className={`inline-flex items-center justify-center font-serif text-lg font-bold transition-all group-hover:scale-105 ${isToday
-                        ? 'w-8 h-8 rounded-xl bg-[#D4AF37] text-stone-950 shadow-sm font-black'
-                        : 'text-stone-900 group-hover:text-[#B38F26]'
+                    <span className={`inline-flex items-center justify-center font-sans text-lg font-bold transition-all group-hover:scale-105 ${isToday
+                        ? 'w-8 h-8 rounded-xl bg-[#FF6B00] text-white shadow-sm font-black'
+                        : 'text-stone-900 group-hover:text-[#FF6B00]'
                       }`}>
                       {date.getDate()}
                     </span>
-                    <span className="text-[9px] text-[#B38F26] font-semibold opacity-0 group-hover:opacity-100 transition-opacity leading-none mt-0.5">
+                    <span className="text-[9px] text-[#FF6B00] font-semibold opacity-0 group-hover:opacity-100 transition-opacity leading-none mt-0.5">
                       Ver día →
                     </span>
                   </button>
@@ -330,15 +330,15 @@ function CalendarContent() {
                         <img
                           src={staff.avatar_url}
                           alt={staff.full_name}
-                          className="w-9 h-9 rounded-full object-cover border-2 border-[#D4AF37]/50 shadow-sm shrink-0"
+                          className="w-9 h-9 rounded-full object-cover border-2 border-[#FF6B00]/40 shadow-sm shrink-0"
                         />
                       ) : (
-                        <div className="w-9 h-9 rounded-full bg-stone-900 text-[#D4AF37] font-serif font-bold text-xs flex items-center justify-center border border-[#D4AF37]/40 shadow-sm shrink-0">
+                        <div className="w-9 h-9 rounded-full bg-stone-900 text-[#FF6B00] font-sans font-bold text-xs flex items-center justify-center border border-[#FF6B00]/30 shadow-sm shrink-0">
                           {staff.full_name?.charAt(0) || 'E'}
                         </div>
                       )}
                       <div className="min-w-0 flex-1">
-                        <h4 className="font-serif font-bold text-stone-900 text-xs leading-tight truncate">
+                        <h4 className="font-sans font-bold text-stone-900 text-xs leading-tight truncate">
                           {staff.full_name}
                         </h4>
                         <p className="text-[10px] text-stone-400 capitalize font-medium leading-none mt-0.5 truncate">
@@ -346,7 +346,7 @@ function CalendarContent() {
                         </p>
                       </div>
                     </div>
-                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-50 text-[#8c6d17] border border-amber-200/60 shrink-0">
+                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-orange-50 text-[#EA5E00] border border-orange-200/60 shrink-0">
                       {staffAppts.length} {staffAppts.length === 1 ? 'cita' : 'citas'}
                     </span>
                   </div>
@@ -686,7 +686,7 @@ function CalendarContent() {
                   return (
                     <div className="bg-stone-50/70 p-3.5 rounded-2xl border border-stone-100">
                       <p className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]" /> {t('dashboard.calendar.specialist') || 'ESPECIALISTA ASIGNADO'}
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B00]" /> {t('dashboard.calendar.specialist') || 'ESPECIALISTA ASIGNADO'}
                       </p>
                       {staff ? (
                         <div className="flex items-center gap-3">
@@ -694,10 +694,10 @@ function CalendarContent() {
                             <img
                               src={staff.avatar_url}
                               alt={staff.full_name}
-                              className="w-9 h-9 rounded-full object-cover border-2 border-[#D4AF37]/40 shadow-sm shrink-0"
+                              className="w-9 h-9 rounded-full object-cover border-2 border-[#FF6B00]/40 shadow-sm shrink-0"
                             />
                           ) : (
-                            <div className="w-9 h-9 rounded-full bg-stone-900 text-[#D4AF37] font-serif font-bold text-sm flex items-center justify-center border border-[#D4AF37]/30 shadow-sm shrink-0">
+                            <div className="w-9 h-9 rounded-full bg-stone-900 text-[#FF6B00] font-sans font-bold text-sm flex items-center justify-center border border-[#FF6B00]/30 shadow-sm shrink-0">
                               {staff.full_name?.charAt(0) || 'E'}
                             </div>
                           )}
@@ -724,24 +724,24 @@ function CalendarContent() {
                   const isHome = c.hoveredAppt.service_modality === 'home';
                   if (!loc && !isHome) return null;
                   return (
-                    <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-amber-50/50 border border-amber-200/60 text-xs">
+                    <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-orange-50/50 border border-orange-200/60 text-xs">
                       {isHome ? (
                         <>
-                          <div className="w-7 h-7 rounded-xl bg-amber-100 flex items-center justify-center shrink-0 text-amber-800 text-xs">
+                          <div className="w-7 h-7 rounded-xl bg-orange-100 flex items-center justify-center shrink-0 text-orange-800 text-xs">
                             🏠
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="text-[9px] font-bold text-amber-700 uppercase tracking-wider">A Domicilio</p>
+                            <p className="text-[9px] font-bold text-orange-700 uppercase tracking-wider">A Domicilio</p>
                             <p className="font-semibold text-stone-800 truncate">{c.hoveredAppt.client_address || 'Dirección del cliente'}</p>
                           </div>
                         </>
                       ) : loc ? (
                         <>
-                          <div className="w-7 h-7 rounded-xl bg-[#D4AF37]/15 flex items-center justify-center shrink-0 text-[#99771A] text-xs border border-[#D4AF37]/30">
+                          <div className="w-7 h-7 rounded-xl bg-[#FF6B00]/15 flex items-center justify-center shrink-0 text-[#EA5E00] text-xs border border-[#FF6B00]/30">
                             📍
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="text-[9px] font-bold text-[#99771A] uppercase tracking-wider">{t('dashboard.calendar.location') || 'Sede'}</p>
+                            <p className="text-[9px] font-bold text-[#EA5E00] uppercase tracking-wider">{t('dashboard.calendar.location') || 'Sede'}</p>
                             <p className="font-bold text-stone-900 text-xs truncate">{loc.name}</p>
                             {loc.address && <p className="text-[10px] text-stone-500 truncate mt-0.5">{loc.address}</p>}
                           </div>
@@ -757,7 +757,7 @@ function CalendarContent() {
                   if (!resource?.name) return null;
                   return (
                   <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-stone-50/80 border border-stone-100 text-xs">
-                    <div className="w-7 h-7 rounded-xl bg-[#D4AF37]/10 flex items-center justify-center shrink-0 text-[#D4AF37]">
+                    <div className="w-7 h-7 rounded-xl bg-[#FF6B00]/10 flex items-center justify-center shrink-0 text-[#FF6B00]">
                       <Layers size={14} />
                     </div>
                     <div className="min-w-0 flex-1">

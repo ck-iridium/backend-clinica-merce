@@ -70,7 +70,7 @@ export default function CreateCategoryInlineModal({ open, onOpenChange, onCreate
               value={name} 
               onChange={(e) => setName(e.target.value)} 
               placeholder={t('dashboard.services.new_category_placeholder')} 
-              className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all font-semibold text-sm text-stone-900 dark:text-stone-900" 
+              className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FF6B00] transition-all font-semibold text-sm text-stone-900 dark:text-stone-900" 
             />
           </form>
         </div>
@@ -87,7 +87,7 @@ export default function CreateCategoryInlineModal({ open, onOpenChange, onCreate
           <button 
             form="inline-category-form" 
             type="submit" 
-            className="flex-1 bg-stone-900 hover:bg-[#d4af37] text-white px-4 py-2.5 rounded-lg font-bold text-xs transition-all shadow-md active:scale-95 border border-transparent disabled:opacity-50"
+            className="flex-1 bg-stone-900 hover:bg-[#FF6B00] text-white px-4 py-2.5 rounded-lg font-bold text-xs transition-all shadow-md active:scale-95 border border-transparent disabled:opacity-50"
             disabled={saving}
           >
             {saving ? t('dashboard.services.creating') : t('dashboard.services.create')}

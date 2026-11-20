@@ -44,7 +44,7 @@ export default function GeneralTab({
     <div className="space-y-4">
       <div>
         <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.service_name_label')}</label>
-        <input id="service-editor-general-name-input" {...register('name', { required: true })} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 dark:text-stone-900 focus:ring-2 focus:ring-[#d4af37] outline-none transition-all font-semibold" placeholder={t('dashboard.services.service_name_placeholder')} />
+        <input id="service-editor-general-name-input" {...register('name', { required: true })} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 dark:text-stone-900 focus:ring-2 focus:ring-[#FF6B00] outline-none transition-all font-semibold" placeholder={t('dashboard.services.service_name_placeholder')} />
       </div>
       <div className="relative group">
         <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.slug_label')}</label>
@@ -53,13 +53,13 @@ export default function GeneralTab({
             id="service-editor-general-slug-input"
             {...register('slug', { required: true })} 
             readOnly={slugLocked}
-            className={`w-full pl-4 pr-12 py-3 rounded-xl border outline-none transition-all text-sm font-mono ${slugLocked ? 'bg-stone-50 border-stone-200 text-stone-500 dark:text-stone-500' : 'bg-white border-[#d4af37] text-stone-800 dark:text-stone-800'}`} 
+            className={`w-full pl-4 pr-12 py-3 rounded-xl border outline-none transition-all text-sm font-mono ${slugLocked ? 'bg-stone-50 border-stone-200 text-stone-500 dark:text-stone-500' : 'bg-white border-[#FF6B00] text-stone-800 dark:text-stone-800'}`} 
           />
           <button 
             id="service-editor-general-slug-toggle-btn"
             type="button"
             onClick={() => setSlugLocked(!slugLocked)}
-            className={`absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${slugLocked ? 'text-stone-400 hover:text-stone-600' : 'bg-[#d4af37]/10 text-[#d4af37] hover:bg-[#d4af37]/20'}`}
+            className={`absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${slugLocked ? 'text-stone-400 hover:text-stone-600' : 'bg-orange-50 text-[#FF6B00] hover:bg-orange-100'}`}
             title={slugLocked ? t('dashboard.services.slug_unlock') : t('dashboard.services.slug_lock')}
           >
             {slugLocked ? <Lock size={14} /> : <Unlock size={14} />}
@@ -105,11 +105,11 @@ export default function GeneralTab({
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.price_label')}</label>
-          <input id="service-editor-general-price-input" type="number" step="0.01" {...register('price', { required: true, valueAsNumber: true })} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 dark:text-stone-900 focus:ring-2 focus:ring-[#d4af37] outline-none transition-all font-semibold" />
+          <input id="service-editor-general-price-input" type="number" step="0.01" {...register('price', { required: true, valueAsNumber: true })} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 dark:text-stone-900 focus:ring-2 focus:ring-[#FF6B00] outline-none transition-all font-semibold" />
         </div>
         <div>
           <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.duration_label')}</label>
-          <input id="service-editor-general-duration-input" type="number" step="15" {...register('duration_minutes', { required: true, valueAsNumber: true })} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 dark:text-stone-900 focus:ring-2 focus:ring-[#d4af37] outline-none transition-all font-semibold" />
+          <input id="service-editor-general-duration-input" type="number" step="15" {...register('duration_minutes', { required: true, valueAsNumber: true })} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 dark:text-stone-900 focus:ring-2 focus:ring-[#FF6B00] outline-none transition-all font-semibold" />
         </div>
       </div>
 
@@ -180,7 +180,7 @@ export default function GeneralTab({
             />
             <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${
               formValues.requires_deposit 
-                ? 'bg-[#d4af37] border-[#d4af37]' 
+                ? 'bg-[#FF6B00] border-[#FF6B00]' 
                 : 'border-stone-300 bg-white hover:border-stone-400'
             }`}>
               {formValues.requires_deposit && (
@@ -203,7 +203,7 @@ export default function GeneralTab({
               type="number" 
               step="0.01" 
               {...register('deposit_amount', { required: formValues.requires_deposit, valueAsNumber: true })} 
-              className="w-full sm:w-1/2 px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 dark:text-stone-900 focus:ring-2 focus:ring-[#d4af37] outline-none transition-all font-semibold" 
+              className="w-full sm:w-1/2 px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 dark:text-stone-900 focus:ring-2 focus:ring-[#FF6B00] outline-none transition-all font-semibold" 
             />
             <p className="text-[10px] text-stone-400 mt-1">{t('dashboard.services.deposit_amount_helper')}</p>
           </div>
@@ -217,13 +217,13 @@ export default function GeneralTab({
             id="service-editor-general-ai-desc-btn"
             type="button" 
             onClick={() => setShowAIModal('short_description')}
-            className="flex items-center gap-1.5 text-xs font-bold text-[#d4af37] hover:bg-yellow-50/50 px-2.5 py-1 rounded-lg border border-yellow-100 transition-colors shadow-sm"
+            className="flex items-center gap-1.5 text-xs font-bold text-[#FF6B00] hover:bg-orange-50 px-2.5 py-1 rounded-lg border border-orange-200 transition-colors shadow-sm"
           >
             <Sparkles size={12} strokeWidth={2} />
             {t('dashboard.services.generate_ia')}
           </button>
         </div>
-        <textarea id="service-editor-general-desc-textarea" {...register('description')} rows={3} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 dark:text-stone-900 focus:ring-2 focus:ring-[#d4af37] outline-none transition-all text-sm resize-none" placeholder={t('dashboard.services.short_description_placeholder')} />
+        <textarea id="service-editor-general-desc-textarea" {...register('description')} rows={3} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 dark:text-stone-900 focus:ring-2 focus:ring-[#FF6B00] outline-none transition-all text-sm resize-none" placeholder={t('dashboard.services.short_description_placeholder')} />
       </div>
       
       <div className="flex items-center gap-3 p-4 bg-white border border-stone-200 rounded-xl">
@@ -236,7 +236,7 @@ export default function GeneralTab({
           />
           <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${
             formValues.is_active 
-              ? 'bg-[#d4af37] border-[#d4af37]' 
+              ? 'bg-[#FF6B00] border-[#FF6B00]' 
               : 'border-stone-300 bg-white hover:border-stone-400'
           }`}>
             {formValues.is_active && (

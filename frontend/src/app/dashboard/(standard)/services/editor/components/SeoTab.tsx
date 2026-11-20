@@ -324,10 +324,10 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
 
       {/* ── BANNER PARA IDIOMAS SECUNDARIOS (EN / FR) ── */}
       {selectedLang !== 'es' && (
-        <div className="p-4 rounded-2xl bg-amber-50/50 border border-[#D4AF37]/30 text-stone-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs animate-in fade-in duration-200">
+        <div className="p-4 rounded-2xl bg-orange-50/50 border border-orange-200 text-stone-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs animate-in fade-in duration-200">
           <div className="space-y-0.5">
             <span className="font-bold flex items-center gap-1.5 text-stone-900">
-              <Globe size={14} className="text-[#D4AF37]" />
+              <Globe size={14} className="text-[#FF6B00]" />
               Traducción SEO para {selectedLang === 'en' ? 'Inglés (English)' : 'Francés (Français)'}
             </span>
             <p className="text-[11px] text-stone-500">
@@ -339,12 +339,12 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
             type="button"
             onClick={handleTranslateWithAi}
             disabled={isTranslatingLang}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-stone-900 hover:bg-[#d4af37] text-white text-xs font-bold transition-all shadow-sm shrink-0 active:scale-95 disabled:opacity-50"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-stone-900 hover:bg-[#FF6B00] text-white text-xs font-bold transition-all shadow-sm shrink-0 active:scale-95 disabled:opacity-50"
           >
             {isTranslatingLang ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
             ) : (
-              <Sparkles size={14} className="text-[#D4AF37]" />
+              <Sparkles size={14} className="text-[#FF6B00]" />
             )}
             <span>{isTranslatingLang ? 'Traduciendo...' : 'Traducir con IA'}</span>
           </button>
@@ -355,7 +355,7 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
       {isBlocked && (
         <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200/40 text-[11px] text-stone-500 mb-6 flex flex-col gap-2 font-sans animate-in fade-in duration-300">
           <div className="flex items-center gap-1.5 text-stone-700 font-bold uppercase tracking-wider text-[10px]">
-            <Sparkles size={12} className="text-[#d4af37]" />
+            <Sparkles size={12} className="text-[#FF6B00]" />
             <span>Asistente de SEO Premium</span>
           </div>
           <p className="leading-relaxed">
@@ -389,7 +389,7 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
                 router.push('/dashboard/settings?tab=subscription');
               }}
               disabled={redirecting !== null}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#d4af37] text-white font-bold transition-all shadow-sm hover:bg-stone-900 active:scale-95 disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#FF6B00] text-white font-bold transition-all shadow-sm hover:bg-[#EA5E00] active:scale-95 disabled:opacity-50"
             >
               {redirecting === 'subscription' ? (
                 <>
@@ -419,7 +419,7 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
             className={`w-full h-12 flex items-center justify-center gap-2 rounded-xl font-bold transition-all shadow-md ${
               isBlocked
                 ? 'bg-stone-100 text-stone-400 border border-stone-200 cursor-not-allowed shadow-none'
-                : 'bg-stone-900 hover:bg-[#d4af37] text-white disabled:opacity-50 disabled:cursor-not-allowed'
+                : 'bg-stone-900 hover:bg-[#FF6B00] text-white disabled:opacity-50 disabled:cursor-not-allowed'
             }`}
           >
             {isGeneratingSEO ? (
@@ -463,7 +463,7 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
           <input
             id="service-editor-seo-title-input"
             {...register('seo_title')}
-            className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 focus:ring-2 focus:ring-[#d4af37] outline-none transition-all font-semibold"
+            className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 focus:ring-2 focus:ring-[#FF6B00] outline-none transition-all font-semibold"
             placeholder={
               (t('dashboard.services.seo_title_placeholder') || 'Ej: {name} | Negocio').replace(
                 '{name}',
@@ -476,7 +476,7 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
             id={`service-editor-seo-title-${selectedLang}-input`}
             value={activeTitle}
             onChange={(e) => updateTranslationField('seo_title', e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 focus:ring-2 focus:ring-[#d4af37] outline-none transition-all font-semibold"
+            className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 focus:ring-2 focus:ring-[#FF6B00] outline-none transition-all font-semibold"
             placeholder={formValues.seo_title ? `Ej. traducido de: "${formValues.seo_title}"` : 'Title in foreign language...'}
           />
         )}
@@ -501,7 +501,7 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
             id="service-editor-seo-desc-textarea"
             {...register('seo_description')}
             rows={3}
-            className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 focus:ring-2 focus:ring-[#d4af37] outline-none transition-all text-sm resize-none"
+            className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 focus:ring-2 focus:ring-[#FF6B00] outline-none transition-all text-sm resize-none"
             placeholder={t('dashboard.services.meta_description_placeholder')}
           />
         ) : (
@@ -510,7 +510,7 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
             value={activeDesc}
             onChange={(e) => updateTranslationField('seo_description', e.target.value)}
             rows={3}
-            className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 focus:ring-2 focus:ring-[#d4af37] outline-none transition-all text-sm resize-none"
+            className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 focus:ring-2 focus:ring-[#FF6B00] outline-none transition-all text-sm resize-none"
             placeholder={formValues.seo_description ? `Ej. traducido de: "${formValues.seo_description}"` : 'Description in foreign language...'}
           />
         )}
@@ -525,7 +525,7 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
           <input
             id="service-editor-seo-keywords-input"
             {...register('seo_keywords')}
-            className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 focus:ring-2 focus:ring-[#d4af37] outline-none transition-all text-sm"
+            className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 focus:ring-2 focus:ring-[#FF6B00] outline-none transition-all text-sm"
             placeholder={t('dashboard.services.meta_keywords_placeholder')}
           />
         ) : (
@@ -533,7 +533,7 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
             id={`service-editor-seo-keywords-${selectedLang}-input`}
             value={activeKw}
             onChange={(e) => updateTranslationField('seo_keywords', e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 focus:ring-2 focus:ring-[#d4af37] outline-none transition-all text-sm"
+            className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 focus:ring-2 focus:ring-[#FF6B00] outline-none transition-all text-sm"
             placeholder="keywords, separated, by, commas"
           />
         )}
@@ -555,7 +555,7 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
                   toast.success('Slug generado a partir del título.');
                 }
               }}
-              className="text-[11px] font-bold text-[#d4af37] hover:underline"
+              className="text-[11px] font-bold text-[#FF6B00] hover:underline"
             >
               Autogenerar de título
             </button>
@@ -567,7 +567,7 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
             <input
               id="service-editor-slug-input"
               {...register('slug')}
-              className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-stone-50/70 text-stone-800 font-mono text-xs focus:ring-2 focus:ring-[#d4af37] outline-none transition-all"
+              className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-stone-50/70 text-stone-800 font-mono text-xs focus:ring-2 focus:ring-[#FF6B00] outline-none transition-all"
               placeholder="url-amigable-del-servicio"
             />
             <p className="text-[11px] text-stone-400 font-mono">
@@ -581,7 +581,7 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
                 id={`service-editor-slug-${selectedLang}-input`}
                 value={currentTrans.slug || ''}
                 onChange={(e) => updateTranslationField('slug', e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 font-mono text-xs focus:ring-2 focus:ring-[#d4af37] outline-none transition-all"
+                className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 font-mono text-xs focus:ring-2 focus:ring-[#FF6B00] outline-none transition-all"
                 placeholder={slugifyText(activeTitle || formValues.name || 'translated-slug')}
               />
             </div>
@@ -589,7 +589,7 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
               <span className="truncate">
                 URL Indexable: /tratamientos/[categoria]/<strong className="text-stone-900">{currentTrans.slug || slugifyText(activeTitle || formValues.name || 'slug')}</strong>?lang={selectedLang}
               </span>
-              <span className="text-[10px] bg-[#d4af37]/15 text-[#9a7e20] px-2 py-0.5 rounded font-sans font-bold whitespace-nowrap">
+              <span className="text-[10px] bg-orange-100 text-[#EA5E00] px-2 py-0.5 rounded font-sans font-bold whitespace-nowrap">
                 hreflang="{selectedLang}"
               </span>
             </div>

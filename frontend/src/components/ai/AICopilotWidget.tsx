@@ -158,16 +158,16 @@ export default function AICopilotWidget() {
               className="absolute top-0 left-0 w-6 h-6 cursor-nwse-resize z-50 group/resize flex items-center justify-center max-sm:hidden touch-none"
               title="Arrastra para redimensionar"
             >
-              <div className="w-2.5 h-2.5 border-l-2 border-t-2 border-stone-400/60 group-hover/resize:border-[#d4af37] transition-colors rounded-tl" />
+              <div className="w-2.5 h-2.5 border-l-2 border-t-2 border-stone-400/60 group-hover/resize:border-[#FF6B00] transition-colors rounded-tl" />
             </div>
             <div
               onMouseDown={startResize}
-              className="absolute top-0 left-0 bottom-0 w-2 cursor-ew-resize z-40 hover:bg-[#d4af37]/20 transition-colors max-sm:hidden touch-none"
+              className="absolute top-0 left-0 bottom-0 w-2 cursor-ew-resize z-40 hover:bg-[#FF6B00]/20 transition-colors max-sm:hidden touch-none"
               title="Arrastra para cambiar ancho"
             />
             <div
               onMouseDown={startResize}
-              className="absolute top-0 left-0 right-0 h-2 cursor-ns-resize z-40 hover:bg-[#d4af37]/20 transition-colors max-sm:hidden touch-none"
+              className="absolute top-0 left-0 right-0 h-2 cursor-ns-resize z-40 hover:bg-[#FF6B00]/20 transition-colors max-sm:hidden touch-none"
               title="Arrastra para cambiar alto"
             />
 

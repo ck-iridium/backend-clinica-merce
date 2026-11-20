@@ -33,13 +33,13 @@ export function POSMobileBar({
       {/* Barra flotante inferior para dispositivos móviles */}
       <div
         className={`fixed bottom-20 left-4 right-4 md:left-[96px] md:right-8 lg:hidden bg-stone-950/95 backdrop-blur-xl border border-stone-800 text-white p-3.5 sm:p-4 rounded-2xl shadow-2xl flex items-center justify-between z-40 transition-all duration-300 ${
-          bounceCart ? 'scale-105 border-[#D4AF37]/60 shadow-[0_0_25px_rgba(212,175,55,0.25)]' : 'scale-100'
+          bounceCart ? 'scale-105 border-orange-500/60 shadow-[0_0_25px_rgba(255,107,0,0.25)]' : 'scale-100'
         }`}
       >
         <div className="flex items-center gap-3">
           <div className="relative p-2.5 bg-white/10 rounded-xl border border-white/10">
-            <ShoppingCart size={18} className="text-[#D4AF37]" />
-            <span className="absolute -top-1.5 -right-1.5 bg-[#D4AF37] text-stone-950 text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center leading-none font-mono shadow-sm">
+            <ShoppingCart size={18} className="text-[#FF6B00]" />
+            <span className="absolute -top-1.5 -right-1.5 bg-[#FF6B00] text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center leading-none font-mono shadow-sm">
               {cartCount}
             </span>
           </div>
@@ -47,7 +47,7 @@ export function POSMobileBar({
             <span className="text-[10px] text-white/50 uppercase tracking-wider font-semibold">
               {t('dashboard.pos.total_to_charge') || 'Total a cobrar'}
             </span>
-            <span className="text-xl font-bold font-mono text-[#D4AF37] leading-tight">
+            <span className="text-xl font-bold font-mono text-white leading-tight">
               {totalAmount.toFixed(2)}€
             </span>
           </div>

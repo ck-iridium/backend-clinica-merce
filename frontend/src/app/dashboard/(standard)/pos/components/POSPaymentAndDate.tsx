@@ -32,7 +32,7 @@ export function POSPaymentAndDate({
         <div className="relative pointer-events-auto cursor-pointer group">
           <div className="bg-white/5 border border-white/10 text-white rounded-2xl px-3.5 py-2.5 text-xs font-semibold flex items-center justify-between gap-2.5 group-hover:bg-white/10 group-hover:border-white/20 transition-all">
             <div className="flex items-center gap-2 truncate">
-              <Calendar size={14} className="text-[#D4AF37] shrink-0" />
+              <Calendar size={14} className="text-[#FF6B00] shrink-0" />
               <span className="truncate font-medium text-white/90">
                 {getFriendlyDateStr(selectedDate)}
               </span>

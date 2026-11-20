@@ -79,7 +79,7 @@ export function CalendarHeader({
                 : currentWeek.toLocaleDateString(getLocaleString(), { month: 'long', year: 'numeric' })}
             </h2>
             {viewMode === 'day' ? (
-              <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-50 text-[#99771A] border border-amber-200/70 shadow-2xs">
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-orange-50 text-[#EA5E00] border border-orange-200/70 shadow-2xs">
                 {t('dashboard.calendar.day_specialists') || 'Columnas por Especialista'}
               </span>
             ) : (
@@ -125,7 +125,7 @@ export function CalendarHeader({
                 id="calendar-location-selector-trigger"
                 className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl border border-stone-200/80 bg-white hover:bg-stone-50/80 text-stone-800 text-xs font-semibold shadow-2xs transition-all outline-hidden cursor-pointer"
               >
-                <MapPin size={13} className="text-[#D4AF37] shrink-0" />
+                <MapPin size={13} className="text-[#FF6B00] shrink-0" />
                 <span className="truncate max-w-[150px]">
                   {selectedLocationFilter === 'ALL'
                     ? (t('dashboard.calendar.all_locations') || 'Todas las sedes')
@@ -139,7 +139,7 @@ export function CalendarHeader({
                   onClick={() => onSelectLocationFilter?.('ALL')}
                   className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium cursor-pointer transition-colors ${
                     selectedLocationFilter === 'ALL'
-                      ? 'bg-amber-50 text-[#99771A] font-bold'
+                      ? 'bg-orange-50 text-[#EA5E00] font-bold'
                       : 'hover:bg-stone-50 text-stone-700'
                   }`}
                 >
@@ -164,12 +164,12 @@ export function CalendarHeader({
                       onClick={() => onSelectLocationFilter?.(loc.id)}
                       className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium cursor-pointer transition-colors ${
                         isSelected
-                          ? 'bg-amber-50 text-[#99771A] font-bold'
+                          ? 'bg-orange-50 text-[#EA5E00] font-bold'
                           : 'hover:bg-stone-50 text-stone-700'
                       }`}
                     >
                       <div className="flex items-center gap-2 truncate">
-                        <MapPin size={13} className={isSelected ? 'text-[#D4AF37]' : 'text-stone-400'} />
+                        <MapPin size={13} className={isSelected ? 'text-[#FF6B00]' : 'text-stone-400'} />
                         <span className="truncate">{loc.name}</span>
                       </div>
                       <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-stone-100 text-stone-600 shrink-0">
@@ -185,7 +185,7 @@ export function CalendarHeader({
           {/* Si solo hay 1 sede, mostramos una discreta insignia informativa */}
           {locations && locations.length === 1 && (
             <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-200/60 bg-stone-50/60 text-stone-600 text-xs font-medium shadow-2xs" title={locations[0].address || locations[0].name}>
-              <MapPin size={12} className="text-[#D4AF37] shrink-0" />
+              <MapPin size={12} className="text-[#FF6B00] shrink-0" />
               <span className="truncate max-w-[140px]">{locations[0].name}</span>
             </div>
           )}
@@ -202,7 +202,7 @@ export function CalendarHeader({
                   : 'text-stone-500 hover:text-stone-800'
               }`}
             >
-              <CalendarDays size={14} className={viewMode === 'week' ? 'text-[#D4AF37]' : ''} />
+              <CalendarDays size={14} className={viewMode === 'week' ? 'text-[#FF6B00]' : ''} />
               <span>{t('dashboard.calendar.view_week') || 'Semana'}</span>
             </button>
             <button
@@ -215,7 +215,7 @@ export function CalendarHeader({
                   : 'text-stone-500 hover:text-stone-800'
               }`}
             >
-              <Columns3 size={14} className={viewMode === 'day' ? 'text-[#D4AF37]' : ''} />
+              <Columns3 size={14} className={viewMode === 'day' ? 'text-[#FF6B00]' : ''} />
               <span>{t('dashboard.calendar.day_specialists') || 'Día (Especialistas)'}</span>
             </button>
           </div>
@@ -227,7 +227,7 @@ export function CalendarHeader({
         <div className="flex items-center gap-2">
           <div className="relative pointer-events-auto">
             <div className="bg-white/80 backdrop-blur-md border border-stone-200/50 text-stone-800 rounded-xl px-4 py-2.5 font-bold shadow-sm flex items-center justify-between gap-3 min-w-[130px] max-w-[160px]">
-              <Calendar size={18} className="text-[#D4AF37] shrink-0" />
+              <Calendar size={18} className="text-[#FF6B00] shrink-0" />
               <span className="capitalize text-sm text-center flex-1 truncate">
                 {mobileSelectedDate.toLocaleDateString(getLocaleString(), { month: 'short', year: 'numeric' }).replace('.', '')}
               </span>

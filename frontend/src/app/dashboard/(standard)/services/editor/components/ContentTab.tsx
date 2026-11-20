@@ -43,7 +43,7 @@ export default function ContentTab({ editor, setShowAIModal }: ContentTabProps) 
             id="service-editor-content-ai-btn"
             type="button" 
             onClick={() => setShowAIModal('rich_content')}
-            className="flex items-center gap-1.5 text-xs font-bold text-[#d4af37] hover:bg-yellow-50/50 px-2.5 py-1 rounded-lg border border-yellow-100 transition-colors shadow-sm"
+            className="flex items-center gap-1.5 text-xs font-bold text-[#FF6B00] hover:bg-orange-50 px-2.5 py-1 rounded-lg border border-orange-200 transition-colors shadow-sm"
           >
             <Sparkles size={12} strokeWidth={2} />
             {t('dashboard.services.generate_ia')}

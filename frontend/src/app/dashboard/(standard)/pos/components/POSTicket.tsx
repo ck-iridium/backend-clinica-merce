@@ -102,11 +102,11 @@ export function POSTicket({
       {isInsideDrawer && (
         <div className="flex justify-between items-center border-b border-white/10 pb-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-[#D4AF37]/20 border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37]">
+            <div className="w-8 h-8 rounded-xl bg-[#FF6B00]/20 border border-[#FF6B00]/30 flex items-center justify-center text-[#FF6B00]">
               <ShoppingCart size={16} />
             </div>
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-[#D4AF37]">
+              <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-[#FF6B00]">
                 {t('dashboard.pos.ticket_summary') || 'Ticket de Venta'}
               </h3>
               <p className="text-[11px] text-white/50">{cart.length} líneas en ticket</p>
@@ -149,12 +149,12 @@ export function POSTicket({
                           if (e.key === 'Escape') setEditingIndex(null);
                         }}
                         autoFocus
-                        className="w-20 bg-stone-900 border border-[#D4AF37] rounded-lg px-2 py-1 text-xs text-[#D4AF37] font-mono outline-none font-bold"
+                        className="w-20 bg-stone-900 border border-[#FF6B00] rounded-lg px-2 py-1 text-xs text-[#FF6B00] font-mono outline-none font-bold"
                       />
                       <button
                         type="button"
                         onClick={() => updateItemPrice(idx, tempItemPrice)}
-                        className="p-1.5 bg-[#D4AF37] text-stone-950 rounded-lg hover:bg-amber-400 transition-colors"
+                        className="p-1.5 bg-[#FF6B00] text-white rounded-lg hover:bg-[#EA5E00] transition-colors"
                         title="Guardar precio"
                       >
                         <Check size={12} strokeWidth={3} />
@@ -170,7 +170,7 @@ export function POSTicket({
                     </div>
                   ) : (
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs text-[#D4AF37] font-bold font-mono">
+                      <span className="text-xs text-white font-bold font-mono">
                         {Number(item.price).toFixed(2)}€
                       </span>
                       {isModified && (
@@ -184,7 +184,7 @@ export function POSTicket({
                           setEditingIndex(idx);
                           setTempItemPrice(String(item.price));
                         }}
-                        className="p-1 text-white/30 hover:text-[#D4AF37] hover:bg-white/10 rounded-md transition-colors"
+                        className="p-1 text-white/30 hover:text-[#FF6B00] hover:bg-white/10 rounded-md transition-colors"
                         title={t('dashboard.pos.edit_price') || 'Editar precio'}
                       >
                         <Edit2 size={11} />
@@ -249,7 +249,7 @@ export function POSTicket({
           <button
             type="button"
             onClick={handleResetPrices}
-            className="flex items-center gap-1.5 px-3 py-1 bg-white/10 hover:bg-white/15 border border-white/10 text-[#D4AF37] text-[10px] font-bold rounded-full transition-all"
+            className="flex items-center gap-1.5 px-3 py-1 bg-white/10 hover:bg-white/15 border border-white/10 text-[#FF6B00] text-[10px] font-bold rounded-full transition-all"
           >
             <RotateCcw size={11} />
             <span>{t('dashboard.pos.reset_catalog') || 'Restablecer precios'}</span>
@@ -289,7 +289,7 @@ export function POSTicket({
                   setIsEditingTotal(true);
                   setCustomTotalInput(totalAmount.toFixed(2));
                 }}
-                className="flex items-center gap-1 border border-white/10 bg-white/5 hover:bg-white/10 text-[#D4AF37] text-xs font-semibold px-2.5 py-1 rounded-xl transition-all"
+                className="flex items-center gap-1 border border-white/10 bg-white/5 hover:bg-white/10 text-[#FF6B00] text-xs font-semibold px-2.5 py-1 rounded-xl transition-all"
                 title={t('dashboard.pos.edit_total') || 'Modificar total'}
               >
                 <Edit2 size={11} />
@@ -299,7 +299,7 @@ export function POSTicket({
           </div>
 
           {isEditingTotal ? (
-            <div className="flex items-center gap-2 mt-2 bg-stone-900 border border-[#D4AF37] p-2 rounded-2xl animate-in fade-in duration-200">
+            <div className="flex items-center gap-2 mt-2 bg-stone-900 border border-[#FF6B00] p-2 rounded-2xl animate-in fade-in duration-200">
               <input
                 type="number"
                 step="0.01"
@@ -312,12 +312,12 @@ export function POSTicket({
                 }}
                 autoFocus
                 placeholder="0.00"
-                className="w-full bg-transparent text-2xl font-bold font-mono text-[#D4AF37] outline-none px-2"
+                className="w-full bg-transparent text-2xl font-bold font-mono text-[#FF6B00] outline-none px-2"
               />
               <button
                 type="button"
                 onClick={handleApplyCustomTotal}
-                className="px-3.5 py-2 bg-[#D4AF37] text-stone-950 font-bold text-xs rounded-xl hover:bg-amber-400 transition-colors uppercase tracking-wider shrink-0"
+                className="px-3.5 py-2 bg-[#FF6B00] text-white font-bold text-xs rounded-xl hover:bg-[#EA5E00] transition-colors uppercase tracking-wider shrink-0"
               >
                 <Check size={14} strokeWidth={3} />
               </button>
@@ -336,7 +336,7 @@ export function POSTicket({
                   setIsEditingTotal(true);
                   setCustomTotalInput(totalAmount.toFixed(2));
                 }}
-                className="text-4xl font-serif font-bold text-[#D4AF37] font-mono leading-none tracking-tight cursor-pointer hover:opacity-80 transition-opacity"
+                className="text-4xl font-sans font-bold text-white font-mono leading-none tracking-tight cursor-pointer hover:text-[#FF6B00] transition-colors"
                 title="Haz clic para editar el total"
               >
                 {totalAmount.toFixed(2)}€
@@ -354,7 +354,7 @@ export function POSTicket({
           disabled={cart.length === 0 || (!isSimplified && !selectedClientId) || isProcessing}
           variant="luxury"
           size="lg"
-          className="w-full text-stone-950 font-bold uppercase tracking-wider h-14 rounded-2xl shadow-luxury text-sm disabled:opacity-30 disabled:pointer-events-none"
+          className="w-full text-white font-bold uppercase tracking-wider h-14 rounded-2xl shadow-md text-sm disabled:opacity-30 disabled:pointer-events-none"
         >
           {isProcessing ? (
             <div className="flex items-center gap-2">

@@ -33,7 +33,7 @@ const CommandDialog = ({ children, ...props }: CommandDialogProps) => {
         <DialogTitle className="sr-only">Buscador global</DialogTitle>
         <DialogDescription className="sr-only">Buscador para elementos generales del panel de control de la clínica</DialogDescription>
         <div className="relative w-full">
-          <Command className="[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:font-serif [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:text-stone-400 [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:tracking-widest [&_[cmdk-group-heading]]:pt-4 [&_[cmdk-group-heading]]:pb-2 [&_[cmdk-group]:not([hidden])~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-14 [&_[cmdk-item]]:px-3 [&_[cmdk-item]]:py-3 [&_[cmdk-item]]:rounded-xl [&_[cmdk-item]_svg]:h-4 [&_[cmdk-item]_svg]:w-4 [&_[cmdk-item][data-selected='true']]:bg-stone-100 [&_[cmdk-item][aria-selected='true']]:bg-stone-100 [&_[cmdk-item][data-selected='true']]:text-stone-950 [&_[cmdk-item][aria-selected='true']]:text-stone-950 [&_[cmdk-item][data-selected='true']]:ring-1 [&_[cmdk-item][data-selected='true']]:ring-[#D4AF37]/30">
+          <Command className="[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:font-serif [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:text-stone-400 [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:tracking-widest [&_[cmdk-group-heading]]:pt-4 [&_[cmdk-group-heading]]:pb-2 [&_[cmdk-group]:not([hidden])~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-14 [&_[cmdk-item]]:px-3 [&_[cmdk-item]]:py-3 [&_[cmdk-item]]:rounded-xl [&_[cmdk-item]_svg]:h-4 [&_[cmdk-item]_svg]:w-4 [&_[cmdk-item][data-selected='true']]:bg-stone-100 [&_[cmdk-item][aria-selected='true']]:bg-stone-100 [&_[cmdk-item][data-selected='true']]:text-stone-950 [&_[cmdk-item][aria-selected='true']]:text-stone-950 [&_[cmdk-item][data-selected='true']]:ring-1 [&_[cmdk-item][data-selected='true']]:ring-primary/30">
             {children}
           </Command>
           <DialogPrimitive.Close className="absolute right-3.5 top-3 z-30 rounded-lg p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition-colors focus:outline-none focus:ring-1 focus:ring-stone-300">
@@ -51,7 +51,7 @@ const CommandInput = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>
 >(({ className, ...props }, ref) => (
   <div className="flex items-center border-b px-4 pr-16" cmdk-input-wrapper="">
-    <Search className="mr-3 h-4 w-4 shrink-0 text-[#D4AF37]" />
+    <Search className="mr-3 h-4 w-4 shrink-0 text-primary" />
     <CommandPrimitive.Input
       ref={ref}
       className={cn(
@@ -126,7 +126,7 @@ const CommandItem = React.forwardRef<
   <CommandPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex cursor-pointer select-none items-center rounded-xl px-3 py-2.5 text-sm outline-none transition-all duration-150 font-medium data-[selected='true']:bg-stone-100 data-[selected=true]:bg-stone-100 aria-selected:bg-stone-100 data-[selected='true']:text-stone-950 aria-selected:text-stone-950 data-[selected='true']:ring-1 data-[selected='true']:ring-[#D4AF37]/30 data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50",
+      "relative flex cursor-pointer select-none items-center rounded-xl px-3 py-2.5 text-sm outline-none transition-all duration-150 font-medium data-[selected='true']:bg-stone-100 data-[selected=true]:bg-stone-100 aria-selected:bg-stone-100 data-[selected='true']:text-stone-950 aria-selected:text-stone-950 data-[selected='true']:ring-1 data-[selected='true']:ring-primary/30 data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50",
       className
     )}
     {...props}

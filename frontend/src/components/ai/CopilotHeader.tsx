@@ -48,7 +48,7 @@ export default function CopilotHeader({
             <h3 className="font-serif text-[15px] font-semibold text-stone-900 tracking-wide leading-tight">
               Co-Piloto AI
             </h3>
-            <span className="text-[10px] text-[#d4af37] font-semibold uppercase tracking-widest block leading-none mt-0.5">
+            <span className="text-[10px] text-[#FF6B00] font-semibold uppercase tracking-widest block leading-none mt-0.5">
               {language === 'fr' ? 'Navigation Intelligente' : language === 'en' ? 'Smart Navigation' : 'Navegación Inteligente'}
             </span>
           </div>
@@ -70,7 +70,7 @@ export default function CopilotHeader({
           {planType && !hasOwnKey && (
             planType === 'free' && trialRemaining !== null ? (
               <div className="px-2.5 py-0.5 rounded-full border border-amber-300/60 bg-amber-50 text-amber-800 text-[10px] font-medium tracking-wide flex items-center gap-1.5 shrink-0">
-                <Sparkles size={11} className="text-[#d4af37] animate-pulse" />
+                <Sparkles size={11} className="text-[#FF6B00] animate-pulse" />
                 <span>{trialRemaining} / {dailyActionsLimit || 35} prueba</span>
               </div>
             ) : (planType === 'basic' || planType === 'pro') && dailyActionsLimit > 0 ? (
@@ -92,7 +92,7 @@ export default function CopilotHeader({
                   window.dispatchEvent(event);
                 }}
               >
-                <Sparkles size={11} className="text-[#d4af37] animate-pulse" />
+                <Sparkles size={11} className="text-[#FF6B00] animate-pulse" />
                 <span>Smart: {dailyActionsLimit - dailyActionsUsed} / {dailyActionsLimit}</span>
               </div>
             ) : null
@@ -101,7 +101,7 @@ export default function CopilotHeader({
           {/* Badge ilimitado Gold/BYOK */}
           {(planType === 'gold' || hasOwnKey) && (
             <div className="px-2.5 py-0.5 rounded-full border border-amber-300/60 bg-amber-50 text-amber-800 text-[10px] font-medium tracking-wide flex items-center gap-1.5 shrink-0">
-              <Infinity size={13} className="text-[#d4af37]" strokeWidth={2} />
+              <Infinity size={13} className="text-[#FF6B00]" strokeWidth={2} />
               <span>Ilimitado</span>
             </div>
           )}
@@ -118,7 +118,7 @@ export default function CopilotHeader({
             }`}
             title={language === 'fr' ? 'Changer de voix (Féminin/Masculin)' : language === 'en' ? 'Change voice (Female/Male)' : 'Cambiar voz (Femenina/Masculina)'}
           >
-            <AudioLines size={12} className={voiceGender === 'male' ? 'text-amber-700' : 'text-[#d4af37]'} strokeWidth={2} />
+            <AudioLines size={12} className={voiceGender === 'male' ? 'text-orange-700' : 'text-[#FF6B00]'} strokeWidth={2} />
             <span>
               {voiceGender === 'female'
                 ? (language === 'fr' ? 'Voix Féminine' : language === 'en' ? 'Female Voice' : 'Voz Femenina')

@@ -157,7 +157,7 @@ export default function LocationResourcesModal({
       <DialogContent className="max-w-xl p-0 overflow-hidden rounded-[2rem] bg-white border border-stone-200/80 shadow-2xl">
         <DialogHeader className="p-7 pb-4 bg-gradient-to-b from-stone-50 to-white border-b border-stone-100">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#D4AF37]/10 flex items-center justify-center text-[#D4AF37] border border-[#D4AF37]/20">
+            <div className="w-10 h-10 rounded-2xl bg-orange-100/70 flex items-center justify-center text-[#FF6B00] border border-orange-200/60">
               <Layers size={20} />
             </div>
             <div>
@@ -173,8 +173,8 @@ export default function LocationResourcesModal({
 
         <div className="p-7 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
           {/* Explicación de arquitectura Cero Ruido */}
-          <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200/60 text-xs text-amber-900/90 leading-relaxed flex items-start gap-3">
-            <Sparkles size={16} className="text-[#D4AF37] shrink-0 mt-0.5" />
+          <div className="p-4 rounded-2xl bg-orange-50/60 border border-orange-200/60 text-xs text-stone-800 leading-relaxed flex items-start gap-3">
+            <Sparkles size={16} className="text-[#FF6B00] shrink-0 mt-0.5" />
             <p>
               Registra las <strong>cabinas</strong> o <strong>máquinas de tratamiento</strong> de esta sede que no admiten citas simultáneas (ej. Máquina Láser Sapphire o Cabina Estética 1). El sistema evitará automáticamente citas dobles en esos servicios.
             </p>
@@ -192,7 +192,7 @@ export default function LocationResourcesModal({
                 placeholder="Ej. Máquina Láser Sapphire, Cabina 1..."
                 value={newResourceName}
                 onChange={(e) => setNewResourceName(e.target.value)}
-                className="flex-1 px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-xs font-medium text-stone-900 focus:ring-1 focus:ring-[#D4AF37] outline-none"
+                className="flex-1 px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-xs font-medium text-stone-900 focus:ring-1 focus:ring-[#FF6B00] outline-none"
               />
               <div className="flex items-center gap-2">
                 <div className="w-24">
@@ -205,14 +205,14 @@ export default function LocationResourcesModal({
                     value={newResourceQuantity}
                     onChange={(e) => setNewResourceQuantity(Math.max(1, parseInt(e.target.value) || 1))}
                     title="Número de unidades disponibles simultáneamente"
-                    className="w-full px-3 py-2.5 rounded-xl border border-stone-200 bg-white text-xs font-semibold text-center text-stone-900 focus:ring-1 focus:ring-[#D4AF37] outline-none"
+                    className="w-full px-3 py-2.5 rounded-xl border border-stone-200 bg-white text-xs font-semibold text-center text-stone-900 focus:ring-1 focus:ring-[#FF6B00] outline-none"
                   />
                 </div>
                 <Button
                   id="location-resource-add-btn"
                   type="submit"
                   disabled={creating || !newResourceName.trim()}
-                  className="bg-[#D4AF37] hover:bg-[#b08e23] text-stone-950 font-bold text-xs h-10 px-4 rounded-xl shadow-xs"
+                  className="bg-[#FF6B00] hover:bg-[#EA5E00] text-white font-bold text-xs h-10 px-4 rounded-xl shadow-xs"
                 >
                   <Plus size={14} className="mr-1" />
                   {creating ? 'Guardando...' : 'Añadir'}
@@ -253,7 +253,7 @@ export default function LocationResourcesModal({
                   >
                     <div className="flex items-center gap-3">
                       <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${
-                        res.is_active ? 'bg-[#D4AF37]/10 text-[#D4AF37]' : 'bg-stone-200 text-stone-400'
+                        res.is_active ? 'bg-orange-100 text-[#FF6B00]' : 'bg-stone-200 text-stone-400'
                       }`}>
                         <Layers size={15} />
                       </div>
@@ -272,7 +272,7 @@ export default function LocationResourcesModal({
                         className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border transition-all ${
                           res.is_active
                             ? 'border-stone-200 text-stone-600 hover:bg-stone-50'
-                            : 'border-[#D4AF37]/30 text-[#bf9b30] hover:bg-[#D4AF37]/10'
+                            : 'border-orange-300/60 text-[#FF6B00] hover:bg-orange-50'
                         }`}
                       >
                         {res.is_active ? 'Activo' : 'Pausado'}

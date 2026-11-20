@@ -126,9 +126,9 @@ export default function CoachTooltip({ targetId, content, onClose }: CoachToolti
           opacity: { duration: 0.3 },
           scale: { duration: 0.3 }
         }}
-        className="bg-white/95 backdrop-blur-md border border-[#d4af37]/45 rounded-2xl p-4 shadow-[0_15px_45px_-8px_rgba(212,175,55,0.25)] w-80 sm:w-96 max-w-[calc(100vw-32px)] relative flex items-start gap-3 border-l-4 border-l-[#d4af37]"
+        className="bg-white/95 backdrop-blur-md border border-primary/30 rounded-2xl p-4 shadow-luxury w-80 sm:w-96 max-w-[calc(100vw-32px)] relative flex items-start gap-3 border-l-4 border-l-primary"
       >
-        <div className="mt-0.5 text-[#d4af37] shrink-0">
+        <div className="mt-0.5 text-primary shrink-0">
           <Sparkles size={16} className="animate-pulse" />
         </div>
         <div className="flex-1">

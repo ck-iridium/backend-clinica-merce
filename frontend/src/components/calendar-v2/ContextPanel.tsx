@@ -115,14 +115,14 @@ export function ContextPanel({
                 {/* 1. BÚSQUEDA Y COLAPSAR */}
                 <div className="flex items-center gap-2">
                     <div className="relative flex-1 group">
-                        <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-[#D4AF37] transition-colors" />
+                        <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-[#FF6B00] transition-colors" />
                         <input
                             id="calendar-search-input"
                             type="text"
                             placeholder={t('dashboard.calendar.search_placeholder') || 'Buscar cita o paciente...'}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-3.5 py-2.5 bg-stone-50 border border-stone-200/80 rounded-2xl text-xs font-medium focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] focus:bg-white outline-none transition-all shadow-2xs placeholder:text-stone-400"
+                            className="w-full pl-10 pr-3.5 py-2.5 bg-stone-50 border border-stone-200/80 rounded-2xl text-xs font-medium focus:ring-2 focus:ring-[#FF6B00]/20 focus:border-[#FF6B00] focus:bg-white outline-none transition-all shadow-2xs placeholder:text-stone-400"
                         />
                     </div>
                     {onClose && (
@@ -171,17 +171,23 @@ export function ContextPanel({
                                     item.date.getDate() === selectedDate.getDate() &&
                                     item.date.getMonth() === selectedDate.getMonth() &&
                                     item.date.getFullYear() === selectedDate.getFullYear();
+                                const isToday = item.currentMonth &&
+                                    item.date.getDate() === new Date().getDate() &&
+                                    item.date.getMonth() === new Date().getMonth() &&
+                                    item.date.getFullYear() === new Date().getFullYear();
 
                                 return (
                                     <button
                                         key={i}
                                         id={item.currentMonth ? `calendar-mini-day-btn-${item.day}` : undefined}
                                         onClick={() => item.currentMonth && onDateChange?.(item.date)}
-                                        className={`w-7 h-7 flex items-center justify-center text-xs font-medium rounded-xl transition-all
+                                        className={`w-7 h-7 flex items-center justify-center text-xs rounded-xl transition-all
                                             ${isSelected 
-                                                ? 'bg-gradient-to-r from-[#D4AF37] to-[#B38F26] text-stone-950 font-bold shadow-xs scale-105' 
+                                                ? 'bg-[#FF6B00] text-white font-black shadow-sm scale-105' 
+                                                : isToday
+                                                ? 'bg-orange-50 text-[#FF6B00] font-black border border-orange-200'
                                                 : item.currentMonth 
-                                                ? 'text-stone-700 hover:bg-amber-50 hover:text-amber-900' 
+                                                ? 'text-stone-700 font-medium hover:bg-orange-50 hover:text-[#FF6B00]' 
                                                 : 'text-stone-200 pointer-events-none'
                                             }
                                         `}
@@ -205,7 +211,7 @@ export function ContextPanel({
                             <button 
                                 id="calendar-daily-today-btn"
                                 onClick={onToday}
-                                className="px-3.5 py-1.5 rounded-xl bg-stone-50 hover:bg-white border border-stone-200/70 text-stone-700 hover:text-[#B38F26] font-bold text-[10px] uppercase tracking-wider shadow-2xs transition-all"
+                                className="px-3.5 py-1.5 rounded-xl bg-stone-50 hover:bg-white border border-stone-200/70 text-stone-700 hover:text-[#FF6B00] font-bold text-[10px] uppercase tracking-wider shadow-2xs transition-all"
                             >
                                 {t('dashboard.calendar.today') || 'Hoy'}
                             </button>
@@ -288,14 +294,14 @@ export function ContextPanel({
                     <div className="space-y-2.5 pt-2 border-t border-stone-100">
                         <div className="flex items-center justify-between ml-1">
                             <p className="text-[10px] font-bold text-stone-400 uppercase tracking-[0.2em] flex items-center gap-1.5">
-                                <Users size={12} className="text-[#D4AF37]" />
+                                <Users size={12} className="text-[#FF6B00]" />
                                 {t('dashboard.calendar.team_filter') || 'Personal / Equipo'}
                             </p>
                             {selectedStaffFilter !== 'ALL' && (
                                 <button
                                     type="button"
                                     onClick={() => onSelectStaffFilter?.('ALL')}
-                                    className="text-[10px] font-semibold text-[#B38F26] hover:underline"
+                                    className="text-[10px] font-semibold text-[#FF6B00] hover:underline"
                                 >
                                     {t('dashboard.calendar.all_team') || 'Ver todos'}
                                 </button>
@@ -310,14 +316,14 @@ export function ContextPanel({
                                 onClick={() => onSelectStaffFilter?.('ALL')}
                                 className={`w-full flex items-center justify-between p-2.5 rounded-2xl transition-all border shadow-2xs ${
                                     selectedStaffFilter === 'ALL'
-                                        ? 'bg-amber-50/70 border-[#D4AF37]/50 text-stone-900 font-bold'
+                                        ? 'bg-orange-50/70 border-[#FF6B00]/50 text-stone-900 font-bold'
                                         : 'bg-white border-stone-200/70 text-stone-600 hover:border-stone-300'
                                 }`}
                             >
                                 <div className="flex items-center gap-2.5 min-w-0">
                                     <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 border ${
                                         selectedStaffFilter === 'ALL'
-                                            ? 'bg-stone-900 text-[#D4AF37] border-[#D4AF37]/40'
+                                            ? 'bg-stone-900 text-[#FF6B00] border-[#FF6B00]/40'
                                             : 'bg-stone-100 text-stone-500 border-stone-200'
                                     }`}>
                                         <Users size={13} />
@@ -341,7 +347,7 @@ export function ContextPanel({
                                         onClick={() => onSelectStaffFilter?.(isSelected ? 'ALL' : staff.id)}
                                         className={`w-full flex items-center justify-between p-2.5 rounded-2xl transition-all border shadow-2xs ${
                                             isSelected
-                                                ? 'bg-[#FAF6EC] border-[#D4AF37] text-stone-950 font-bold ring-1 ring-[#D4AF37]/30'
+                                                ? 'bg-orange-50/70 border-[#FF6B00] text-stone-950 font-bold ring-1 ring-[#FF6B00]/30'
                                                 : 'bg-white border-stone-200/70 text-stone-700 hover:border-stone-300'
                                         }`}
                                     >
@@ -350,10 +356,10 @@ export function ContextPanel({
                                                 <img
                                                     src={staff.avatar_url}
                                                     alt={staff.full_name}
-                                                    className="w-7 h-7 rounded-full object-cover shrink-0 border border-[#D4AF37]/30"
+                                                    className="w-7 h-7 rounded-full object-cover shrink-0 border border-[#FF6B00]/30"
                                                 />
                                             ) : (
-                                                <div className="w-7 h-7 rounded-full bg-stone-900 text-[#D4AF37] font-serif font-bold text-xs flex items-center justify-center shrink-0">
+                                                <div className="w-7 h-7 rounded-full bg-stone-900 text-[#FF6B00] font-sans font-bold text-xs flex items-center justify-center shrink-0">
                                                     {staff.full_name?.charAt(0) || 'E'}
                                                 </div>
                                             )}
@@ -363,7 +369,7 @@ export function ContextPanel({
                                             </div>
                                         </div>
                                         <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full shrink-0 ${
-                                            isSelected ? 'bg-[#D4AF37]/20 text-[#8c6d17]' : 'bg-stone-100 text-stone-600'
+                                            isSelected ? 'bg-orange-100 text-[#EA5E00] font-bold' : 'bg-stone-100 text-stone-600'
                                         }`}>
                                             {count}
                                         </span>

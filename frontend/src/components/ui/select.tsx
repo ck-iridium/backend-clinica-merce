@@ -19,7 +19,7 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-12 w-full items-center justify-between rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm font-medium ring-offset-background placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/40 focus:border-[#D4AF37] disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 transition-all shadow-2xs hover:border-stone-300",
+      "flex h-12 w-full items-center justify-between rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm font-medium ring-offset-background placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 transition-all shadow-2xs hover:border-stone-300",
       className
     )}
     {...props}
@@ -118,12 +118,12 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex w-full cursor-default select-none items-center rounded-xl py-2.5 pl-8 pr-3 text-sm font-medium outline-none focus:bg-[#D4AF37]/15 focus:text-stone-900 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 transition-colors whitespace-normal break-words leading-tight",
+      "relative flex w-full cursor-default select-none items-center rounded-xl py-2.5 pl-8 pr-3 text-sm font-medium outline-none focus:bg-primary/10 focus:text-stone-900 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 transition-colors whitespace-normal break-words leading-tight",
       className
     )}
     {...props}
   >
-    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center text-[#B38F26]">
+    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center text-primary">
       <SelectPrimitive.ItemIndicator>
         <Check className="h-4 w-4" />
       </SelectPrimitive.ItemIndicator>
@@ -171,7 +171,7 @@ export function SelectSimple({
       <SelectTrigger 
         id={id} 
         className={cn(
-          "w-full rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-800 dark:text-stone-100 font-bold focus:ring-2 focus:ring-[#d4af37]/30 transition-all", 
+          "w-full rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-800 dark:text-stone-100 font-bold focus:ring-2 focus:ring-primary/30 transition-all", 
           className
         )}
       >

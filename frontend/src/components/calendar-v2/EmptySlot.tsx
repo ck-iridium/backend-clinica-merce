@@ -35,8 +35,8 @@ export function EmptySlot({
       : 'none';
 
   const baseClasses = viewType === 'desktop' 
-    ? `w-full h-1/4 transition-all relative group/slot ${borderClass} ${isDisabled ? 'bg-stone-100/30 cursor-not-allowed opacity-50' : 'hover:bg-[#D4AF37]/10 cursor-pointer'}`
-    : `w-full h-1/4 transition-all relative group/slot ${borderClass} ${isDisabled ? 'bg-stone-100/30 cursor-not-allowed opacity-50' : 'active:bg-[#D4AF37]/15 cursor-pointer'}`;
+    ? `w-full h-1/4 transition-all relative group/slot ${borderClass} ${isDisabled ? 'bg-stone-100/30 cursor-not-allowed opacity-50' : 'hover:bg-[#FF6B00]/10 cursor-pointer'}`
+    : `w-full h-1/4 transition-all relative group/slot ${borderClass} ${isDisabled ? 'bg-stone-100/30 cursor-not-allowed opacity-50' : 'active:bg-[#FF6B00]/15 cursor-pointer'}`;
 
   return (
     <div
@@ -49,7 +49,7 @@ export function EmptySlot({
       {!isDisabled && (
         <div className="absolute right-0.5 top-0 bottom-0 w-6 flex items-center justify-center pointer-events-none z-10">
           <span 
-            className="w-4 h-4 rounded-full bg-[#D4AF37] text-white flex items-center justify-center text-[10px] font-black shadow-xs opacity-0 group-hover/slot:opacity-100 group-hover/slot:scale-110 transition-all duration-150"
+            className="w-4 h-4 rounded-full bg-[#FF6B00] text-white flex items-center justify-center text-[10px] font-black shadow-xs opacity-0 group-hover/slot:opacity-100 group-hover/slot:scale-110 transition-all duration-150"
             title={`Añadir cita a las ${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`}
           >
             +

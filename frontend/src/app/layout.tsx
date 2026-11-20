@@ -423,6 +423,19 @@ export default async function RootLayout({
         <style dangerouslySetInnerHTML={{
           __html: `
           :root {
+            ${isDashboardRoute ? `
+            --primary: 25 100% 50% !important;
+            --primary-foreground: 0 0% 100% !important;
+            --primary-text-color: #FFFFFF !important;
+            --secondary: 220 25% 15% !important;
+            --ring: 25 100% 50% !important;
+            --radius-base: 0.75rem !important;
+            --radius-card: 1.5rem !important;
+            --radius-btn: 0.75rem !important;
+            --font-heading: var(--font-inter), sans-serif !important;
+            --font-playfair: var(--font-inter), sans-serif !important;
+            --font-cormorant: var(--font-inter), sans-serif !important;
+            ` : `
             --primary: ${primaryHsl} !important;
             --primary-foreground: ${primaryContrast.fgHsl} !important;
             --primary-text-color: ${primaryContrast.textHex} !important;
@@ -431,11 +444,6 @@ export default async function RootLayout({
             --radius-base: ${radiusBase} !important;
             --radius-card: ${radiusCard} !important;
             --radius-btn: ${radiusBtn} !important;
-            ${isDashboardRoute ? `
-            --font-heading: var(--font-inter), sans-serif !important;
-            --font-playfair: var(--font-inter), sans-serif !important;
-            --font-cormorant: var(--font-inter), sans-serif !important;
-            ` : `
             --font-heading: ${getFontVar(headingsFont, "var(--font-playfair-base), 'Playfair', 'Playfair Display', serif")} !important;
             --font-cormorant: ${getFontVar(headingsFont, 'var(--font-cormorant), serif')} !important;
             --font-playfair: ${getFontVar(headingsFont, "var(--font-playfair-base), 'Playfair', 'Playfair Display', serif")} !important;

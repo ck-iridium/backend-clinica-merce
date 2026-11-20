@@ -175,7 +175,7 @@ export default function LocationFormModal({
               type="text" 
               value={formData.name} 
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all"
+              className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/20 focus:border-[#FF6B00] transition-all"
               placeholder={isEdit ? '' : t('dashboard.locations.name_placeholder')} 
               required 
             />
@@ -192,7 +192,7 @@ export default function LocationFormModal({
                 type="text" 
                 value={formData.address} 
                 onChange={handleAddressChange}
-                className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all"
+                className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/20 focus:border-[#FF6B00] transition-all"
                 placeholder={isEdit ? '' : t('dashboard.locations.address_placeholder')} 
                 required 
               />
@@ -251,7 +251,7 @@ export default function LocationFormModal({
                 type="text" 
                 value={formData.phone} 
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all" 
+                className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/20 focus:border-[#FF6B00] transition-all" 
               />
             </div>
             <div className="space-y-1.5">
@@ -264,7 +264,7 @@ export default function LocationFormModal({
                 value={formData.email} 
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 placeholder={t('dashboard.locations.email_placeholder')}
-                className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all" 
+                className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/20 focus:border-[#FF6B00] transition-all" 
               />
             </div>
           </div>
@@ -284,7 +284,7 @@ export default function LocationFormModal({
                 max_concurrent_appointments: e.target.value ? parseInt(e.target.value) : null 
               })}
               placeholder="Sin límite global (regido por especialistas y cabinas)"
-              className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37] transition-all" 
+              className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/20 focus:border-[#FF6B00] transition-all" 
             />
             <p className="text-[10px] text-stone-400 font-medium">
               Si tu local tiene un aforo máximo físico, define el número. De lo contrario, déjalo vacío.

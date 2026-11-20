@@ -30,10 +30,10 @@ export function POSSuccessView({
   return (
     <div className="bg-white/90 backdrop-blur-xl rounded-[2.5rem] p-8 sm:p-12 max-w-2xl mx-auto text-center border border-stone-200/80 shadow-luxury animate-in zoom-in-95 duration-500 relative overflow-hidden">
       {/* Halo de luz dorada */}
-      <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-72 h-72 bg-[#D4AF37]/15 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-72 h-72 bg-[#FF6B00]/15 rounded-full blur-3xl pointer-events-none" />
 
       {/* Icono de éxito */}
-      <div className="w-20 h-20 bg-gradient-to-b from-amber-50 to-amber-100/50 border border-[#D4AF37]/30 text-[#B38F26] rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+      <div className="w-20 h-20 bg-gradient-to-b from-orange-50 to-orange-100/50 border border-orange-200/60 text-[#FF6B00] rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm">
         <Sparkles size={36} />
       </div>
 
@@ -85,7 +85,7 @@ export function POSSuccessView({
             <span className="text-stone-500 text-xs font-sans block">Total Facturado (IVA Inc.)</span>
             <span className="text-xl sm:text-2xl font-bold text-stone-900">Importe Final</span>
           </div>
-          <span className="text-3xl font-bold text-[#D4AF37] font-mono">
+          <span className="text-3xl font-bold text-[#FF6B00] font-mono">
             {Number(lastInvoice.amount).toFixed(2)}€
           </span>
         </div>

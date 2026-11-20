@@ -87,7 +87,7 @@ export default function CopilotInputBar({
             {attachedFile.type === 'image' && attachedFile.url ? (
               <img src={attachedFile.url} className="w-7 h-7 rounded-lg object-cover border border-amber-200/60 shrink-0" alt="Preview" />
             ) : (
-              <FileText size={15} className="text-[#d4af37] shrink-0" />
+              <FileText size={15} className="text-[#FF6B00] shrink-0" />
             )}
             <div className="flex flex-col min-w-0">
               <span className="text-xs font-medium text-stone-800 truncate max-w-[200px]">
@@ -123,7 +123,7 @@ export default function CopilotInputBar({
       {/* Cápsula Unificada de Entrada */}
       <div
         onPaste={onPaste}
-        className="bg-stone-50 hover:bg-stone-50/80 border border-stone-200/80 focus-within:bg-white focus-within:border-[#d4af37] focus-within:ring-2 focus-within:ring-[#d4af37]/15 rounded-2xl p-2.5 transition-all flex flex-col gap-2 shadow-xs"
+        className="bg-stone-50 hover:bg-stone-50/80 border border-stone-200/80 focus-within:bg-white focus-within:border-[#FF6B00] focus-within:ring-2 focus-within:ring-[#FF6B00]/15 rounded-2xl p-2.5 transition-all flex flex-col gap-2 shadow-xs"
       >
         <textarea
           value={input}
@@ -187,7 +187,7 @@ export default function CopilotInputBar({
               className={`flex h-8 w-8 items-center justify-center rounded-xl bg-stone-900 text-white transition-all duration-300 border border-stone-800 shadow-xs shrink-0 active:scale-95 ${
                 isLoading || isUploading || (!input.trim() && !attachedFile)
                   ? 'opacity-30 cursor-not-allowed'
-                  : 'hover:bg-[#d4af37] hover:text-stone-950 hover:border-[#d4af37]'
+                  : 'hover:bg-[#FF6B00] hover:text-white hover:border-[#FF6B00]'
               }`}
               title={language === 'fr' ? 'Envoyer le message' : language === 'en' ? 'Send Message' : 'Enviar Mensaje'}
             >

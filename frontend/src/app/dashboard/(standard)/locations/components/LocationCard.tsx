@@ -38,14 +38,14 @@ export default function LocationCard({
 
   return (
     <SpotlightCard
-      spotlightColor={location.is_active ? "rgba(212, 175, 55, 0.16)" : "rgba(212, 175, 55, 0.05)"}
+      spotlightColor={location.is_active ? "rgba(255, 107, 0, 0.12)" : "rgba(255, 107, 0, 0.04)"}
       className={`p-7 flex flex-col justify-between relative ${
         location.is_active ? 'border-stone-200/70 shadow-sm' : 'border-stone-100 opacity-60'
       }`}
     >
       {/* Detalle sutil de lujo en la cabecera de la tarjeta activa */}
       {location.is_active && (
-        <div className="absolute top-0 right-0 w-28 h-1 bg-gradient-to-r from-stone-900 via-[#d4af37] to-stone-900 z-20" />
+        <div className="absolute top-0 right-0 w-28 h-1 bg-gradient-to-r from-stone-900 via-[#FF6B00] to-stone-900 z-20" />
       )}
 
       <div className="space-y-4">
@@ -57,7 +57,7 @@ export default function LocationCard({
           <span
             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
               location.is_active
-                ? 'bg-[#d4af37]/10 text-[#bf9b30] border border-[#d4af37]/20'
+                ? 'bg-orange-50 text-[#EA5E00] border border-orange-200/60'
                 : 'bg-stone-100 text-stone-400 border border-stone-200/40'
             }`}
           >
@@ -70,20 +70,20 @@ export default function LocationCard({
         {/* Datos de contacto y dirección física */}
         <div className="space-y-2.5 pt-2 text-stone-500 font-medium text-sm">
           <div className="flex items-start gap-2.5">
-            <MapPin size={16} className="text-[#d4af37] shrink-0 mt-0.5" />
+            <MapPin size={16} className="text-[#FF6B00] shrink-0 mt-0.5" />
             <span>{location.address}</span>
           </div>
 
           {location.phone && (
             <div className="flex items-center gap-2.5">
-              <Phone size={16} className="text-[#d4af37] shrink-0" />
+              <Phone size={16} className="text-[#FF6B00] shrink-0" />
               <span>{location.phone}</span>
             </div>
           )}
 
           {location.email && (
             <div className="flex items-center gap-2.5">
-              <Mail size={16} className="text-[#d4af37] shrink-0" />
+              <Mail size={16} className="text-[#FF6B00] shrink-0" />
               <span className="truncate max-w-[200px]">{location.email}</span>
             </div>
           )}
@@ -95,7 +95,7 @@ export default function LocationCard({
                 href={publicUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-xs text-[#b08e23] hover:text-stone-900 font-semibold bg-[#d4af37]/10 hover:bg-[#d4af37]/20 px-3 py-1.5 rounded-lg transition-colors"
+                className="inline-flex items-center gap-1.5 text-xs text-[#FF6B00] hover:text-[#EA5E00] font-semibold bg-orange-50 hover:bg-orange-100/80 px-3 py-1.5 rounded-lg transition-colors"
                 title={t('dashboard.locations.public_seo_tooltip') || "Ver ficha web pública optimizada para Google"}
               >
                 <Globe size={13} />
@@ -110,14 +110,14 @@ export default function LocationCard({
         <div className="pt-3 border-t border-stone-100/80">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest flex items-center gap-1.5">
-              <Layers size={13} className="text-[#d4af37]" />
+              <Layers size={13} className="text-[#FF6B00]" />
               Cabinas & Recursos ({location.resources?.length || 0})
             </span>
             {onManageResources && (
               <button
                 type="button"
                 onClick={() => onManageResources(location)}
-                className="text-[10px] font-semibold text-[#b08e23] hover:text-stone-900 transition-colors"
+                className="text-[10px] font-semibold text-[#FF6B00] hover:text-[#EA5E00] transition-colors"
               >
                 + Gestionar
               </button>
@@ -136,7 +136,7 @@ export default function LocationCard({
                   }`}
                   title={`${res.name} (${res.quantity} ${res.quantity === 1 ? 'unidad' : 'unidades'})`}
                 >
-                  <span className={`w-1.5 h-1.5 rounded-full ${res.is_active ? 'bg-[#d4af37]' : 'bg-stone-300'}`} />
+                  <span className={`w-1.5 h-1.5 rounded-full ${res.is_active ? 'bg-[#FF6B00]' : 'bg-stone-300'}`} />
                   <span className="truncate max-w-[140px]">{res.name}</span>
                   {res.quantity > 1 && (
                     <span className="text-[10px] text-stone-400 font-normal">x{res.quantity}</span>
@@ -148,10 +148,10 @@ export default function LocationCard({
             <button
               type="button"
               onClick={() => onManageResources?.(location)}
-              className="w-full py-2 px-3 rounded-xl border border-dashed border-stone-200 hover:border-[#d4af37]/60 hover:bg-[#d4af37]/5 text-stone-400 hover:text-stone-700 text-xs font-medium transition-all text-left flex items-center justify-between"
+              className="w-full py-2 px-3 rounded-xl border border-dashed border-stone-200 hover:border-[#FF6B00]/60 hover:bg-orange-50/40 text-stone-400 hover:text-stone-700 text-xs font-medium transition-all text-left flex items-center justify-between"
             >
               <span>Sin cabinas configuradas</span>
-              <span className="text-[10px] text-[#b08e23] font-bold">+ Añadir</span>
+              <span className="text-[10px] text-[#FF6B00] font-bold">+ Añadir</span>
             </button>
           )}
         </div>
@@ -165,7 +165,7 @@ export default function LocationCard({
           className={`text-xs font-semibold px-3 py-1.5 rounded-xl border transition-all duration-300 flex items-center gap-1.5 ${
             location.is_active
               ? 'border-stone-200 text-stone-600 hover:bg-stone-50 hover:border-stone-300'
-              : 'border-[#d4af37]/40 text-[#bf9b30] hover:bg-[#d4af37]/10'
+              : 'border-[#FF6B00]/40 text-[#FF6B00] hover:bg-orange-50'
           }`}
         >
           {location.is_active ? (
@@ -186,7 +186,7 @@ export default function LocationCard({
             <button
               id={`locations-resources-btn-${location.id}`}
               onClick={() => onManageResources(location)}
-              className="p-2 text-stone-400 hover:text-[#d4af37] hover:bg-[#d4af37]/10 rounded-xl transition-all"
+              className="p-2 text-stone-400 hover:text-[#FF6B00] hover:bg-orange-50 rounded-xl transition-all"
               title="Cabinas y Recursos de la sede"
             >
               <Layers size={16} />
@@ -196,7 +196,7 @@ export default function LocationCard({
             href={publicUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="p-2 text-stone-400 hover:text-[#d4af37] hover:bg-stone-50 rounded-xl transition-all"
+            className="p-2 text-stone-400 hover:text-[#FF6B00] hover:bg-stone-50 rounded-xl transition-all"
             title={t('dashboard.locations.open_public_page') || "Abrir página pública"}
           >
             <ExternalLink size={16} />

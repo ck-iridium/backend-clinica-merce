@@ -26,7 +26,7 @@ interface DesignTabProps {
   brandAccentColor?: string;
 }
 
-export default function DesignTab({ formValues, register, control, setValue, setMediaPickerSlot, brandAccentColor = '#d4af37' }: DesignTabProps) {
+export default function DesignTab({ formValues, register, control, setValue, setMediaPickerSlot, brandAccentColor = '#FF6B00' }: DesignTabProps) {
   const { t, language } = useLanguage();
   const [showAIImageModal, setShowAIImageModal] = useState(false);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
@@ -222,7 +222,7 @@ export default function DesignTab({ formValues, register, control, setValue, set
           <div className="flex flex-col gap-0.5">
             <label className="block text-xs font-bold text-stone-500 uppercase tracking-[0.15em]">{t('dashboard.services.main_image_label')}</label>
             {!hasOwnKey && !loadingLimits && (
-              <span className="text-[9px] text-[#d4af37] font-bold tracking-wide uppercase italic">
+              <span className="text-[9px] text-[#FF6B00] font-bold tracking-wide uppercase italic">
                 {language === 'fr' 
                   ? "✦ Exclusivité BYOK : Clé API requise" 
                   : language === 'en' 
@@ -239,7 +239,7 @@ export default function DesignTab({ formValues, register, control, setValue, set
               "flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-lg border transition-all shadow-sm active:scale-95",
               !hasOwnKey && !loadingLimits
                 ? "bg-stone-50 text-stone-400 border-stone-200 hover:bg-stone-100"
-                : "text-[#d4af37] border-yellow-100 hover:bg-yellow-50/50"
+                : "text-[#FF6B00] border-orange-200 hover:bg-orange-50"
             )}
           >
             {!hasOwnKey && !loadingLimits ? <Lock size={12} className="text-stone-400" /> : <Sparkles size={12} strokeWidth={2.5} />}
@@ -257,14 +257,14 @@ export default function DesignTab({ formValues, register, control, setValue, set
           )}
         >
           {isProcessingImage ? (
-            <div className="flex flex-col items-center justify-center p-8 w-full border-2 border-dashed border-[#d4af37] bg-[#fcf8e5] rounded-2xl min-h-[140px]">
-              <Loader2 className="w-8 h-8 text-[#d4af37] animate-spin mb-3" strokeWidth={1.5} />
+            <div className="flex flex-col items-center justify-center p-8 w-full border-2 border-dashed border-[#FF6B00] bg-orange-50/50 rounded-2xl min-h-[140px]">
+              <Loader2 className="w-8 h-8 text-[#FF6B00] animate-spin mb-3" strokeWidth={1.5} />
               <p className="text-[10px] font-black uppercase tracking-widest text-stone-500 animate-pulse">{t('dashboard.services.uploading')}</p>
             </div>
           ) : formValues.image_url ? (
             <div className={cn(
               "relative group rounded-2xl overflow-hidden border border-stone-200 aspect-video shadow-sm transition-all",
-              isDraggingImage && "border-[#d4af37] border-2 border-dashed bg-[#fcf8e5]"
+              isDraggingImage && "border-[#FF6B00] border-2 border-dashed bg-orange-50/50"
             )}>
               <img src={getFullUrl(formValues.image_url)} alt="Cover" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
               <div className="absolute inset-0 bg-stone-900/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-3 backdrop-blur-[2px]">
@@ -272,7 +272,7 @@ export default function DesignTab({ formValues, register, control, setValue, set
                   id="service-editor-design-change-image-btn"
                   type="button"
                   onClick={() => setMediaPickerSlot('image')}
-                  className="px-4 py-2 bg-white text-stone-900 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#d4af37] hover:text-white transition-all shadow-xl active:scale-95"
+                  className="px-4 py-2 bg-white text-stone-900 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#FF6B00] hover:text-white transition-all shadow-xl active:scale-95"
                 >
                   {t('dashboard.services.change')}
                 </button>
@@ -294,7 +294,7 @@ export default function DesignTab({ formValues, register, control, setValue, set
               onClick={() => setMediaPickerSlot('image')}
               className={cn(
                 "w-full py-12 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center text-stone-400 transition-all group",
-                isDraggingImage ? "border-[#d4af37] bg-[#fcf8e5]" : "border-stone-200 hover:bg-stone-50 hover:border-[#d4af37]"
+                isDraggingImage ? "border-[#FF6B00] bg-orange-50/50" : "border-stone-200 hover:bg-stone-50 hover:border-[#FF6B00]"
               )}
             >
               <div className="w-12 h-12 rounded-2xl bg-stone-50 flex items-center justify-center mb-3 group-hover:bg-white group-hover:shadow-md transition-all">
@@ -320,15 +320,15 @@ export default function DesignTab({ formValues, register, control, setValue, set
           onDrop={(e) => onDrop(e, 'video')}
           className={cn(
             "relative w-full min-h-[180px] rounded-2xl border-2 border-dashed transition-all duration-300 flex flex-col items-center justify-center overflow-hidden",
-            isDraggingVideo ? "border-[#d4af37] bg-[#fcf8e5] scale-[1.02] shadow-lg" : "border-stone-200 bg-white hover:border-[#d4af37] hover:bg-stone-50"
+            isDraggingVideo ? "border-[#FF6B00] bg-orange-50/50 scale-[1.02] shadow-lg" : "border-stone-200 bg-white hover:border-[#FF6B00] hover:bg-stone-50"
           )}
         >
           {isProcessingVideo ? (
             <div className="flex flex-col items-center justify-center p-8 w-full">
               <div className="relative w-20 h-20 flex items-center justify-center mb-4">
-                <Loader2 className="w-full h-full text-[#d4af37] animate-spin opacity-20" strokeWidth={1} />
+                <Loader2 className="w-full h-full text-[#FF6B00] animate-spin opacity-20" strokeWidth={1} />
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-sm font-black text-[#d4af37]">{processingProgress}%</span>
+                  <span className="text-sm font-black text-[#FF6B00]">{processingProgress}%</span>
                 </div>
               </div>
               <p className="text-xs font-black uppercase tracking-widest text-stone-500 animate-pulse">{t('dashboard.services.optimizing_video')}</p>
@@ -346,7 +346,7 @@ export default function DesignTab({ formValues, register, control, setValue, set
                   id="service-editor-design-change-video-btn"
                   type="button"
                   onClick={() => setMediaPickerSlot('video')}
-                  className="px-4 py-2 bg-white text-stone-900 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#d4af37] hover:text-white transition-all shadow-xl active:scale-95"
+                  className="px-4 py-2 bg-white text-stone-900 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#FF6B00] hover:text-white transition-all shadow-xl active:scale-95"
                 >
                   {t('dashboard.services.change_video')}
                 </button>
@@ -409,7 +409,7 @@ export default function DesignTab({ formValues, register, control, setValue, set
               onClick={() => setValue('layout_preferences.accentColor', brandAccentColor, { shouldDirty: true })}
               className={`w-9 h-9 rounded-full border-2 transition-all ${formValues.layout_preferences.accentColor === brandAccentColor ? 'border-stone-800 scale-110 shadow-lg' : 'border-transparent hover:scale-105 shadow-sm'}`}
               style={{ backgroundColor: brandAccentColor }}
-              title={brandAccentColor === '#d4af37' ? t('dashboard.services.corporate_gold') : t('dashboard.services.corporate_color') || 'Color Corporativo'}
+              title={t('dashboard.services.corporate_color') || 'Color Corporativo'}
             />
             <div className="w-px h-6 bg-stone-200 mx-1" />
             <div className="relative group" title={t('dashboard.services.custom_color')}>
@@ -434,7 +434,7 @@ export default function DesignTab({ formValues, register, control, setValue, set
                 id="service-editor-design-reset-color-btn"
                 type="button"
                 onClick={() => setValue('layout_preferences.accentColor', brandAccentColor, { shouldDirty: true })}
-                className="ml-auto p-2 text-stone-400 hover:text-[#d4af37] hover:bg-stone-50 rounded-xl transition-all"
+                className="ml-auto p-2 text-stone-400 hover:text-[#FF6B00] hover:bg-stone-50 rounded-xl transition-all"
                 title={t('dashboard.services.reset_default')}
               >
                 <RotateCcw size={14} />

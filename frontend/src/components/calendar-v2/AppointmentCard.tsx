@@ -37,7 +37,7 @@ const getStatusColors = (status: string) => {
       return 'bg-rose-50/60 border-rose-200/60 border-l-rose-400 text-rose-900/80 opacity-70';
     case 'web_pending': 
     case 'pending_verification': 
-      return 'bg-amber-50/90 border-amber-200/80 border-l-[#D4AF37] text-amber-950';
+      return 'bg-orange-50/90 border-orange-200/80 border-l-[#FF6B00] text-orange-950';
     case 'confirmed': 
       return 'bg-sky-50/90 border-sky-200/80 border-l-sky-500 text-sky-950';
     case 'pending':
@@ -99,7 +99,7 @@ export function AppointmentCard({
         <div className="flex items-center justify-between gap-1 w-full min-w-0 mb-1">
           <div className={`font-semibold ${isNarrowCol ? 'text-[10px]' : 'text-xs'} tracking-tight leading-none flex items-center gap-1 min-w-0 flex-1 ${appointment.status === 'cancelled' || appointment.status === 'no_show' ? 'line-through opacity-70' : 'text-stone-900'}`}>
             {appointment.status === 'web_pending' && (
-              <span className="text-[9px] font-black bg-amber-500/20 text-[#B38F26] px-1 py-0.2 rounded uppercase shrink-0">
+              <span className="text-[9px] font-black bg-orange-500/20 text-[#EA5E00] px-1 py-0.2 rounded uppercase shrink-0">
                 Web
               </span>
             )}
@@ -115,7 +115,7 @@ export function AppointmentCard({
               {staff.avatar_url ? (
                 <img src={staff.avatar_url} alt="" className="w-3.5 h-3.5 rounded-full object-cover shrink-0" />
               ) : (
-                <span className="w-3.5 h-3.5 rounded-full bg-stone-900 text-[8px] font-black text-[#D4AF37] flex items-center justify-center shrink-0">
+                <span className="w-3.5 h-3.5 rounded-full bg-stone-900 text-[8px] font-black text-[#FF6B00] flex items-center justify-center shrink-0">
                   {staffInitial}
                 </span>
               )}
@@ -155,7 +155,7 @@ export function AppointmentCard({
           isNarrowCol || useSmallText ? 'text-[10px]' : isMultiCol ? 'text-[11px]' : 'text-xs'
         } ${appointment.status === 'cancelled' || appointment.status === 'no_show' ? 'line-through text-stone-400' : 'text-stone-900'}`}>
           {appointment.status === 'web_pending' && (
-            <span className="text-[8px] font-bold bg-[#D4AF37]/20 text-[#99771A] px-1 py-0.2 rounded uppercase shrink-0">
+            <span className="text-[8px] font-bold bg-[#FF6B00]/20 text-[#EA5E00] px-1 py-0.2 rounded uppercase shrink-0">
               Web
             </span>
           )}
@@ -182,7 +182,7 @@ export function AppointmentCard({
             {staff.avatar_url ? (
               <img src={staff.avatar_url} alt="" className="w-3.5 h-3.5 rounded-full object-cover shrink-0" />
             ) : (
-              <span className="w-3.5 h-3.5 rounded-full bg-stone-900 text-[8px] font-black text-[#D4AF37] flex items-center justify-center shrink-0">
+              <span className="w-3.5 h-3.5 rounded-full bg-stone-900 text-[8px] font-black text-[#FF6B00] flex items-center justify-center shrink-0">
                 {staffInitial}
               </span>
             )}
@@ -213,7 +213,7 @@ export function AppointmentCard({
             <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${
               appointment.status === 'confirmed' ? 'bg-sky-500' : 
               appointment.status === 'completed' ? 'bg-emerald-500' :
-              appointment.status === 'web_pending' ? 'bg-[#D4AF37]' :
+              appointment.status === 'web_pending' ? 'bg-[#FF6B00]' :
               'bg-orange-400'
             }`} />
             {!isNarrowCol && (
@@ -233,7 +233,7 @@ export function AppointmentCard({
               {staff.avatar_url ? (
                 <img src={staff.avatar_url} alt="" className="w-3.5 h-3.5 rounded-full object-cover shrink-0" />
               ) : (
-                <span className="w-3.5 h-3.5 rounded-full bg-stone-900 text-[8px] font-black text-[#D4AF37] flex items-center justify-center shrink-0">
+                <span className="w-3.5 h-3.5 rounded-full bg-stone-900 text-[8px] font-black text-[#FF6B00] flex items-center justify-center shrink-0">
                   {staffInitial}
                 </span>
               )}

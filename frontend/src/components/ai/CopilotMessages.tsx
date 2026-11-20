@@ -163,7 +163,7 @@ export default function CopilotMessages({
                           className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity flex items-end justify-between p-2 cursor-zoom-in"
                         >
                           <span className="text-[10px] text-white/95 font-medium truncate flex items-center gap-1.5">
-                            <ZoomIn size={12} className="text-[#d4af37]" />
+                            <ZoomIn size={12} className="text-[#FF6B00]" />
                             <span className="truncate max-w-[170px]">{attachedImage.name}</span>
                           </span>
                           <span className="text-[9px] text-stone-300 bg-black/50 px-1.5 py-0.5 rounded-md">
@@ -184,9 +184,9 @@ export default function CopilotMessages({
                       <button
                         key={i}
                         onClick={() => onSendMessage?.(opt.value)}
-                        className="w-full text-left px-3.5 py-2 rounded-xl border border-stone-200/80 bg-white text-[11.5px] font-medium text-stone-700 hover:border-[#d4af37] hover:bg-amber-50/20 active:scale-[0.98] transition-all duration-200 flex items-center gap-2 shadow-xs"
+                        className="w-full text-left px-3.5 py-2 rounded-xl border border-stone-200/80 bg-white text-[11.5px] font-medium text-stone-700 hover:border-[#FF6B00] hover:bg-orange-50/30 active:scale-[0.98] transition-all duration-200 flex items-center gap-2 shadow-xs"
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37] shrink-0 animate-pulse" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B00] shrink-0 animate-pulse" />
                         <span className="truncate">{opt.label}</span>
                       </button>
                     ))}
@@ -200,13 +200,13 @@ export default function CopilotMessages({
         {/* Indicador de carga */}
         {isLoading && (
           <div className="flex gap-2.5 max-w-[88%] self-start animate-in fade-in duration-200">
-            <div className="w-8 h-8 rounded-xl bg-white border border-amber-300/40 flex items-center justify-center text-[#d4af37] shrink-0 shadow-xs mt-0.5">
+            <div className="w-8 h-8 rounded-xl bg-white border border-orange-200 flex items-center justify-center text-[#FF6B00] shrink-0 shadow-xs mt-0.5">
               <Bot size={16} />
             </div>
             <div className="px-3.5 py-2.5 bg-white border border-stone-200/70 rounded-2xl rounded-tl-xs text-[10px] text-stone-400 font-semibold uppercase tracking-wider flex items-center gap-1.5 shadow-xs">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37] animate-bounce" style={{ animationDelay: '0ms' }} />
-              <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37] animate-bounce" style={{ animationDelay: '150ms' }} />
-              <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37] animate-bounce" style={{ animationDelay: '300ms' }} />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B00] animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B00] animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B00] animate-bounce" style={{ animationDelay: '300ms' }} />
               <span className="ml-1 text-[11px] text-stone-400 font-normal normal-case">Escribiendo...</span>
             </div>
           </div>
