@@ -4,6 +4,32 @@ import type { AtomicBlock } from '../../types';
 import { getBlockDefinition, getBlockIcon } from '../../utils/blockRegistry';
 import { toast } from 'sonner';
 
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+  return null;
+}
+
+function getAuthHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (typeof window === 'undefined') return headers;
+  let tenantId = getCookie('tenant_id') || '';
+  let authToken = '';
+  try {
+    const raw = localStorage.getItem('user');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (!tenantId) tenantId = parsed.tenant_id || '';
+      authToken = parsed.access_token || parsed.token || '';
+    }
+  } catch {}
+  if (tenantId) headers['X-Tenant-ID'] = tenantId;
+  if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+  return headers;
+}
+
 interface BlockAIGeneratorModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -34,6 +60,18 @@ export default function BlockAIGeneratorModal({
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<any>(null);
 
+  // Límites y cuotas de IA
+  const [limitsData, setLimitsData] = useState<{
+    planType: string;
+    hasOwnKey: boolean;
+    dailyActionsUsed: number;
+    dailyActionsLimit: number;
+    imagesMonthlyLimit: number;
+    imagesRemaining: number;
+    imagesUsed: number;
+    isTrial: boolean;
+  } | null>(null);
+
   const block = target?.block;
   const blockType = block?.block_type || '';
   const blockDef = getBlockDefinition(blockType);
@@ -41,14 +79,63 @@ export default function BlockAIGeneratorModal({
 
   const supportsImage = ['atomic_image', 'hero', 'text_image_cta'].includes(blockType);
 
+  const fetchLimits = async () => {
+    try {
+      const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const res = await fetch(`${API}/settings/limits`, {
+        headers: getAuthHeaders(),
+      });
+      if (res.ok) {
+        const d = await res.json();
+        const plan = (d.plan_type || 'free').toLowerCase();
+        const ownKey = !!d.has_own_key;
+        const dailyLimit = d.limits?.ai_smart_actions_daily ?? (plan === 'basic' ? 15 : 35);
+        const dailyUsed = d.ai_daily_actions_used ?? 0;
+        const isTrial = plan === 'free';
+        const imgLimit = d.limits?.ai_images_monthly ?? (isTrial ? 5 : 30);
+        const imgRemaining = d.limits?.ai_images_remaining ?? (isTrial ? 5 : 30);
+        const imgUsed = isTrial ? (d.ai_trial_images_used ?? 0) : (d.ai_monthly_images_used ?? 0);
+
+        setLimitsData({
+          planType: plan,
+          hasOwnKey: ownKey,
+          dailyActionsUsed: dailyUsed,
+          dailyActionsLimit: dailyLimit,
+          imagesMonthlyLimit: imgLimit,
+          imagesRemaining: imgRemaining,
+          imagesUsed: imgUsed,
+          isTrial,
+        });
+      }
+    } catch (err) {
+      console.error('Error fetching limits in BlockAIGeneratorModal:', err);
+    }
+  };
+
   // Reset al abrir o cambiar de bloque
   useEffect(() => {
     if (isOpen) {
       setPrompt('');
       setGeneratedData(null);
       setActiveTab(blockType === 'atomic_image' ? 'image' : 'text');
+      fetchLimits();
     }
   }, [isOpen, blockType]);
+
+  // Cuota de texto
+  const isTextUnlimited = limitsData?.hasOwnKey || limitsData?.planType === 'gold';
+  const textLimit = limitsData?.dailyActionsLimit ?? (limitsData?.planType === 'basic' ? 15 : 35);
+  const textRemaining = isTextUnlimited
+    ? 999999
+    : Math.max(0, textLimit - (limitsData?.dailyActionsUsed ?? 0));
+  const isTextExhausted = !isTextUnlimited && textRemaining <= 0;
+
+  // Cuota de fotos
+  const isImageUnlimited = !!limitsData?.hasOwnKey;
+  const isTrial = limitsData?.isTrial ?? false;
+  const imageLimit = limitsData?.imagesMonthlyLimit ?? (isTrial ? 5 : 30);
+  const imageRemaining = isImageUnlimited ? 999999 : (limitsData?.imagesRemaining ?? (isTrial ? 5 : 30));
+  const isImageExhausted = !isImageUnlimited && imageRemaining <= 0;
 
   // Limpieza de reconocimiento de voz al desmontar
   useEffect(() => {
@@ -133,16 +220,27 @@ export default function BlockAIGeneratorModal({
       return;
     }
 
+    if (activeTab === 'text' && isTextExhausted) {
+      toast.error(`Has alcanzado tu límite diario de ${textLimit} acciones. Conecta tu API Key en Ajustes para continuar.`);
+      return;
+    }
+
+    if (activeTab === 'image' && isImageExhausted) {
+      toast.error(`Has agotado tu cupo de ${imageLimit} fotografías. Conecta tu API Key en Ajustes para continuar.`);
+      return;
+    }
+
     setIsGenerating(true);
     setGeneratedData(null);
     const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    const authHeaders = getAuthHeaders();
 
     try {
       if (activeTab === 'image') {
         // Generación de imagen fotorrealista con IA
         const res = await fetch(`${API}/ai/generate-image`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: authHeaders,
           body: JSON.stringify({
             prompt: prompt.trim(),
             aspect_ratio: blockType === 'hero' ? '16:9' : '1:1',
@@ -159,11 +257,12 @@ export default function BlockAIGeneratorModal({
         const data = await res.json();
         setGeneratedData({ image_url: data.url });
         toast.success('¡Fotografía fotorrealista generada con éxito!');
+        fetchLimits();
       } else {
         // Generación de textos/estructuras con IA
         const res = await fetch(`${API}/ai/generate-block-content`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: authHeaders,
           body: JSON.stringify({
             block_type: blockType,
             prompt: prompt.trim(),
@@ -181,10 +280,12 @@ export default function BlockAIGeneratorModal({
         const data = await res.json();
         setGeneratedData(data.content_data);
         toast.success('¡Contenido generado por la IA!');
+        fetchLimits();
       }
     } catch (err: any) {
       console.error(err);
       toast.error(err.message || 'Error al conectar con el motor de IA');
+      fetchLimits();
     } finally {
       setIsGenerating(false);
     }
@@ -238,7 +339,7 @@ export default function BlockAIGeneratorModal({
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 0 0 0-8c-2 0-4 1.33-6 4Z" />
                 <circle cx="12" cy="12" r="1" fill="currentColor" />
               </svg>
-              <span>Copilot IA · Asistente de Bloque</span>
+              <span>Copilot IA · Diseñador de Bloques</span>
             </div>
             <h2 className="font-serif text-2xl font-bold text-stone-900 leading-tight flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-xl bg-orange-50 text-orange-600 border border-orange-200/80 flex items-center justify-center shrink-0">
@@ -263,38 +364,114 @@ export default function BlockAIGeneratorModal({
 
         {/* ── Pestañas si soporta imagen ── */}
         {supportsImage && blockType !== 'atomic_image' && (
-          <div className="px-7 py-2.5 bg-stone-50/80 border-b border-stone-150 flex gap-2 shrink-0">
-            <button
-              onClick={() => { setActiveTab('text'); setGeneratedData(null); }}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                activeTab === 'text'
-                  ? 'bg-stone-900 text-white shadow-xs'
-                  : 'text-stone-500 hover:text-stone-800'
-              }`}
-            >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
-              </svg>
-              <span>Redactar Textos</span>
-            </button>
-            <button
-              onClick={() => { setActiveTab('image'); setGeneratedData(null); }}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                activeTab === 'image'
-                  ? 'bg-stone-900 text-white shadow-xs'
-                  : 'text-stone-500 hover:text-stone-800'
-              }`}
-            >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-              </svg>
-              <span>Generar Fotografía IA</span>
-            </button>
+          <div className="px-7 py-2.5 bg-stone-50/80 border-b border-stone-150 flex items-center justify-between gap-2 shrink-0">
+            <div className="flex gap-2">
+              <button
+                onClick={() => { setActiveTab('text'); setGeneratedData(null); }}
+                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  activeTab === 'text'
+                    ? 'bg-stone-900 text-white shadow-xs'
+                    : 'text-stone-500 hover:text-stone-800'
+                }`}
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
+                </svg>
+                <span>Redactar Textos</span>
+              </button>
+              <button
+                onClick={() => { setActiveTab('image'); setGeneratedData(null); }}
+                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  activeTab === 'image'
+                    ? 'bg-stone-900 text-white shadow-xs'
+                    : 'text-stone-500 hover:text-stone-800'
+                }`}
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                </svg>
+                <span>Generar Fotografía IA</span>
+              </button>
+            </div>
+
+            {/* Chip de saldo en barra de pestañas */}
+            <div className="text-[11px] font-medium text-stone-500 hidden sm:flex items-center gap-1.5">
+              {activeTab === 'text' ? (
+                <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border text-[10px] font-bold ${
+                  isTextExhausted ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-white text-stone-600 border-stone-200'
+                }`}>
+                  <span>⚡</span>
+                  <span>{isTextUnlimited ? 'Ilimitadas (∞)' : `${textRemaining}/${textLimit} hoy`}</span>
+                </span>
+              ) : (
+                <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border text-[10px] font-bold ${
+                  isImageExhausted ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-white text-stone-600 border-stone-200'
+                }`}>
+                  <span>📸</span>
+                  <span>{isImageUnlimited ? '∞ con tu clave' : isTrial ? `${imageRemaining}/${imageLimit} prueba` : `${imageRemaining}/${imageLimit} este mes`}</span>
+                </span>
+              )}
+            </div>
           </div>
         )}
 
         {/* ── Cuerpo Scrollable ── */}
         <div className="flex-1 overflow-y-auto px-7 py-5 space-y-4">
+
+          {/* Bloqueo suave / aviso de cuota si se agota */}
+          {activeTab === 'text' && isTextExhausted && (
+            <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200/90 text-stone-800 text-xs space-y-2">
+              <div className="flex items-center gap-2 text-amber-800 font-bold">
+                <svg className="w-4 h-4 text-amber-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                </svg>
+                <span>Límite diario de {textLimit} acciones inteligentes alcanzado</span>
+              </div>
+              <p className="text-stone-600 text-[11px] leading-relaxed">
+                Has consumido tu cuota diaria de textos inteligentes. Se reiniciará mañana a las 00:00 UTC. Si no deseas tener límites diarios, puedes conectar tu propia API Key en Ajustes o actualizar tu suscripción.
+              </p>
+              <div className="pt-0.5">
+                <a
+                  href="/dashboard/settings?tab=advanced"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-900 text-white text-[11px] font-bold hover:bg-stone-800 transition-all shadow-2xs"
+                >
+                  <span>Conectar mi propia API Key en Ajustes</span>
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'image' && isImageExhausted && (
+            <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200/90 text-stone-800 text-xs space-y-2">
+              <div className="flex items-center gap-2 text-amber-800 font-bold">
+                <svg className="w-4 h-4 text-amber-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                </svg>
+                <span>Bolsa de {imageLimit} fotografías {isTrial ? 'de prueba agotada' : 'mensuales alcanzada'}</span>
+              </div>
+              <p className="text-stone-600 text-[11px] leading-relaxed">
+                Has utilizado todas las fotos incluidas con la clave de ProBookia. Conecta tu propia API Key (Google Gemini u OpenAI) en Ajustes &gt; Avanzado para generar fotografías comerciales ilimitadas sin coste de plataforma.
+              </p>
+              <div className="pt-0.5">
+                <a
+                  href="/dashboard/settings?tab=advanced"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-900 text-white text-[11px] font-bold hover:bg-stone-800 transition-all shadow-2xs"
+                >
+                  <span>Conectar API Key en Ajustes</span>
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+          )}
           
           {/* Selector de Tono (solo en modo texto) */}
           {activeTab === 'text' && (
@@ -345,17 +522,19 @@ export default function BlockAIGeneratorModal({
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder={getPlaceholder()}
                 rows={4}
-                className="w-full rounded-2xl border border-stone-200 bg-stone-50/50 p-4 pr-14 text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-orange-500/40 focus:border-orange-500 transition-all resize-none font-sans leading-relaxed"
+                disabled={(activeTab === 'text' && isTextExhausted) || (activeTab === 'image' && isImageExhausted)}
+                className="w-full rounded-2xl border border-stone-200 bg-stone-50/50 p-4 pr-14 text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-orange-500/40 focus:border-orange-500 transition-all resize-none font-sans leading-relaxed disabled:opacity-60 disabled:cursor-not-allowed"
               />
 
               {/* Botón de Dictado por Voz */}
               <button
                 type="button"
                 onClick={toggleListening}
+                disabled={(activeTab === 'text' && isTextExhausted) || (activeTab === 'image' && isImageExhausted)}
                 className={`absolute bottom-3.5 right-3.5 w-8 h-8 rounded-xl flex items-center justify-center transition-all ${
                   isListening
                     ? 'bg-red-500 text-white shadow-md animate-bounce'
-                    : 'bg-white border border-stone-200 text-stone-500 hover:text-orange-500 hover:border-orange-500 shadow-xs'
+                    : 'bg-white border border-stone-200 text-stone-500 hover:text-orange-500 hover:border-orange-500 shadow-xs disabled:opacity-40 disabled:cursor-not-allowed'
                 }`}
                 title={isListening ? 'Detener micrófono' : 'Dictar por voz'}
               >
@@ -370,8 +549,13 @@ export default function BlockAIGeneratorModal({
           <div className="flex justify-end pt-1">
             <button
               onClick={handleGenerate}
-              disabled={isGenerating || !prompt.trim()}
-              className="flex items-center gap-2 bg-gradient-to-tr from-[#ff5500] to-[#ff7a18] hover:from-[#ff4500] hover:to-[#ff6a00] disabled:opacity-50 text-white px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-md shadow-orange-500/25 active:scale-95"
+              disabled={
+                isGenerating ||
+                !prompt.trim() ||
+                (activeTab === 'text' && isTextExhausted) ||
+                (activeTab === 'image' && isImageExhausted)
+              }
+              className="flex items-center gap-2 bg-gradient-to-tr from-[#ff5500] to-[#ff7a18] hover:from-[#ff4500] hover:to-[#ff6a00] disabled:opacity-50 disabled:cursor-not-allowed text-white px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-md shadow-orange-500/25 active:scale-95"
             >
               {isGenerating ? (
                 <>

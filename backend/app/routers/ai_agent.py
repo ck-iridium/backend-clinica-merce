@@ -337,14 +337,7 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
         navigate_match = re.search(r'\[NAVIGATE:\s*([^\]]+)\]', brain_text, re.IGNORECASE)
         if navigate_match:
             candidate_url = navigate_match.group(1).strip()
-            if mode == "webmaster":
-                # En modo webmaster, permitir navegar a cualquier página pública de la clínica (portada, páginas y tratamientos)
-                if candidate_url.startswith("/") and not candidate_url.startswith("/dashboard"):
-                    redirect_url = candidate_url
-                else:
-                    redirect_url = None
-            else:
-                redirect_url = candidate_url
+            redirect_url = candidate_url
 
         # 3. LA VOZ (Gemini 2.5 Flash TTS): Convierte de forma secuencial el texto en voz hiperrealista
         # Para síntesis de voz: removemos URLs largas, [NAVIGATE:...], [OPTION:...], y etiquetas de imagen para que no las lea mecánicamente

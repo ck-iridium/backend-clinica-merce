@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from . import models
@@ -5,32 +6,36 @@ from .database import current_tenant_var
 
 PLAN_LIMITS = {
     "free": {
-        # 14 días de prueba completa (Reverse Trial de Plan Pro con 35 acciones diarias)
+        # 14 días de prueba completa (Reverse Trial de Plan Pro: 35 acciones/día, 5 imágenes en total)
         "specialists": 4,
         "services": 999999,
         "locations": 2,
-        "ai_smart_actions_daily": 35
+        "ai_smart_actions_daily": 35,
+        "ai_images_monthly": 5,  # 5 imágenes en total durante todo el trial
     },
     "basic": {
-        # Plan Individual (39€/mes): 1 especialista único, 1 sede, servicios ilimitados, 15 acciones IA/día
+        # Plan Individual (39€/mes): 1 especialista único, 1 sede, servicios ilimitados, 15 acciones IA/día, 30 imágenes/mes
         "specialists": 1,
         "services": 999999,
         "locations": 1,
-        "ai_smart_actions_daily": 15
+        "ai_smart_actions_daily": 15,
+        "ai_images_monthly": 30,
     },
     "pro": {
-        # Plan Pro (69€/mes): hasta 4 especialistas, hasta 2 sedes, servicios ilimitados, 35 acciones IA/día
+        # Plan Pro (69€/mes): hasta 4 especialistas, hasta 2 sedes, servicios ilimitados, 35 acciones IA/día, 90 imágenes/mes
         "specialists": 4,
         "services": 999999,
         "locations": 2,
-        "ai_smart_actions_daily": 35
+        "ai_smart_actions_daily": 35,
+        "ai_images_monthly": 90,
     },
     "gold": {
-        # Plan Elite (129€/mes): hasta 10 especialistas, hasta 5 sedes, servicios e IA ilimitada
+        # Plan Elite (129€/mes): hasta 10 especialistas, hasta 5 sedes, servicios e IA texto ilimitada, 250 imágenes/mes
         "specialists": 10,
         "services": 999999,
         "locations": 5,
-        "ai_smart_actions_daily": 999999
+        "ai_smart_actions_daily": 999999,
+        "ai_images_monthly": 250,
     }
 }
 
@@ -159,3 +164,133 @@ def get_tenant_ai_key(db: Session, provider: str) -> str:
             raise HTTPException(status_code=500, detail="Clave maestra de IA no disponible para el trial.")
         
     return tenant_key
+
+def check_and_reset_ai_quotas(db: Session, tenant: models.Tenant):
+    """
+    Gestiona el lazy reset de:
+    1. Cuota diaria de texto/operativa (a las 00:00 UTC cada día).
+    2. Bolsa mensual de imágenes (cada ciclo de 30 días).
+    """
+    now = datetime.utcnow()
+    today = now.date()
+    needs_commit = False
+
+    # 1. Reset diario de acciones de texto
+    if tenant.ai_last_action_date != today:
+        tenant.ai_daily_actions_used = 0
+        tenant.ai_last_action_date = today
+        needs_commit = True
+
+    # 2. Inicialización / Reset mensual de imágenes
+    if tenant.plan_type != "free":
+        if not tenant.ai_images_reset_at:
+            tenant.ai_images_reset_at = now + timedelta(days=30)
+            tenant.ai_monthly_images_used = 0
+            needs_commit = True
+        elif now >= tenant.ai_images_reset_at:
+            tenant.ai_monthly_images_used = 0
+            tenant.ai_images_reset_at = now + timedelta(days=30)
+            needs_commit = True
+
+    if needs_commit:
+        db.commit()
+
+def check_and_deduct_text_action(db: Session, tenant: models.Tenant, settings: models.ClinicSettings = None):
+    """
+    Verifica y descuenta 1 acción de texto/operativa diaria.
+    Si el tenant tiene BYOK o es Plan Gold (Elite), es ilimitado.
+    Si está en Basic, Pro o Free y supera el límite diario, lanza HTTPException 429.
+    """
+    check_and_reset_ai_quotas(db, tenant)
+
+    plan = (tenant.plan_type or "free").lower()
+    has_byok = bool(settings and (
+        (settings.ai_provider == "gemini" and settings.gemini_api_key and settings.gemini_api_key.strip()) or
+        (settings.ai_provider == "openai" and settings.openai_api_key and settings.openai_api_key.strip())
+    ))
+
+    if has_byok or plan == "gold":
+        return {"unlimited": True, "remaining": 999999, "limit": 999999, "used": tenant.ai_daily_actions_used or 0}
+
+    limits = get_tenant_limits(plan)
+    daily_limit = limits.get("ai_smart_actions_daily", 15)
+    used = tenant.ai_daily_actions_used or 0
+
+    if used >= daily_limit:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Has alcanzado tu límite diario de {daily_limit} acciones de IA para hoy. Conecta tu propia API Key en Ajustes > Avanzado para uso ilimitado o actualiza tu plan."
+        )
+
+    tenant.ai_daily_actions_used = used + 1
+    db.commit()
+    remaining = max(0, daily_limit - tenant.ai_daily_actions_used)
+    return {"unlimited": False, "remaining": remaining, "limit": daily_limit, "used": tenant.ai_daily_actions_used}
+
+def check_and_deduct_image_quota(db: Session, tenant: models.Tenant, settings: models.ClinicSettings = None):
+    """
+    Verifica y descuenta 1 imagen de la bolsa mensual (o trial).
+    Si el tenant tiene BYOK configurado, es ILIMITADO (no descuenta de la bolsa).
+    Si usa la clave maestra de ProBookia, descuenta de su bolsa mensual (o de las 5 del trial).
+    Si agota la bolsa, lanza HTTPException 429.
+    """
+    check_and_reset_ai_quotas(db, tenant)
+
+    plan = (tenant.plan_type or "free").lower()
+    has_byok = bool(settings and (
+        (settings.ai_provider == "gemini" and settings.gemini_api_key and settings.gemini_api_key.strip()) or
+        (settings.ai_provider == "openai" and settings.openai_api_key and settings.openai_api_key.strip())
+    ))
+
+    if has_byok:
+        return {
+            "unlimited": True,
+            "has_byok": True,
+            "remaining": 999999,
+            "limit": 999999,
+            "used": tenant.ai_monthly_images_used or 0,
+            "reset_at": tenant.ai_images_reset_at.isoformat() if tenant.ai_images_reset_at else None
+        }
+
+    limits = get_tenant_limits(plan)
+    max_images = limits.get("ai_images_monthly", 30)
+
+    if plan == "free":
+        # En trial son 5 imágenes en total durante todo el trial
+        used = tenant.ai_trial_images_used or 0
+        if used >= max_images:
+            raise HTTPException(
+                status_code=429,
+                detail=f"Has agotado las {max_images} imágenes de prueba de tu trial. Conecta tu propia API Key en Ajustes > Avanzado para generar sin límites o activa tu suscripción."
+            )
+        tenant.ai_trial_images_used = used + 1
+        db.commit()
+        remaining = max(0, max_images - tenant.ai_trial_images_used)
+        return {
+            "unlimited": False,
+            "has_byok": False,
+            "remaining": remaining,
+            "limit": max_images,
+            "used": tenant.ai_trial_images_used,
+            "is_trial": True
+        }
+    else:
+        # En planes de pago (basic, pro, gold)
+        used = tenant.ai_monthly_images_used or 0
+        if used >= max_images:
+            raise HTTPException(
+                status_code=429,
+                detail=f"Has alcanzado tu cupo mensual de {max_images} imágenes incluidas para este ciclo. Conecta tu propia API Key en Ajustes > Avanzado para imágenes ilimitadas o mejora tu plan."
+            )
+        tenant.ai_monthly_images_used = used + 1
+        db.commit()
+        remaining = max(0, max_images - tenant.ai_monthly_images_used)
+        return {
+            "unlimited": False,
+            "has_byok": False,
+            "remaining": remaining,
+            "limit": max_images,
+            "used": tenant.ai_monthly_images_used,
+            "reset_at": tenant.ai_images_reset_at.isoformat() if tenant.ai_images_reset_at else None,
+            "is_trial": False
+        }

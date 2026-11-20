@@ -228,11 +228,28 @@ def generar_imagen(
         gemini_key = settings.gemini_api_key.strip() if settings.gemini_api_key else None
         openai_key = settings.openai_api_key.strip() if settings.openai_api_key else None
 
-        # Verificar si el centro tiene al menos una clave propia de API configurada
+        tenant = db.query(models.Tenant).filter(models.Tenant.id == tenant_id).first()
+        if not tenant:
+            return "Error: Inquilino no encontrado."
+
+        from ....limits import check_and_deduct_image_quota
+        from fastapi import HTTPException
+        try:
+            quota_info = check_and_deduct_image_quota(db, tenant, settings)
+        except HTTPException as he:
+            return (
+                f"{he.detail}\n\n"
+                "[NAVIGATE: /dashboard/settings?tab=advanced&hint=advanced-gemini-api-key]\n"
+                "[OPTION: 1. Ir a Ajustes para conectar mi clave API | ir a ajustes avanzados]"
+            )
+
+        # Si no tiene clave propia, usar la clave maestra del servidor si está disponible
+        if not gemini_key and not openai_key:
+            gemini_key = os.getenv("GEMINI_API_KEY")
+
         if not gemini_key and not openai_key:
             return (
-                "Para generar imágenes con Inteligencia Artificial, es necesario que la clínica configure su propia Clave de API de Google Gemini o de OpenAI en Ajustes > Avanzado. "
-                "Actualmente no se ha detectado ninguna clave propia introducida en los ajustes de tu clínica.\n\n"
+                "Para generar imágenes con Inteligencia Artificial, es necesario que la clínica configure su propia Clave de API de Google Gemini o de OpenAI en Ajustes > Avanzado.\n\n"
                 "[NAVIGATE: /dashboard/settings?tab=advanced&hint=advanced-gemini-api-key]\n"
                 "[OPTION: 1. Ir a Ajustes Avanzados para poner mi clave | ir a ajustes avanzados]"
             )

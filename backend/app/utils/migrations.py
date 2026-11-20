@@ -193,6 +193,10 @@ $function$;
             # ── Control de Cuotas Diarias de Copiloto de IA ─────────────────────────
             "ALTER TABLE tenants ADD COLUMN ai_daily_actions_used INTEGER DEFAULT 0",
             "ALTER TABLE tenants ADD COLUMN ai_last_action_date DATE",
+            # ── Control de Cuotas Mensuales de Imágenes IA ──────────────────────────
+            "ALTER TABLE tenants ADD COLUMN ai_monthly_images_used INTEGER DEFAULT 0",
+            "ALTER TABLE tenants ADD COLUMN ai_trial_images_used INTEGER DEFAULT 0",
+            "ALTER TABLE tenants ADD COLUMN ai_images_reset_at TIMESTAMP NULL",
             # ── Multi-Location & Rostering ──────────────────────────────────────────
             "ALTER TABLE appointments ADD COLUMN staff_id VARCHAR",
             "ALTER TABLE appointments ADD COLUMN location_id VARCHAR",

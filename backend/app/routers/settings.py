@@ -26,7 +26,8 @@ def read_tenant_limits(db: Session = Depends(database.get_db)):
         raise HTTPException(status_code=404, detail="Tenant not found")
         
     plan = tenant.plan_type or "free"
-    from ..limits import get_tenant_limits
+    from ..limits import get_tenant_limits, check_and_reset_ai_quotas
+    check_and_reset_ai_quotas(db, tenant)
     limits = get_tenant_limits(plan)
     
     # Contar uso actual
@@ -58,6 +59,14 @@ def read_tenant_limits(db: Session = Depends(database.get_db)):
     admin_user = db.query(models.User).filter(models.User.tenant_id == tenant_id, models.User.role == "admin").first()
     email_verified = admin_user.email_verified if admin_user else True
 
+    images_monthly_limit = limits.get("ai_images_monthly", 30)
+    if has_own_key:
+        images_remaining = 999999
+    elif plan == "free":
+        images_remaining = max(0, 5 - (tenant.ai_trial_images_used or 0))
+    else:
+        images_remaining = max(0, images_monthly_limit - (tenant.ai_monthly_images_used or 0))
+
     return {
         "tenant_id": tenant_id,
         "tenant_slug": tenant.slug,
@@ -70,11 +79,16 @@ def read_tenant_limits(db: Session = Depends(database.get_db)):
         "has_own_key": has_own_key,
         "ai_trial_queries_used": tenant.ai_trial_queries_used if hasattr(tenant, "ai_trial_queries_used") else 0,
         "ai_daily_actions_used": tenant.ai_daily_actions_used if hasattr(tenant, "ai_daily_actions_used") else 0,
+        "ai_monthly_images_used": tenant.ai_monthly_images_used if hasattr(tenant, "ai_monthly_images_used") else 0,
+        "ai_trial_images_used": tenant.ai_trial_images_used if hasattr(tenant, "ai_trial_images_used") else 0,
+        "ai_images_reset_at": tenant.ai_images_reset_at.isoformat() if tenant.ai_images_reset_at else None,
         "limits": {
             "specialists": limits["specialists"],
             "services": limits["services"],
             "locations": limits.get("locations", 1),
             "ai_smart_actions_daily": limits.get("ai_smart_actions_daily", 0),
+            "ai_images_monthly": images_monthly_limit,
+            "ai_images_remaining": images_remaining,
             "ai_allowed": ai_allowed,
             "ai_requires_byok": ai_requires_byok
         },

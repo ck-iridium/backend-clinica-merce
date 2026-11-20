@@ -16,7 +16,7 @@ import logging
 import time
 from typing import Optional
 from fastapi.concurrency import run_in_threadpool
-from ..limits import get_tenant_ai_key
+from ..limits import get_tenant_ai_key, check_and_deduct_image_quota, check_and_deduct_text_action
 
 # Configurar log
 log_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'ai_generation.log')
@@ -75,8 +75,13 @@ def optimize_prompt(request: schemas.OptimizePromptRequest, db: Session = Depend
 
 @router.post("/generate")
 def generate_content(request: schemas.AIGenerationRequest, db: Session = Depends(database.get_db)):
-    settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == database.current_tenant_var.get()).first()
+    tenant_id = database.current_tenant_var.get()
+    tenant = db.query(models.Tenant).filter(models.Tenant.id == tenant_id).first() if tenant_id else None
+    settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == tenant_id).first() if tenant_id else None
     if not settings: raise HTTPException(status_code=500, detail="Configuración no encontrada.")
+
+    if tenant:
+        check_and_deduct_text_action(db, tenant, settings)
 
     ai_provider = settings.ai_provider or "gemini"
     system_prompt = SYSTEM_PROMPT_TEMPLATE.format(tone=request.tone)
@@ -198,8 +203,20 @@ def ai_enhance_image_prompt_sync(user_prompt: str, shot_type: str, visual_style:
 @router.post("/generate-image")
 def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depends(database.get_db)):
     """Cambiado a síncrono (def) para que FastAPI lo gestione en threads separados."""
-    settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == database.current_tenant_var.get()).first()
-    if not settings: raise HTTPException(status_code=500, detail="Configuración no encontrada.")
+    tenant_id = database.current_tenant_var.get()
+    if not tenant_id:
+        raise HTTPException(status_code=400, detail="Tenant ID no encontrado.")
+
+    tenant = db.query(models.Tenant).filter(models.Tenant.id == tenant_id).first()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant no encontrado.")
+
+    settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == tenant_id).first()
+    if not settings:
+        raise HTTPException(status_code=500, detail="Configuración no encontrada.")
+
+    # Validar y descontar cuota de imágenes mensual / trial / BYOK
+    quota_info = check_and_deduct_image_quota(db, tenant, settings)
 
     ai_provider = settings.ai_provider or "gemini"
     
@@ -297,7 +314,7 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
         db.commit()
         
         logger.info(f"SUCCESS: Generated and saved: {public_url}")
-        return {"url": public_url}
+        return {"url": public_url, "quota": quota_info}
     except Exception as e:
         logger.error(f"Save error: {e}")
         raise HTTPException(status_code=500, detail=f"Error al guardar: {str(e)}")
@@ -307,7 +324,16 @@ def generate_block_content(
     request: schemas.BlockAIGenerateRequest,
     db: Session = Depends(database.get_db)
 ):
-    settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == database.current_tenant_var.get()).first()
+    tenant_id = database.current_tenant_var.get()
+    tenant = db.query(models.Tenant).filter(models.Tenant.id == tenant_id).first() if tenant_id else None
+    settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == tenant_id).first() if tenant_id else None
+    if not settings:
+        raise HTTPException(status_code=500, detail="Configuración no encontrada.")
+
+    # Validar y descontar cuota diaria de texto inteligente
+    if tenant:
+        check_and_deduct_text_action(db, tenant, settings)
+
     clinic_name = settings.clinic_name if settings and settings.clinic_name else "Centro de Belleza y Bienestar"
 
     tone_str = "Quiet Luxury refinado y exclusivo"

@@ -362,8 +362,8 @@ export function PricingComparisonTable({
 
             <tr className="hover:bg-stone-50/50 transition-colors">
               <td className="py-3.5 px-6">
-                <span className="font-bold text-stone-900 block text-xs md:text-sm">Co-Piloto Operativo IA (Voz y Texto)</span>
-                <span className="text-[11px] text-stone-400 font-medium">Agenda, clientes, precios rápidos y navegación inteligente</span>
+                <span className="font-bold text-stone-900 block text-xs md:text-sm">Asistente IA (Co-Piloto y Diseñador Web)</span>
+                <span className="text-[11px] text-stone-400 font-medium">Agenda, clientes, precios rápidos y textos con IA en el constructor</span>
               </td>
               <td className="py-3.5 px-6">
                 <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-stone-800 bg-stone-100 px-2.5 py-1 rounded-full border border-stone-200/60">
@@ -393,19 +393,22 @@ export function PricingComparisonTable({
 
             <tr className="hover:bg-stone-50/50 transition-colors">
               <td className="py-3.5 px-6">
-                <span className="font-bold text-stone-900 block text-xs md:text-sm">Asistente IA en Diseñador Web (CMS)</span>
-                <span className="text-[11px] text-stone-400 font-medium">Generación de textos, imágenes y bloques con IA en el editor visual</span>
+                <span className="font-bold text-stone-900 block text-xs md:text-sm">Generador de Fotografías IA</span>
+                <span className="text-[11px] text-stone-400 font-medium">Fotografías fotorrealistas de alta gama (+ Ilimitadas con clave propia BYOK)</span>
               </td>
               <td className="py-3.5 px-6">
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-stone-400">
-                  <Minus className="w-3.5 h-3.5 text-stone-300 stroke-[2]" />
-                  <span>No incluido</span>
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-stone-800 bg-stone-100 px-2.5 py-1 rounded-full border border-stone-200/60">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5]" />
+                  <span>30 fotos / mes</span>
                 </span>
               </td>
               <td className="py-3.5 px-6 border-x border-[#D4AF37]/25" style={{ backgroundColor: `${accentColor}06` }}>
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-stone-400">
-                  <Minus className="w-3.5 h-3.5 text-stone-300 stroke-[2]" />
-                  <span>No incluido</span>
+                <span 
+                  style={{ backgroundColor: `${accentColor}18`, borderColor: `${accentColor}40`, color: '#1c1917' }}
+                  className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border shadow-2xs"
+                >
+                  <Check className="w-3.5 h-3.5 text-stone-950 stroke-[2.5]" />
+                  <span>90 fotos / mes</span>
                 </span>
               </td>
               <td className="py-3.5 px-6">
@@ -414,7 +417,7 @@ export function PricingComparisonTable({
                   className="inline-flex items-center gap-1.5 text-[11px] font-black px-3 py-1 rounded-full border shadow-2xs"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-                  <span>Texto, Voz y Fotos (En Vivo)</span>
+                  <span>250 fotos / mes</span>
                 </span>
               </td>
             </tr>

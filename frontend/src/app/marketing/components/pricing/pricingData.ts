@@ -30,8 +30,9 @@ export const PRICING_PLANS: PricingPlan[] = [
     features: [
       { text: '1 especialista único' },
       { text: '1 sede o ubicación física' },
-      { text: 'Co-Piloto Operativo IA (15 acciones/día)', isBold: true },
-      { text: 'Servicios y catálogo ilimitados', isSpecial: true },
+      { text: 'Co-Piloto & Diseñador Web IA (15 acciones/día)', isBold: true },
+      { text: '30 fotos/mes con IA incluidas (Ilimitadas con tu clave)', isSpecial: true },
+      { text: 'Servicios y catálogo ilimitados' },
       { text: 'Agenda interactiva & turnos' },
       { text: 'Firma en tablet y consentimientos LOPD' },
       { text: 'Emisión y control de Bonos (/vouchers)' },
@@ -52,8 +53,9 @@ export const PRICING_PLANS: PricingPlan[] = [
     features: [
       { text: 'Hasta 4 miembros de equipo (con RBAC)', isBold: true },
       { text: 'Hasta 2 sedes físicas', isBold: true },
-      { text: 'Co-Piloto Operativo IA (35 acciones/día)', isBold: true },
-      { text: 'Firma digital LOPD para todo el equipo', isSpecial: true },
+      { text: 'Co-Piloto & Diseñador Web IA (35 acciones/día)', isBold: true },
+      { text: '90 fotos/mes con IA incluidas (Ilimitadas con tu clave)', isSpecial: true },
+      { text: 'Firma digital LOPD para todo el equipo' },
       { text: 'Emisión y control de Bonos (/vouchers)' },
       { text: 'Facturación oficial correlativa e IVA (/invoices)' },
       { text: 'Web de lujo con CMS + Dominio propio' },
@@ -73,8 +75,8 @@ export const PRICING_PLANS: PricingPlan[] = [
     features: [
       { text: 'Hasta 10 miembros (+15€/mes extra)', isBold: true },
       { text: 'Hasta 5 sedes (+20€/mes extra)', isBold: true },
-      { text: 'Constructor Web con IA (Generación de bloques, texto y fotos)', isSpecial: true },
-      { text: 'Co-Piloto Operativo IA (Acciones ilimitadas)', isBold: true },
+      { text: 'Co-Piloto & Diseñador Web IA (Acciones ilimitadas ∞)', isBold: true },
+      { text: '250 fotos/mes con IA incluidas (Ilimitadas con tu clave)', isSpecial: true },
       { text: 'Todo lo incluido en el Plan Pro' },
       { text: 'Marca blanca 100% invisible' },
       { text: 'Soporte prioritario VIP 24/7' }

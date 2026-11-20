@@ -70,8 +70,8 @@ export const DEFAULT_PILLARS: PillarsSectionData = {
     {
       id: "pillar-4",
       number_badge: "Pilar 04",
-      title: "AI Webmaster Copilot",
-      description: "Tu asistente con inteligencia artificial integrado en tu base de datos. Redacta descripciones de tratamientos, traduce contenidos y ayuda a tu equipo en la operativa diaria.",
+      title: "Co-Piloto Operativo y Diseñador Web IA",
+      description: "Tu asistente con inteligencia artificial integrado en tu negocio. Redacta descripciones y bloques web, genera fotografías comerciales y asiste en la operativa diaria.",
       footer_highlight: "Inteligencia sin esfuerzo",
       icon: "bot"
     }
