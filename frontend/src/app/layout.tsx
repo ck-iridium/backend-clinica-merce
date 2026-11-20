@@ -134,10 +134,10 @@ export async function generateMetadata(): Promise<Metadata> {
       },
       icons: {
         icon: [
-          { url: marketingFavicon },
+          { url: '/api/favicon', sizes: 'any' },
         ],
-        shortcut: marketingFavicon,
-        apple: marketingFavicon,
+        shortcut: '/favicon.ico',
+        apple: '/api/favicon',
       },
     };
   }
@@ -330,7 +330,9 @@ export default async function RootLayout({
       <html lang="es" suppressHydrationWarning className={fontClasses}>
         <GoogleTagManager gtmId="GTM-N4FTWCBX" />
         <head>
-          <link rel="icon" href={marketingFavicon} />
+          <link rel="icon" href="/api/favicon" sizes="any" />
+          <link rel="shortcut icon" href="/favicon.ico" />
+          <link rel="apple-touch-icon" href="/api/favicon" />
           <link rel="preconnect" href="https://ypimdbkiuguiszaddzaj.supabase.co" crossOrigin="anonymous" />
           <link rel="dns-prefetch" href="https://ypimdbkiuguiszaddzaj.supabase.co" />
         </head>
@@ -353,9 +355,6 @@ export default async function RootLayout({
   const borderRadiusStyle = settings?.border_radius || 'suave';
   const headingsFont = settings?.branding_font_headings || 'Playfair';
   const bodyFont = settings?.branding_font_body || 'Inter';
-  const favicon = isMarketing 
-    ? (marketingFavicon || '/favicon_probookia.ico')
-    : (settings?.favicon_b64 || settings?.logo_app_b64 || settings?.logo_pdf_b64 || '/favicon_tenant.ico');
 
   let radiusBase = "1rem";
   let radiusCard = "1.5rem";
@@ -415,7 +414,9 @@ export default async function RootLayout({
     <html lang="es" suppressHydrationWarning className={`${fontClasses} ${isDark && !isDashboardRoute ? 'dark' : ''}`}>
       <GoogleTagManager gtmId={gtmId} />
       <head>
-        <link rel="icon" href={favicon} />
+        <link rel="icon" href="/api/favicon" sizes="any" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/api/favicon" />
         <link rel="preconnect" href="https://ypimdbkiuguiszaddzaj.supabase.co" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://ypimdbkiuguiszaddzaj.supabase.co" />
         {localBusinessSchema && <JsonLd id="tenant-business-jsonld" data={localBusinessSchema} />}

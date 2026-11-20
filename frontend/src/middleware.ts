@@ -7,13 +7,12 @@ export async function middleware(request: NextRequest) {
 
   console.log(`[MIDDLEWARE] Path: ${url.pathname} | Host: ${hostname}`);
 
-  // 1. Excluir recursos estáticos, api routes, _next y archivos de sistema
+  // 1. Excluir recursos estáticos, api routes, _next y archivos de sistema (permitiendo favicon, robots y sitemap dinámicos)
   if (
     url.pathname.startsWith('/_next') ||
     url.pathname.startsWith('/api') ||
     url.pathname.startsWith('/static') ||
-    (url.pathname.includes('.') && url.pathname !== '/robots.txt' && url.pathname !== '/sitemap.xml') ||
-    url.pathname.startsWith('/favicon.ico')
+    (url.pathname.includes('.') && url.pathname !== '/robots.txt' && url.pathname !== '/sitemap.xml' && url.pathname !== '/favicon.ico')
   ) {
     return NextResponse.next();
   }
@@ -159,6 +158,16 @@ export async function middleware(request: NextRequest) {
     requestHeaders.set("x-tenant-slug", subdomain);
     requestHeaders.set("x-pathname", url.pathname);
 
+    // Si la petición es para el favicon, reescribir internamente a /api/favicon manteniendo el tenant
+    if (url.pathname === '/favicon.ico') {
+      url.pathname = '/api/favicon';
+      return NextResponse.rewrite(url, {
+        request: {
+          headers: requestHeaders,
+        },
+      });
+    }
+
     // Reescribimos la petición con los encabezados modificados para que Server Components los lean
     const response = NextResponse.rewrite(url, {
       request: {
@@ -205,6 +214,7 @@ export async function middleware(request: NextRequest) {
       url.pathname === "/cookies" ||
       url.pathname === "/robots.txt" ||
       url.pathname === "/sitemap.xml" ||
+      url.pathname === "/favicon.ico" ||
       url.pathname.startsWith("/super-admin");
 
     console.log(`[MIDDLEWARE-GLOBAL] Path: "${url.pathname}" | isGlobalSassPath: ${isGlobalSassPath}`);
@@ -218,6 +228,15 @@ export async function middleware(request: NextRequest) {
       console.log(`[MIDDLEWARE-GLOBAL] Redirecting to / because path is not global SaaS`);
       url.pathname = "/";
       return NextResponse.redirect(url);
+    }
+
+    if (url.pathname === "/favicon.ico") {
+      url.pathname = "/api/favicon";
+      return NextResponse.rewrite(url, {
+        request: {
+          headers: requestHeaders,
+        },
+      });
     }
 
     if (url.pathname === "/") {
@@ -245,10 +264,11 @@ export const config = {
      * 1. /api routes
      * 2. /_next (Next.js internals)
      * 3. Static files (e.g. /_next/static, public/images)
-     * Incluye explícitamente /sitemap.xml y /robots.txt para contexto multi-tenant
+     * Incluye explícitamente /sitemap.xml, /robots.txt y /favicon.ico para contexto multi-tenant
      */
     '/((?!api|_next|static|[\\w-]+\\.\\w+).*)',
     '/sitemap.xml',
     '/robots.txt',
+    '/favicon.ico',
   ],
 };

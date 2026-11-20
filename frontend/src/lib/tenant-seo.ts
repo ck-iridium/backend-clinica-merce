@@ -164,9 +164,9 @@ export async function getTenantSeoData(): Promise<TenantSeoData> {
     if (parsed.length > 0) keywords = parsed;
   }
 
-  // 11. Favicon y OG Image
-  const favicon = settings?.favicon_b64 || settings?.logo_app_b64 || settings?.logo_pdf_b64 || '/favicon_tenant.ico';
-  let ogImage = siteContent?.hero_image_url || favicon;
+  // 11. Favicon y OG Image (Favicon servido dinámicamente vía URL real para indexación en Google)
+  const favicon = '/api/favicon';
+  let ogImage = siteContent?.hero_image_url || `${canonical}/api/favicon`;
   if (ogImage && ogImage.startsWith('/') && !ogImage.startsWith('//')) {
     ogImage = `${canonical}${ogImage}`;
   }
@@ -251,9 +251,9 @@ export async function buildTenantMetadata(options?: TenantMetadataOptions): Prom
         }
       : undefined,
     icons: {
-      icon: seo.favicon,
-      shortcut: seo.favicon,
-      apple: seo.favicon,
+      icon: [{ url: '/api/favicon', sizes: 'any' }],
+      shortcut: '/favicon.ico',
+      apple: '/api/favicon',
     },
     openGraph: {
       title: seo.title,
