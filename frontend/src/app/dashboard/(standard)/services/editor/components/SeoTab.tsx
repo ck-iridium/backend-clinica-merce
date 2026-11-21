@@ -95,7 +95,7 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
   // Generar SEO en Español (Idioma Base)
   const handleGenerateSEO = async () => {
     if (isBlocked) {
-      toast.error('Acción restringida. Habilite su propia clave de API o mejore su plan.');
+      toast.error('Has alcanzado el límite de acciones inteligentes de tu plan para hoy. Conecta tu API Key o mejora tu plan.');
       return;
     }
 
@@ -359,9 +359,8 @@ export default function SeoTab({ formValues, register, setValue, editor }: SeoTa
             <span>Asistente de SEO Premium</span>
           </div>
           <p className="leading-relaxed">
-            La automatización de metadatos mediante IA está reservada para el{' '}
-            <span className="font-bold text-stone-700">Plan Gold</span> o requiere que configure su propia{' '}
-            <span className="font-bold text-stone-700">Clave de API</span> en Ajustes.
+            Has alcanzado el límite diario de acciones inteligentes de tu plan para hoy. La cuota se renueva a medianoche o puedes conectar tu propia{' '}
+            <span className="font-bold text-stone-700">Clave de API</span> en Ajustes para uso ilimitado.
           </p>
           <div className="flex gap-2 mt-1">
             <button

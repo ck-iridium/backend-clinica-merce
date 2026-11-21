@@ -3,6 +3,32 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+  return null;
+}
+
+function getAuthHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (typeof window === 'undefined') return headers;
+  let tenantId = getCookie('tenant_id') || '';
+  let authToken = '';
+  try {
+    const raw = localStorage.getItem('user');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (!tenantId) tenantId = parsed.tenant_id || '';
+      authToken = parsed.access_token || parsed.token || '';
+    }
+  } catch {}
+  if (tenantId) headers['X-Tenant-ID'] = tenantId;
+  if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+  return headers;
+}
+
 interface AIImageContextType {
   isGenerating: boolean;
   generationTime: number;
@@ -96,7 +122,7 @@ export function AIImageProvider({ children }: { children: React.ReactNode }) {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ai/generate-image`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify(params),
         signal: controller.signal
       });

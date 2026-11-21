@@ -312,10 +312,10 @@ export function useCopilotChat({
           setTrialRemaining(0);
           const exhaustMsg =
             language === 'fr'
-              ? 'Votre essai gratuit a expiré. Veuillez passer au Plan Gold.'
+              ? 'Votre quota quotidien d\'actions IA est atteint pour aujourd\'hui. Il sera réinitialisé à minuit ou vous pouvez connecter votre propre clé API dans Paramètres.'
               : language === 'en'
-              ? 'Your free trial has expired. Please upgrade to Plan Gold.'
-              : 'Tu prueba gratuita de Co-Piloto de IA ha expirado. Por favor, actualiza al Plan Gold.';
+              ? 'Your daily quota of smart actions has been reached for today. It will reset at midnight or you can connect your own API Key in Settings.'
+              : 'Tu cupo diario de acciones de IA ha sido alcanzado por hoy. Se renovará a medianoche o puedes conectar tu propia Clave de API en Ajustes para uso ilimitado.';
           setMessages((prev) => [...prev, { role: 'model', content: exhaustMsg }]);
           speakText(exhaustMsg);
           setIsLoading(false);

@@ -11,6 +11,32 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+  return null;
+}
+
+function getAuthHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (typeof window === 'undefined') return headers;
+  let tenantId = getCookie('tenant_id') || '';
+  let authToken = '';
+  try {
+    const raw = localStorage.getItem('user');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (!tenantId) tenantId = parsed.tenant_id || '';
+      authToken = parsed.access_token || parsed.token || '';
+    }
+  } catch {}
+  if (tenantId) headers['X-Tenant-ID'] = tenantId;
+  if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+  return headers;
+}
+
 interface AIGeneratorModalProps {
   onClose: () => void;
   onGenerate: (content: string) => void;
@@ -34,12 +60,14 @@ export default function AIGeneratorModal({ onClose, onGenerate, targetType, serv
     async function fetchLimits() {
       try {
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-        const res = await fetch(`${API_URL}/settings/limits`);
+        const res = await fetch(`${API_URL}/settings/limits`, {
+          headers: getAuthHeaders(),
+        });
         if (res.ok) {
           const limitsData = await res.json();
           setLimits({
-            ai_allowed: limitsData.limits.ai_allowed,
-            ai_requires_byok: limitsData.limits.ai_requires_byok
+            ai_allowed: limitsData.limits?.ai_allowed ?? true,
+            ai_requires_byok: limitsData.limits?.ai_requires_byok ?? false
           });
         }
       } catch (err) {
@@ -65,7 +93,7 @@ export default function AIGeneratorModal({ onClose, onGenerate, targetType, serv
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/ai/generate`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           prompt: contextPrompt,
           type: targetType,
@@ -137,7 +165,7 @@ export default function AIGeneratorModal({ onClose, onGenerate, targetType, serv
         {isBlocked ? (
           /* Bloqueo Exclusivo Quiet Luxury / BYOK */
           <div className="flex flex-col items-center text-center py-4 px-2">
-            <div className="w-14 h-14 rounded-2xl bg-stone-900 flex items-center justify-center text-[#d4af37] mb-5 shadow-lg shadow-stone-200">
+            <div className="w-14 h-14 rounded-2xl bg-stone-900 flex items-center justify-center text-[#FF6B00] mb-5 shadow-lg shadow-stone-200">
               <Sparkles size={26} strokeWidth={1.5} className="animate-pulse" />
             </div>
             
@@ -173,7 +201,7 @@ export default function AIGeneratorModal({ onClose, onGenerate, targetType, serv
                   router.push('/dashboard/settings?tab=subscription');
                 }}
                 disabled={redirecting !== null}
-                className="flex items-center justify-center h-12 rounded-xl bg-[#d4af37] hover:bg-stone-900 text-white font-bold text-xs transition-all shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center justify-center h-12 rounded-xl bg-[#FF6B00] hover:bg-[#EA5E00] text-white font-bold text-xs transition-all shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {redirecting === 'subscription' ? (
                   <div className="flex items-center gap-2">
@@ -191,7 +219,7 @@ export default function AIGeneratorModal({ onClose, onGenerate, targetType, serv
           <>
             {/* Header */}
             <div className="flex items-center gap-4 mb-8">
-              <div className="w-12 h-12 rounded-2xl bg-yellow-50 flex items-center justify-center text-[#d4af37]">
+              <div className="w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center text-[#FF6B00]">
                 <Sparkles size={24} strokeWidth={1.5} />
               </div>
               <div>
@@ -215,7 +243,7 @@ export default function AIGeneratorModal({ onClose, onGenerate, targetType, serv
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   placeholder={t('dashboard.services.context_ideas_placeholder')}
-                  className="w-full px-5 py-4 rounded-2xl border border-stone-200 bg-stone-50 focus:bg-white focus:border-[#d4af37] focus:ring-4 focus:ring-[#d4af37]/10 outline-none transition-all resize-none min-h-[120px] text-sm"
+                  className="w-full px-5 py-4 rounded-2xl border border-stone-200 bg-stone-50 focus:bg-white focus:border-[#FF6B00] focus:ring-4 focus:ring-[#FF6B00]/10 outline-none transition-all resize-none min-h-[120px] text-sm"
                   disabled={isLoading}
                 />
               </div>
@@ -244,7 +272,7 @@ export default function AIGeneratorModal({ onClose, onGenerate, targetType, serv
               <button 
                 onClick={handleGenerate}
                 disabled={isLoading}
-                className="w-full relative overflow-hidden group h-[56px] rounded-2xl flex items-center justify-center bg-stone-900 hover:bg-[#d4af37] text-white font-bold transition-all disabled:opacity-70 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
+                className="w-full relative overflow-hidden group h-[56px] rounded-2xl flex items-center justify-center bg-[#FF6B00] hover:bg-[#EA5E00] text-white font-bold transition-all disabled:opacity-70 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
               >
                 {isLoading ? (
                   <div className="flex items-center gap-3">

@@ -51,7 +51,7 @@ export function useCopilotLimits() {
           const plan = d.plan_type?.toLowerCase() || 'free';
           setPlanType(plan);
           
-          const ownKey = d.limits?.ai_allowed && d.limits?.ai_requires_byok;
+          const ownKey = !!d.has_own_key;
           setHasOwnKey(!!ownKey);
           
           const dailyLimit = d.limits?.ai_smart_actions_daily ?? (plan === 'basic' ? 15 : 35);

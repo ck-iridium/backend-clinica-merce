@@ -166,7 +166,7 @@
   "generate_magic_btn": "Generar Contenido Mágico",
   "generating_magic": "La IA está redactando...",
   "ai_writer_title": "Asistente de Redacción",
-  "ai_writer_locked_desc": "La generación automática de contenido inteligente requiere una suscripción activa al Plan Gold.\n\nSi se encuentra en planes inferiores (Free, Basic o Pro), puede habilitar esta función configurando su propia Clave de API en los Ajustes de su negocio.",
+  "ai_writer_locked_desc": "Has alcanzado el límite diario de acciones inteligentes de tu plan para hoy.\n\nLa cuota diaria se renueva automáticamente cada medianoche, o puedes configurar tu propia Clave de API en Ajustes para redactar de forma ilimitada.",
   "config_own_key": "Configurar Clave de API Propia",
   "upgrade_plan": "Mejorar Plan de Suscripción",
   "ai_error_prompt": "Por favor, indica al menos el nombre del servicio o algunos detalles.",

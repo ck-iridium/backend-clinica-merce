@@ -53,8 +53,13 @@ def read_tenant_limits(db: Session = Depends(database.get_db)):
         has_own_key = bool(key and key.strip())
         
     is_gold = plan.lower() == "gold"
-    ai_allowed = is_gold or has_own_key
-    ai_requires_byok = not is_gold
+    daily_actions_limit = limits.get("ai_smart_actions_daily", 35)
+    daily_actions_used = tenant.ai_daily_actions_used or 0
+    actions_remaining = 999999 if (has_own_key or is_gold) else max(0, daily_actions_limit - daily_actions_used)
+
+    # Permitir IA si tiene clave propia (BYOK), es Gold, o aún dispone de cuota diaria incluida en su plan
+    ai_allowed = has_own_key or is_gold or (actions_remaining > 0)
+    ai_requires_byok = not is_gold and not has_own_key and (actions_remaining <= 0)
 
     admin_user = db.query(models.User).filter(models.User.tenant_id == tenant_id, models.User.role == "admin").first()
     email_verified = admin_user.email_verified if admin_user else True
@@ -92,7 +97,9 @@ def read_tenant_limits(db: Session = Depends(database.get_db)):
             "specialists": limits["specialists"],
             "services": limits["services"],
             "locations": limits.get("locations", 1),
-            "ai_smart_actions_daily": limits.get("ai_smart_actions_daily", 0),
+            "ai_smart_actions_daily": daily_actions_limit,
+            "ai_actions_remaining": actions_remaining,
+            "ai_actions_used": daily_actions_used,
             "ai_images_monthly": images_monthly_limit,
             "ai_images_remaining": images_remaining,
             "is_trial": is_trial,

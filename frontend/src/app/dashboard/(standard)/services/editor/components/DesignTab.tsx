@@ -37,8 +37,10 @@ export default function DesignTab({ formValues, register, control, setValue, set
   const [isDraggingImage, setIsDraggingImage] = useState(false);
   const [isDraggingVideo, setIsDraggingVideo] = useState(false);
 
-  // Validación de Clave de API propia (BYOK) para imágenes
+  // Validación de cuotas de imágenes e IA
   const [hasOwnKey, setHasOwnKey] = useState<boolean>(false);
+  const [imagesRemaining, setImagesRemaining] = useState<number>(0);
+  const [isPlanGold, setIsPlanGold] = useState<boolean>(false);
   const [loadingLimits, setLoadingLimits] = useState(true);
 
   useEffect(() => {
@@ -83,6 +85,8 @@ export default function DesignTab({ formValues, register, control, setValue, set
         if (res.ok) {
           const data = await res.json();
           setHasOwnKey(!!data.has_own_key);
+          setImagesRemaining(data.limits?.ai_images_remaining ?? 0);
+          setIsPlanGold(data.plan_type?.toLowerCase() === 'gold');
         }
       } catch (err) {
         console.error("Error al obtener límites de plan:", err);
@@ -192,15 +196,17 @@ export default function DesignTab({ formValues, register, control, setValue, set
     if (file) handleMediaUpload(file, type);
   };
 
+  const canGenerateImage = hasOwnKey || isPlanGold || imagesRemaining > 0;
+
   const handleOpenAIImageModal = () => {
     if (loadingLimits) return;
-    if (!hasOwnKey) {
+    if (!canGenerateImage) {
       toast.error(
         language === 'fr' 
-          ? "Génération d'images désactivée. Le plan Gold / Premium requiert votre propre clé API (BYOK) dans Paramètres > Avancé." 
+          ? "Vous avez atteint votre quota de photographies pour ce mois. Vous pouvez configurer votre propre clé API (BYOK) dans Paramètres > Avancé pour un usage illimité." 
           : language === 'en' 
-            ? "Image generation disabled. Gold / Premium plan requires your own API Key (BYOK) in Settings > Advanced." 
-            : "Generación de imágenes deshabilitada. El plan Gold / Premium requiere tu propia clave de API (BYOK) en Ajustes > Avanzado.",
+            ? "You have reached your plan's photo quota for this month. You can configure your own API Key (BYOK) in Settings > Advanced for unlimited generation." 
+            : "Has alcanzado la cuota de fotografías de tu plan para este mes. Puedes configurar tu propia Clave de API (BYOK) en Ajustes > Avanzado para generar sin límites.",
         { 
           duration: 7000,
           action: {
@@ -221,13 +227,13 @@ export default function DesignTab({ formValues, register, control, setValue, set
         <div className="flex items-center justify-between">
           <div className="flex flex-col gap-0.5">
             <label className="block text-xs font-bold text-stone-500 uppercase tracking-[0.15em]">{t('dashboard.services.main_image_label')}</label>
-            {!hasOwnKey && !loadingLimits && (
+            {!loadingLimits && (
               <span className="text-[9px] text-[#FF6B00] font-bold tracking-wide uppercase italic">
-                {language === 'fr' 
-                  ? "✦ Exclusivité BYOK : Clé API requise" 
-                  : language === 'en' 
-                    ? "✦ BYOK Exclusive: API Key required" 
-                    : "✦ Exclusivo BYOK: Clave de API requerida"}
+                {hasOwnKey 
+                  ? "✦ Ilimitado (API Propia)" 
+                  : isPlanGold 
+                    ? `✦ ${imagesRemaining} fotos/mes (Plan Gold)` 
+                    : `✦ ${imagesRemaining} fotografías disponibles`}
               </span>
             )}
           </div>
@@ -237,12 +243,12 @@ export default function DesignTab({ formValues, register, control, setValue, set
             onClick={handleOpenAIImageModal}
             className={cn(
               "flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-lg border transition-all shadow-sm active:scale-95",
-              !hasOwnKey && !loadingLimits
+              !canGenerateImage && !loadingLimits
                 ? "bg-stone-50 text-stone-400 border-stone-200 hover:bg-stone-100"
-                : "text-[#FF6B00] border-orange-200 hover:bg-orange-50"
+                : "text-[#FF6B00] border-orange-200 hover:bg-orange-50 bg-white"
             )}
           >
-            {!hasOwnKey && !loadingLimits ? <Lock size={12} className="text-stone-400" /> : <Sparkles size={12} strokeWidth={2.5} />}
+            {!canGenerateImage && !loadingLimits ? <Lock size={12} className="text-stone-400" /> : <Sparkles size={12} strokeWidth={2.5} />}
             {t('dashboard.services.generate_ia')}
           </button>
         </div>
