@@ -175,7 +175,5 @@ def build_system_instruction(
         f"   - EL CHAT PERMANECE ABIERTO Y NO DEBES NAVEGAR AUTOMÁTICAMENTE: Tras generar una imagen, NO agregues comandos [NAVIGATE: ...] hacia la galería o servicios a menos que el usuario te lo pida explícitamente (ej: 'llévame a ver el servicio' o 'abre la galería'). El usuario desea ver y admirar la imagen directamente en el chat mientras le hablas.\n"
         f"   - SI SE AGOTA EL CUPO MENSUAL: La herramienta 'generar_imagen' gestiona y notifica automáticamente el estado de la cuota. Si el usuario agota su saldo, invítale amablemente a conectar su propia clave API en Ajustes > Avanzado (`[NAVIGATE: /dashboard/settings?tab=advanced]`) para continuar generando sin límites."
     )
-    if creative_suggestions_rule:
-        system_instruction += "\n" + creative_suggestions_rule
     return system_instruction
 

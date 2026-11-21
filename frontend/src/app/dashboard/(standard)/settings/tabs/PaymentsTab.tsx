@@ -120,7 +120,7 @@ export default function PaymentsTab({ settings, setSettings }: { settings: any, 
               disabled={connecting}
               variant="luxury"
               size="lg"
-              className="rounded-xl px-6 font-bold shadow-luxury text-stone-950 flex items-center justify-center gap-2 mx-auto"
+              className="rounded-xl px-6 font-bold shadow-luxury !text-white flex items-center justify-center gap-2 mx-auto"
             >
               <CreditCard size={16} strokeWidth={2} />
               {connecting ? t('dashboard.settings.payments.connecting') : t('dashboard.settings.payments.connect_btn')}

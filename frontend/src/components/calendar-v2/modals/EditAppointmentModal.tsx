@@ -307,15 +307,15 @@ export function EditAppointmentModal({
               <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">{t('dashboard.calendar.service') || 'Tratamiento'}</p>
             </div>
             <div className="flex items-center gap-2 py-1.5 border-b border-stone-100">
-              <Sparkles size={16} strokeWidth={2} className="text-[#D4AF37]" />
+              <Sparkles size={16} strokeWidth={2} className="text-[#FF6B00]" />
               <p className="text-base font-bold text-stone-700">
                 {selectedAppt ? serviceMap.get(selectedAppt.service_id)?.name : '...'}
               </p>
             </div>
             {selectedAppt?.resource?.name && (
               <div className="mt-2 flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 text-amber-900 border border-amber-200/60 text-xs font-semibold">
-                  <Layers size={13} className="text-[#D4AF37]" />
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-50 text-orange-900 border border-orange-200/60 text-xs font-semibold">
+                  <Layers size={13} className="text-[#FF6B00]" />
                   Recurso: {selectedAppt.resource.name}
                 </span>
               </div>
@@ -326,7 +326,7 @@ export function EditAppointmentModal({
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest flex items-center gap-1.5">
-                <User size={13} className="text-[#D4AF37]" />
+                <User size={13} className="text-[#FF6B00]" />
                 {t('dashboard.calendar.specialist') || 'Especialista Asignado'}
               </p>
             </div>
@@ -345,9 +345,9 @@ export function EditAppointmentModal({
                     return (
                       <div className="flex items-center gap-2.5 truncate">
                         {staff.avatar_url ? (
-                          <img src={staff.avatar_url} alt="" className="w-6 h-6 rounded-full object-cover shrink-0 border border-[#D4AF37]/30" />
+                          <img src={staff.avatar_url} alt="" className="w-6 h-6 rounded-full object-cover shrink-0 border border-[#FF6B00]/30" />
                         ) : (
-                          <div className="w-6 h-6 rounded-full bg-stone-900 text-[#D4AF37] text-[10px] font-bold flex items-center justify-center shrink-0">
+                          <div className="w-6 h-6 rounded-full bg-stone-900 text-[#FF6B00] text-[10px] font-bold flex items-center justify-center shrink-0">
                             {staff.full_name?.charAt(0) || 'E'}
                           </div>
                         )}
@@ -377,9 +377,9 @@ export function EditAppointmentModal({
                     <SelectItem key={s.id} value={s.id} className="py-2.5 rounded-xl text-xs font-medium">
                       <div className="flex items-center gap-2.5">
                         {s.avatar_url ? (
-                          <img src={s.avatar_url} alt="" className="w-5 h-5 rounded-full object-cover shrink-0 border border-[#D4AF37]/30" />
+                          <img src={s.avatar_url} alt="" className="w-5 h-5 rounded-full object-cover shrink-0 border border-[#FF6B00]/30" />
                         ) : (
-                          <div className="w-5 h-5 rounded-full bg-stone-900 text-[#D4AF37] text-[9px] font-bold flex items-center justify-center shrink-0">
+                          <div className="w-5 h-5 rounded-full bg-stone-900 text-[#FF6B00] text-[9px] font-bold flex items-center justify-center shrink-0">
                             {s.full_name?.charAt(0) || 'E'}
                           </div>
                         )}
@@ -400,7 +400,7 @@ export function EditAppointmentModal({
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest flex items-center gap-1.5">
-                  <MapPin size={13} className="text-[#D4AF37]" />
+                  <MapPin size={13} className="text-[#FF6B00]" />
                   {t('dashboard.calendar.location') || 'Sede del Tratamiento'}
                 </p>
               </div>
@@ -426,7 +426,7 @@ export function EditAppointmentModal({
                       const loc = resolvedLocationMap.get(selectedAppt.location_id);
                       return (
                         <div className="flex items-center gap-2 truncate">
-                          <MapPin size={14} className="text-[#D4AF37] shrink-0" />
+                          <MapPin size={14} className="text-[#FF6B00] shrink-0" />
                           <span className="font-bold text-stone-900 truncate">{loc.name}</span>
                           {loc.address && <span className="text-[10px] text-stone-400 truncate">({loc.address})</span>}
                         </div>
@@ -439,7 +439,7 @@ export function EditAppointmentModal({
                     {locations.map((loc) => (
                       <SelectItem key={loc.id} value={loc.id} className="py-2.5 rounded-xl text-xs font-medium">
                         <div className="flex items-center gap-2">
-                          <MapPin size={13} className="text-[#D4AF37]" />
+                          <MapPin size={13} className="text-[#FF6B00]" />
                           <span className="font-semibold text-stone-800">{loc.name}</span>
                           {loc.address && <span className="text-[10px] text-stone-400 truncate">({loc.address})</span>}
                         </div>
@@ -449,7 +449,7 @@ export function EditAppointmentModal({
                 </Select>
               ) : locations.length === 1 ? (
                 <div className="flex items-center gap-2.5 p-3 rounded-xl border border-stone-200/70 bg-stone-50/60 text-xs text-stone-700">
-                  <MapPin size={14} className="text-[#D4AF37] shrink-0" />
+                  <MapPin size={14} className="text-[#FF6B00] shrink-0" />
                   <span className="font-bold text-stone-900">{locations[0].name}</span>
                   {locations[0].address && <span className="text-[10px] text-stone-400 truncate">({locations[0].address})</span>}
                 </div>
@@ -462,7 +462,7 @@ export function EditAppointmentModal({
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest flex items-center gap-1.5">
-                  <Layers size={13} className="text-[#D4AF37]" />
+                  <Layers size={13} className="text-[#FF6B00]" />
                   {t('dashboard.calendar.modal.resource_title') || 'Cabina / Recurso Físico'}
                 </p>
               </div>
@@ -479,7 +479,7 @@ export function EditAppointmentModal({
                     const res = resolvedResourceMap.get(selectedAppt.resource_id) || selectedAppt.resource;
                     return (
                       <div className="flex items-center gap-2 truncate">
-                        <Layers size={14} className="text-[#D4AF37] shrink-0" />
+                        <Layers size={14} className="text-[#FF6B00] shrink-0" />
                         <span className="font-bold text-stone-900 truncate">{res.name}</span>
                         {res.quantity > 1 && <span className="text-[10px] text-stone-400">({res.quantity} unid.)</span>}
                       </div>
@@ -502,7 +502,7 @@ export function EditAppointmentModal({
                     <SelectItem key={res.id} value={res.id} className="py-2.5 rounded-xl text-xs font-medium">
                       <div className="flex items-center justify-between w-full gap-2">
                         <div className="flex items-center gap-2">
-                          <Layers size={13} className="text-[#D4AF37]" />
+                          <Layers size={13} className="text-[#FF6B00]" />
                           <span className="font-semibold text-stone-800">{res.name}</span>
                         </div>
                         {res.quantity > 1 && (
@@ -600,7 +600,7 @@ export function EditAppointmentModal({
               id="edit-appt-notes-textarea"
               value={editNotes}
               onChange={e => setEditNotes(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#D4AF37]/30 focus:border-[#D4AF37] outline-none bg-stone-50 min-h-[56px] h-auto resize-none text-[13px] placeholder:italic shadow-2xs overflow-hidden transition-all"
+              className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#FF6B00]/30 focus:border-[#FF6B00] outline-none bg-stone-50 min-h-[56px] h-auto resize-none text-[13px] placeholder:italic shadow-2xs overflow-hidden transition-all"
               placeholder={t('dashboard.calendar.modal.add_notes') || 'Añadir nota...'}
             />
             {selectedAppt && editNotes !== (selectedAppt.notes || '') && (

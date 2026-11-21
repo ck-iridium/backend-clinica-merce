@@ -50,11 +50,11 @@ export default function BookingLayoutTab({ settings, setSettings }: BookingLayou
                 onClick={() => handleLayoutChange('grid')}
                 className={`text-left w-full relative overflow-hidden transition-all duration-300 p-5 rounded-3xl border-2 group
                   ${currentLayout === 'grid' 
-                    ? 'border-[#D4AF37] bg-[#D4AF37]/5 shadow-sm' 
+                    ? 'border-[#FF6B00] bg-[#FF6B00]/5 shadow-sm' 
                     : 'border-stone-200/80 bg-white hover:border-stone-300 hover:bg-stone-50/50'}`}
               >
                 <div className="flex items-start gap-4">
-                  <div className={`p-3 rounded-2xl transition-colors ${currentLayout === 'grid' ? 'bg-[#D4AF37] text-stone-950 shadow-sm' : 'bg-stone-100 text-stone-400 group-hover:bg-stone-200'}`}>
+                  <div className={`p-3 rounded-2xl transition-colors ${currentLayout === 'grid' ? 'bg-[#FF6B00] text-white shadow-sm' : 'bg-stone-100 text-stone-400 group-hover:bg-stone-200'}`}>
                     <Grip size={22} strokeWidth={1.5} />
                   </div>
                   <div>
@@ -70,11 +70,11 @@ export default function BookingLayoutTab({ settings, setSettings }: BookingLayou
                 onClick={() => handleLayoutChange('list')}
                 className={`text-left w-full relative overflow-hidden transition-all duration-300 p-5 rounded-3xl border-2 group
                   ${currentLayout === 'list' 
-                    ? 'border-[#D4AF37] bg-[#D4AF37]/5 shadow-sm' 
+                    ? 'border-[#FF6B00] bg-[#FF6B00]/5 shadow-sm' 
                     : 'border-stone-200/80 bg-white hover:border-stone-300 hover:bg-stone-50/50'}`}
               >
                 <div className="flex items-start gap-4">
-                  <div className={`p-3 rounded-2xl transition-colors ${currentLayout === 'list' ? 'bg-[#D4AF37] text-stone-950 shadow-sm' : 'bg-stone-100 text-stone-400 group-hover:bg-stone-200'}`}>
+                  <div className={`p-3 rounded-2xl transition-colors ${currentLayout === 'list' ? 'bg-[#FF6B00] text-white shadow-sm' : 'bg-stone-100 text-stone-400 group-hover:bg-stone-200'}`}>
                     <ListIcon size={22} strokeWidth={1.5} />
                   </div>
                   <div>

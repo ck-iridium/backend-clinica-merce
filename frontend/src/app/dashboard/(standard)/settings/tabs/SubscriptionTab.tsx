@@ -408,12 +408,12 @@ export default function SubscriptionTab() {
             return (
               <SpotlightCard 
                 key={plan.id}
-                spotlightColor={isCurrent ? "rgba(212, 175, 55, 0.22)" : "rgba(212, 175, 55, 0.12)"}
+                spotlightColor={isCurrent ? "rgba(255, 107, 0, 0.22)" : "rgba(255, 107, 0, 0.12)"}
                 className={`p-6 md:p-8 flex flex-col justify-between
-                  ${isCurrent ? 'border-[#D4AF37] ring-1 ring-[#D4AF37]/30 shadow-sm relative' : 'border-stone-200/80 hover:border-[#D4AF37]/40'}`}
+                  ${isCurrent ? 'border-[#FF6B00] ring-1 ring-[#FF6B00]/30 shadow-sm relative' : 'border-stone-200/80 hover:border-[#FF6B00]/40'}`}
               >
                 {isCurrent && (
-                  <div className="absolute top-0 right-0 bg-[#D4AF37] text-stone-950 px-3 py-1 rounded-bl-xl text-[9px] font-black uppercase tracking-widest z-20">
+                  <div className="absolute top-0 right-0 bg-[#FF6B00] text-white px-3 py-1 rounded-bl-xl text-[9px] font-black uppercase tracking-widest z-20">
                     Activo
                   </div>
                 )}
@@ -446,7 +446,7 @@ export default function SubscriptionTab() {
                   disabled={isCurrent || creatingBizumRequest}
                   variant={isCurrent ? "outline" : "luxury"}
                   className={`w-full py-5 rounded-2xl text-xs font-bold transition-all duration-300 flex items-center justify-center gap-1.5 ${
-                    isCurrent ? 'opacity-50 cursor-not-allowed bg-stone-50' : 'shadow-luxury text-stone-950'
+                    isCurrent ? 'opacity-50 cursor-not-allowed bg-stone-50' : 'shadow-luxury !text-white'
                   }`}
                 >
                   {creatingBizumRequest && selectedPlanForBizum?.id === plan.id ? (
@@ -537,7 +537,7 @@ export default function SubscriptionTab() {
                     onClick={handleConfirmBizumSent}
                     disabled={confirmingBizumSent}
                     variant="luxury"
-                    className="w-full py-5 rounded-2xl text-xs font-bold shadow-luxury text-stone-950 flex items-center justify-center gap-1.5"
+                    className="w-full py-5 rounded-2xl text-xs font-bold shadow-luxury !text-white flex items-center justify-center gap-1.5"
                   >
                     {confirmingBizumSent ? (
                       <>

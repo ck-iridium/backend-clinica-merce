@@ -170,7 +170,7 @@ export default function VoiceRecorderButton({
   return (
     <div className="relative flex items-center justify-center shrink-0">
       {isRecording && (
-        <span className={`absolute inline-flex ${isSmall ? 'h-9 w-9' : 'h-11 w-11'} rounded-full bg-[#d4af37]/25 animate-ping`} />
+        <span className={`absolute inline-flex ${isSmall ? 'h-9 w-9' : 'h-11 w-11'} rounded-full bg-[#FF6B00]/25 animate-ping`} />
       )}
       <button
         type="button"
@@ -178,12 +178,12 @@ export default function VoiceRecorderButton({
         disabled={disabled}
         className={`relative z-10 flex ${isSmall ? 'h-8 w-8 rounded-xl' : 'h-10 w-10 rounded-xl'} items-center justify-center transition-all duration-300 shadow-xs ${
           isRecording
-            ? 'bg-[#d4af37] text-stone-950 scale-105 shadow-[#d4af37]/30 border border-[#d4af37]'
+            ? 'bg-[#FF6B00] text-white scale-105 shadow-[#FF6B00]/30 border border-[#FF6B00]'
             : 'bg-white hover:bg-stone-50 border border-stone-200/80 text-stone-500 hover:text-stone-800'
         } ${disabled ? 'opacity-40 cursor-not-allowed' : 'active:scale-95'}`}
         title={isRecording ? 'Detener escucha' : 'Hablar al Asistente'}
       >
-        <Mic size={isSmall ? 15 : 18} className={isRecording ? 'animate-pulse' : ''} strokeWidth={isRecording ? 2.5 : 1.8} />
+        <Mic size={isSmall ? 15 : 18} className={isRecording ? 'animate-pulse text-white' : ''} strokeWidth={isRecording ? 2.5 : 1.8} />
       </button>
     </div>
   );

@@ -43,7 +43,7 @@ export function DataGridFilters({
             onClick={() => onSelectCategory(cat.id)}
             className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
               selectedCategory === cat.id
-                ? 'bg-[#D4AF37] text-stone-950 font-bold shadow-xs'
+                ? 'bg-[#FF6B00] text-white font-bold shadow-sm'
                 : 'bg-stone-100/80 text-stone-600 hover:bg-stone-200/80 hover:text-stone-900'
             }`}
           >
@@ -61,7 +61,7 @@ export function DataGridFilters({
           value={searchQuery}
           onChange={e => onSearchChange(e.target.value)}
           placeholder={language === 'fr' ? 'Rechercher des traitements...' : language === 'en' ? 'Search services...' : 'Buscar tratamientos...'}
-          className="w-full pl-11 pr-4 py-2.5 bg-stone-50/80 hover:bg-stone-100/60 focus:bg-white border border-stone-200 focus:border-[#D4AF37] rounded-xl text-xs font-medium text-stone-800 outline-none transition-all focus:ring-1 focus:ring-[#D4AF37]"
+          className="w-full pl-11 pr-4 py-2.5 bg-stone-50/80 hover:bg-stone-100/60 focus:bg-white border border-stone-200 focus:border-[#FF6B00] rounded-xl text-xs font-medium text-stone-800 outline-none transition-all focus:ring-1 focus:ring-[#FF6B00]"
         />
       </div>
     </div>

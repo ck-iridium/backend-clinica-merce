@@ -140,7 +140,7 @@ export default function ManageCategoriesModal({
                   onClick={() => setShowCategoryModal(true)}
                   variant="luxury"
                   size="sm"
-                  className="rounded-xl px-4 py-2 font-bold shadow-luxury text-stone-950 gap-1.5 shrink-0"
+                  className="rounded-xl px-4 py-2 font-bold shadow-luxury text-white gap-1.5 shrink-0"
                 >
                   <Plus size={16} strokeWidth={2} /> {t('dashboard.services.new_category')}
                 </Button>
@@ -164,7 +164,7 @@ export default function ManageCategoriesModal({
                               type="text" 
                               value={editingCategoryName} 
                               onChange={(e) => setEditingCategoryName(e.target.value)} 
-                              className="w-full px-4 py-2.5 rounded-xl border border-stone-200 font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 focus:border-[#D4AF37] bg-white transition-all"
+                              className="w-full px-4 py-2.5 rounded-xl border border-stone-200 font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/30 focus:border-[#FF6B00] bg-white transition-all"
                             />
                           </div>
                           
@@ -195,7 +195,7 @@ export default function ManageCategoriesModal({
 
                           <div className="grid grid-cols-2 gap-2 mt-1">
                             <Button id="services-category-edit-cancel-btn" type="button" variant="outline" size="sm" onClick={() => {setEditingCategoryId(null); setEditingCategoryImage(null);}} className="rounded-xl font-bold text-xs uppercase">{t('dashboard.services.cancel')}</Button>
-                            <Button id="services-category-edit-submit-btn" type="submit" variant="luxury" size="sm" className="rounded-xl font-bold text-xs uppercase shadow-luxury text-stone-950">{t('dashboard.services.save')}</Button>
+                            <Button id="services-category-edit-submit-btn" type="submit" variant="luxury" size="sm" className="rounded-xl font-bold text-xs uppercase shadow-luxury text-white">{t('dashboard.services.save')}</Button>
                           </div>
                         </div>
                       </form>
@@ -264,7 +264,7 @@ export default function ManageCategoriesModal({
                 value={newCategoryName} 
                 onChange={(e) => setNewCategoryName(e.target.value)} 
                 placeholder={t('dashboard.services.new_category_placeholder')} 
-                className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 focus:border-[#D4AF37] transition-all text-sm font-semibold placeholder:text-stone-400" 
+                className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/30 focus:border-[#FF6B00] transition-all text-sm font-semibold placeholder:text-stone-400" 
               />
             </form>
           </div>
@@ -273,7 +273,7 @@ export default function ManageCategoriesModal({
             <Button id="services-new-category-cancel-btn" type="button" variant="outline" size="lg" onClick={() => setShowCategoryModal(false)} className="flex-1 rounded-xl font-bold text-stone-700 h-11">
               {t('dashboard.services.cancel')}
             </Button>
-            <Button id="services-new-category-submit-btn" form="services-new-category-form" type="submit" variant="luxury" size="lg" className="flex-1 font-bold shadow-luxury text-stone-950 rounded-xl h-11">
+            <Button id="services-new-category-submit-btn" form="services-new-category-form" type="submit" variant="luxury" size="lg" className="flex-1 font-bold shadow-luxury text-white rounded-xl h-11">
               {t('dashboard.services.create')}
             </Button>
           </DialogFooter>

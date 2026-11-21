@@ -25,7 +25,7 @@ export function DataGridBulkBar({
   return (
     <div className="bg-[#1c1917] text-white rounded-3xl p-4 md:px-6 shadow-2xl border border-stone-800 flex flex-col sm:flex-row items-center justify-between gap-4 animate-in slide-in-from-top-4 duration-300">
       <div className="flex items-center gap-3">
-        <span className="w-6 h-6 rounded-full bg-[#D4AF37] text-stone-950 flex items-center justify-center text-xs font-black shadow-xs">
+        <span className="w-6 h-6 rounded-full bg-[#FF6B00] text-white flex items-center justify-center text-xs font-black shadow-xs">
           {selectedCount}
         </span>
         <span className="text-xs font-semibold text-stone-300 tracking-wide">

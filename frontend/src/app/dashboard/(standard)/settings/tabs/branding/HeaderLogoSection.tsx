@@ -130,7 +130,7 @@ export default function HeaderLogoSection({
             type="button"
             variant="luxury"
             onClick={() => logoAppRef.current?.click()}
-            className="text-xs font-bold rounded-2xl py-5 w-full shadow-luxury text-stone-950 flex items-center justify-center gap-2"
+            className="text-xs font-bold rounded-2xl py-5 w-full shadow-luxury !text-white flex items-center justify-center gap-2"
           >
             <span>
               {settings.logo_app_b64 

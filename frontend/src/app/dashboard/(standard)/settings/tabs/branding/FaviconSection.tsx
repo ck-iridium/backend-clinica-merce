@@ -88,7 +88,7 @@ export default function FaviconSection({
             type="button"
             variant="luxury"
             onClick={() => faviconInputRef.current?.click()}
-            className="rounded-2xl px-6 py-5 font-bold text-xs shadow-luxury text-stone-950"
+            className="rounded-2xl px-6 py-5 font-bold text-xs shadow-luxury !text-white"
           >
             {t('dashboard.branding.favicon.upload_btn') || 'Cargar Favicon'}
           </Button>

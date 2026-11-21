@@ -536,15 +536,15 @@ function CalendarContent() {
                       onClick={() => c.handleMobileDateSelect(date)}
                       className={`snap-center flex-shrink-0 w-14 rounded-xl flex flex-col items-center justify-center py-2 transition-all border-2
                         ${isSelected
-                          ? 'bg-primary/5 border-primary shadow-md shadow-primary/10 scale-105'
+                          ? 'bg-[#FF6B00] border-[#FF6B00] text-white shadow-md shadow-orange-500/20 scale-105'
                           : 'bg-white border-stone-100 text-stone-400 hover:border-stone-200'
                         }
                       `}
                     >
-                      <span className={`text-[8px] font-bold uppercase tracking-wider ${isSelected ? 'text-primary' : 'text-stone-300'}`}>
+                      <span className={`text-[8px] font-bold uppercase tracking-wider ${isSelected ? 'text-white' : 'text-stone-300'}`}>
                         {date.toLocaleDateString(getLocaleString(), { weekday: 'short' }).replace('.', '')}
                       </span>
-                      <span className={`text-base font-serif italic font-black ${isSelected ? 'text-stone-800' : 'text-stone-400'}`}>
+                      <span className={`text-base font-serif italic font-black ${isSelected ? 'text-white' : 'text-stone-800'}`}>
                         {date.getDate()}
                       </span>
                     </button>

@@ -160,10 +160,10 @@ export default function SeoReviewModal({
             size="sm"
             onClick={onApply}
             disabled={isApplying}
-            className="rounded-xl px-6 text-xs font-bold shadow-luxury text-stone-950 flex items-center gap-2"
+            className="rounded-xl px-6 text-xs font-bold shadow-luxury !text-white flex items-center gap-2"
           >
             {isApplying ? (
-              <RefreshCw size={16} className="animate-spin text-stone-900" />
+              <RefreshCw size={16} className="animate-spin text-white" />
             ) : (
               <Check size={16} strokeWidth={2} />
             )}

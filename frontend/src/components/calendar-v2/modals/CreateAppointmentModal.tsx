@@ -625,7 +625,7 @@ export function CreateAppointmentModal({
             type="submit"
             variant="luxury"
             size="lg"
-            className="flex-1 rounded-xl shadow-luxury text-stone-950 font-bold h-12"
+            className="flex-1 rounded-xl shadow-luxury text-white font-bold h-12"
           >
             {saving ? (t('dashboard.calendar.modal.saving') || 'Guardando...') : (modalType === 'appointment' ? (t('dashboard.calendar.modal.schedule') || 'Agendar Cita') : (t('dashboard.calendar.modal.block_btn') || 'Bloquear'))}
           </Button>

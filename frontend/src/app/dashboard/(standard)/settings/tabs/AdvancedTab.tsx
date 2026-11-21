@@ -403,9 +403,9 @@ export default function AdvancedTab({ settings, setSettings }: AdvancedTabProps)
               variant="luxury"
               onClick={handleExportData}
               disabled={isExporting}
-              className="w-full sm:w-auto px-6 py-5 rounded-2xl font-bold text-xs shadow-luxury text-stone-950 flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-6 py-5 rounded-2xl font-bold text-xs shadow-luxury !text-white flex items-center justify-center gap-2"
             >
-              <Download size={16} className={isExporting ? 'animate-bounce text-stone-950' : ''} />
+              <Download size={16} className={isExporting ? 'animate-bounce text-white' : ''} />
               {isExporting ? 'Generando Archivo...' : 'Descargar Copia (.json)'}
             </Button>
           </div>

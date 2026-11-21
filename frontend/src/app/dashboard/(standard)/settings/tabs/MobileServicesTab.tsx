@@ -318,15 +318,15 @@ export default function MobileServicesTab({ settings, setSettings }: MobileServi
                 className={`p-5 rounded-2xl border text-left transition-all duration-300 flex flex-col gap-2.5 group outline-none
                   ${
                     isSelected
-                      ? 'border-[#D4AF37] bg-[#D4AF37]/5 shadow-sm ring-1 ring-[#D4AF37]/20'
-                      : 'border-stone-200/80 hover:border-[#D4AF37]/40 bg-white'
+                      ? 'border-[#FF6B00] bg-[#FF6B00]/5 shadow-sm ring-1 ring-[#FF6B00]/20'
+                      : 'border-stone-200/80 hover:border-[#FF6B00]/40 bg-white'
                   }`}
               >
                 <span
                   className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors
                     ${
                       isSelected
-                        ? 'bg-[#D4AF37] text-stone-950 shadow-sm'
+                        ? 'bg-[#FF6B00] text-white shadow-sm'
                         : 'bg-stone-100 text-stone-400 group-hover:bg-stone-200'
                     }`}
                 >
@@ -451,7 +451,7 @@ export default function MobileServicesTab({ settings, setSettings }: MobileServi
                     type="submit"
                     variant="luxury"
                     size="sm"
-                    className="rounded-xl px-4 font-bold text-xs shadow-luxury text-stone-950 flex items-center gap-1.5"
+                    className="rounded-xl px-4 font-bold text-xs shadow-luxury !text-white flex items-center gap-1.5"
                   >
                     <Plus size={13} strokeWidth={2} />
                     {t('settings.mobile_services.add')}

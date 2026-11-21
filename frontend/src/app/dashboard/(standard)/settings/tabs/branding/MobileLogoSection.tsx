@@ -151,7 +151,7 @@ export default function MobileLogoSection({
               type="button"
               variant="luxury"
               onClick={() => logoMobileRef.current?.click()}
-              className="text-xs font-bold rounded-2xl py-5 flex-1 shadow-luxury text-stone-950 transition-all duration-300"
+              className="text-xs font-bold rounded-2xl py-5 flex-1 shadow-luxury !text-white transition-all duration-300"
             >
               {settings.logo_mobile_b64 
                 ? (t('dashboard.branding.mobile_logo.change_btn') || 'Cambiar Isotipo')

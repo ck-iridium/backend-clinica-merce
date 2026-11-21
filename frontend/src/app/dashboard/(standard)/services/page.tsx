@@ -294,7 +294,7 @@ export default function ServicesPage() {
             asChild
             variant="luxury"
             size="sm"
-            className="rounded-xl h-10 text-xs font-bold px-4 gap-1.5 shadow-luxury text-stone-950"
+            className="rounded-xl h-10 text-xs font-bold px-4 gap-1.5 shadow-luxury text-white"
           >
             <Link href="/dashboard/services/new">
               <Plus size={16} strokeWidth={2} />

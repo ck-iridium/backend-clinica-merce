@@ -319,10 +319,10 @@ export default function RosteringManager({ staffId, staffName }: RosteringManage
                 type="submit"
                 variant="luxury"
                 disabled={saving}
-                className="col-span-2 mt-2 h-11 rounded-xl text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-2"
+                className="col-span-2 mt-2 h-11 rounded-xl text-xs font-bold !text-white uppercase tracking-wider flex items-center justify-center gap-2"
               >
-                {saving ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
-                <span>{t('dashboard.my_schedule.add_weekly_btn')}</span>
+                {saving ? <Loader2 size={14} className="animate-spin text-white" /> : <Plus size={14} className="text-white" />}
+                <span className="!text-white">{t('dashboard.my_schedule.add_weekly_btn')}</span>
               </Button>
             </form>
           )}
@@ -351,7 +351,7 @@ export default function RosteringManager({ staffId, staffName }: RosteringManage
                           </span>
                         </div>
                         <div className="flex items-center gap-1 text-xs text-stone-400 font-medium">
-                          <MapPin size={12} className="text-[#d4af37]" />
+                          <MapPin size={12} className="text-[#FF6B00]" />
                           <span>{locName}</span>
                         </div>
                       </div>
@@ -376,7 +376,7 @@ export default function RosteringManager({ staffId, staffName }: RosteringManage
         {/* ── COLUMNA 2: EXCEPCIONES ── */}
         <div className="bg-white border border-stone-100 rounded-[2.5rem] p-6 md:p-8 space-y-6 shadow-sm">
           <div className="space-y-1">
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-[#B38F26] bg-[#D4AF37]/10 px-3 py-1 rounded-full border border-[#D4AF37]/20">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-[#FF6B00] bg-orange-50 px-3 py-1 rounded-full border border-orange-200">
               {t('dashboard.my_schedule.exception_label')}
             </span>
             <h3 className="text-2xl font-serif text-stone-900 pt-2 font-semibold">{t('dashboard.my_schedule.exception_title')}</h3>
@@ -390,7 +390,7 @@ export default function RosteringManager({ staffId, staffName }: RosteringManage
               <div className="space-y-1.5 col-span-2">
                 <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.my_schedule.date_label')}</label>
                 <input id="roster-exception-date-input" type="date" value={excDate} onChange={e => setExcDate(e.target.value)}
-                  className="w-full bg-white border border-stone-200/80 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37] font-medium text-stone-800 transition-all shadow-xs"
+                  className="w-full bg-white border border-stone-200/80 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#FF6B00] focus:border-[#FF6B00] font-medium text-stone-800 transition-all shadow-xs"
                   required />
               </div>
 
@@ -415,13 +415,13 @@ export default function RosteringManager({ staffId, staffName }: RosteringManage
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.my_schedule.start_label')}</label>
                 <input id="roster-exception-start-input" type="time" value={excStart} onChange={e => setExcStart(e.target.value)}
-                  className="w-full bg-white border border-stone-200/80 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37] font-medium text-stone-800 transition-all shadow-xs"
+                  className="w-full bg-white border border-stone-200/80 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#FF6B00] focus:border-[#FF6B00] font-medium text-stone-800 transition-all shadow-xs"
                   required />
               </div>
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.my_schedule.end_label')}</label>
                 <input id="roster-exception-end-input" type="time" value={excEnd} onChange={e => setExcEnd(e.target.value)}
-                  className="w-full bg-white border border-stone-200/80 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37] font-medium text-stone-800 transition-all shadow-xs"
+                  className="w-full bg-white border border-stone-200/80 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#FF6B00] focus:border-[#FF6B00] font-medium text-stone-800 transition-all shadow-xs"
                   required />
               </div>
 
@@ -430,10 +430,10 @@ export default function RosteringManager({ staffId, staffName }: RosteringManage
                 type="submit"
                 variant="luxury"
                 disabled={saving}
-                className="col-span-2 mt-2 h-11 rounded-xl text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-2"
+                className="col-span-2 mt-2 h-11 rounded-xl text-xs font-bold !text-white uppercase tracking-wider flex items-center justify-center gap-2"
               >
-                {saving ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
-                <span>{t('dashboard.my_schedule.add_exception_btn')}</span>
+                {saving ? <Loader2 size={14} className="animate-spin text-white" /> : <Plus size={14} className="text-white" />}
+                <span className="!text-white">{t('dashboard.my_schedule.add_exception_btn')}</span>
               </Button>
             </form>
           )}

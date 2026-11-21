@@ -73,7 +73,7 @@ export function DataGridRow({
           />
           <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${
             isChecked 
-              ? 'bg-[#d4af37] border-[#d4af37]' 
+              ? 'bg-[#FF6B00] border-[#FF6B00]' 
               : 'border-stone-300 bg-white hover:border-stone-400'
           }`}>
             {isChecked && (
@@ -92,7 +92,7 @@ export function DataGridRow({
             <div 
               id={`services-image-cover-div-${svc.id}`}
               onClick={onOpenImagePicker}
-              className="relative w-12 h-12 rounded-xl overflow-hidden cursor-pointer group shadow-sm border border-stone-200 hover:border-[#d4af37] hover:scale-105 transition-all"
+              className="relative w-12 h-12 rounded-xl overflow-hidden cursor-pointer group shadow-sm border border-stone-200 hover:border-[#FF6B00] hover:scale-105 transition-all"
               title={language === 'fr' ? "Changer l'image" : language === 'en' ? "Change image" : "Cambiar imagen"}
             >
               <img 
@@ -109,10 +109,10 @@ export function DataGridRow({
               id={`services-image-placeholder-btn-${svc.id}`}
               type="button"
               onClick={onOpenImagePicker}
-              className="w-12 h-12 rounded-xl border border-dashed border-stone-300 hover:border-[#d4af37] flex items-center justify-center text-stone-400 hover:text-[#d4af37] hover:bg-stone-50 transition-all cursor-pointer group bg-stone-50/50"
+              className="w-12 h-12 rounded-xl border border-dashed border-stone-300 hover:border-[#FF6B00] flex items-center justify-center text-stone-400 hover:text-[#FF6B00] hover:bg-stone-50 transition-all cursor-pointer group bg-stone-50/50"
               title={language === 'fr' ? "Ajouter une image" : language === 'en' ? "Add image" : "Añadir imagen"}
             >
-              <span className="text-lg font-light group-hover:scale-110 transition-all text-stone-400 group-hover:text-[#d4af37]">+</span>
+              <span className="text-lg font-light group-hover:scale-110 transition-all text-stone-400 group-hover:text-[#FF6B00]">+</span>
             </button>
           )}
         </div>
@@ -145,11 +145,11 @@ export function DataGridRow({
           >
             <SelectTrigger
               id={`services-category-select-${svc.id}`}
-              className="h-8.5 rounded-xl bg-stone-50/80 hover:bg-stone-100/80 border-stone-200/80 focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37] text-xs font-semibold text-stone-800 transition-all shadow-2xs gap-1.5"
+              className="h-8.5 rounded-xl bg-stone-50/80 hover:bg-stone-100/80 border-stone-200/80 focus:ring-1 focus:ring-[#FF6B00] focus:border-[#FF6B00] text-xs font-semibold text-stone-800 transition-all shadow-2xs gap-1.5"
             >
               <div className="flex items-center gap-1.5 truncate">
                 {isSavingCategory && (
-                  <Loader2 size={12} className="animate-spin text-[#D4AF37] shrink-0" />
+                  <Loader2 size={12} className="animate-spin text-[#FF6B00] shrink-0" />
                 )}
                 <SelectValue placeholder={language === 'fr' ? 'Sans catégorie' : language === 'en' ? 'No Category' : 'Sin Categoría'} />
               </div>
@@ -183,11 +183,11 @@ export function DataGridRow({
                 (e.target as HTMLInputElement).blur();
               }
             }}
-            className="w-full pr-10 pl-3 py-2 bg-stone-50/70 hover:bg-stone-100/70 focus:bg-white border border-stone-200 focus:border-[#D4AF37] rounded-xl text-xs font-bold text-stone-800 outline-none text-right transition-all focus:ring-1 focus:ring-[#D4AF37]"
+            className="w-full pr-10 pl-3 py-2 bg-stone-50/70 hover:bg-stone-100/70 focus:bg-white border border-stone-200 focus:border-[#FF6B00] rounded-xl text-xs font-bold text-stone-800 outline-none text-right transition-all focus:ring-1 focus:ring-[#FF6B00]"
           />
           <span className="absolute right-2.5 text-stone-400 text-[10px] font-bold pointer-events-none">min</span>
           {isSavingDuration && (
-            <Loader2 size={12} className="absolute left-2 animate-spin text-[#D4AF37]" />
+            <Loader2 size={12} className="absolute left-2 animate-spin text-[#FF6B00]" />
           )}
         </div>
       </td>
@@ -207,11 +207,11 @@ export function DataGridRow({
                 (e.target as HTMLInputElement).blur();
               }
             }}
-            className="w-full pr-7 pl-3 py-2 bg-stone-50/70 hover:bg-stone-100/70 focus:bg-white border border-stone-200 focus:border-[#D4AF37] rounded-xl text-xs font-bold text-stone-800 outline-none text-right transition-all focus:ring-1 focus:ring-[#D4AF37]"
+            className="w-full pr-7 pl-3 py-2 bg-stone-50/70 hover:bg-stone-100/70 focus:bg-white border border-stone-200 focus:border-[#FF6B00] rounded-xl text-xs font-bold text-stone-800 outline-none text-right transition-all focus:ring-1 focus:ring-[#FF6B00]"
           />
           <span className="absolute right-2.5 text-stone-400 text-xs font-bold pointer-events-none">€</span>
           {isSavingPrice && (
-            <Loader2 size={12} className="absolute left-2 animate-spin text-[#D4AF37]" />
+            <Loader2 size={12} className="absolute left-2 animate-spin text-[#FF6B00]" />
           )}
         </div>
       </td>
@@ -220,7 +220,7 @@ export function DataGridRow({
       <td className="p-4 text-center">
         <div className="flex justify-center items-center">
           {isStatusUpdating ? (
-            <Loader2 size={16} className="animate-spin text-[#D4AF37]" />
+            <Loader2 size={16} className="animate-spin text-[#FF6B00]" />
           ) : (
             <label className="relative inline-flex items-center cursor-pointer">
               <input

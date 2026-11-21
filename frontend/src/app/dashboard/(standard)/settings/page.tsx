@@ -425,7 +425,7 @@ export default function SettingsPage() {
               size="lg"
               className={`w-full py-6 rounded-2xl font-bold transition-all flex items-center justify-center gap-2 ${
                 hasChanges 
-                  ? 'shadow-luxury text-stone-950 hover:scale-[1.01] active:scale-[0.99]' 
+                  ? 'shadow-luxury !text-white hover:scale-[1.01] active:scale-[0.99]' 
                   : 'opacity-40 cursor-not-allowed text-stone-400 bg-stone-50 border-stone-200'
               }`}
             >
@@ -485,7 +485,7 @@ export default function SettingsPage() {
           disabled={saving || !hasChanges}
           variant="luxury"
           size="lg"
-          className="px-6 py-6 rounded-full font-bold shadow-luxury text-stone-950 flex items-center justify-center gap-2 active:scale-95 transition-transform"
+          className="px-6 py-6 rounded-full font-bold shadow-luxury !text-white flex items-center justify-center gap-2 active:scale-95 transition-transform"
         >
           <Save size={18} strokeWidth={2} />
           {saving ? t('dashboard.settings.saving') : t('dashboard.general.save')}
@@ -510,7 +510,7 @@ export default function SettingsPage() {
                 type="text" 
                 value={newBlock.reason} 
                 onChange={e => setNewBlock({ ...newBlock, reason: e.target.value })} 
-                className="w-full px-4 py-2.5 bg-stone-50/70 border border-stone-200 rounded-xl focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/30 transition-all outline-none font-semibold text-sm text-stone-800" 
+                className="w-full px-4 py-2.5 bg-stone-50/70 border border-stone-200 rounded-xl focus:border-[#FF6B00] focus:ring-2 focus:ring-[#FF6B00]/30 transition-all outline-none font-semibold text-sm text-stone-800" 
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -522,7 +522,7 @@ export default function SettingsPage() {
                   type="date" 
                   value={newBlock.start_time} 
                   onChange={e => setNewBlock({ ...newBlock, start_time: e.target.value })} 
-                  className="w-full px-3 py-2 bg-stone-50/70 border border-stone-200 rounded-xl focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/30 font-mono text-xs outline-none text-stone-800 font-semibold" 
+                  className="w-full px-3 py-2 bg-stone-50/70 border border-stone-200 rounded-xl focus:border-[#FF6B00] focus:ring-2 focus:ring-[#FF6B00]/30 font-mono text-xs outline-none text-stone-800 font-semibold" 
                 />
               </div>
               <div className="grid gap-1.5">
@@ -533,14 +533,14 @@ export default function SettingsPage() {
                   type="date" 
                   value={newBlock.end_time} 
                   onChange={e => setNewBlock({ ...newBlock, end_time: e.target.value })} 
-                  className="w-full px-3 py-2 bg-stone-50/70 border border-stone-200 rounded-xl focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/30 font-mono text-xs outline-none text-stone-800 font-semibold" 
+                  className="w-full px-3 py-2 bg-stone-50/70 border border-stone-200 rounded-xl focus:border-[#FF6B00] focus:ring-2 focus:ring-[#FF6B00]/30 font-mono text-xs outline-none text-stone-800 font-semibold" 
                 />
               </div>
             </div>
             <label className="flex items-center gap-3 cursor-pointer p-3.5 bg-stone-50/80 rounded-2xl border border-stone-200/80">
               <div className="relative">
                 <input id="absence-repeat-annual-checkbox" type="checkbox" checked={newBlock.is_annual_holiday} onChange={e => setNewBlock({ ...newBlock, is_annual_holiday: e.target.checked })} className="sr-only" />
-                <div className={`block w-10 h-6 rounded-full transition-colors ${newBlock.is_annual_holiday ? 'bg-[#D4AF37]' : 'bg-stone-300'}`}></div>
+                <div className={`block w-10 h-6 rounded-full transition-colors ${newBlock.is_annual_holiday ? 'bg-[#FF6B00]' : 'bg-stone-300'}`}></div>
                 <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${newBlock.is_annual_holiday ? 'translate-x-4' : ''}`}></div>
               </div>
               <span className="text-xs font-bold text-stone-800">{t('dashboard.settings.absences.repeat_annually')}</span>
@@ -549,7 +549,7 @@ export default function SettingsPage() {
               <Button id="absence-cancel-btn" type="button" variant="outline" size="sm" onClick={() => setShowBlockModal(false)} className="rounded-xl px-4 font-bold text-xs text-stone-600">
                 {t('dashboard.general.cancel')}
               </Button>
-              <Button id="absence-submit-btn" type="submit" variant="luxury" size="sm" disabled={addingBlock} className="rounded-xl px-5 font-bold text-xs shadow-luxury text-stone-950">
+              <Button id="absence-submit-btn" type="submit" variant="luxury" size="sm" disabled={addingBlock} className="rounded-xl px-5 font-bold text-xs shadow-luxury !text-white">
                 {addingBlock ? t('dashboard.settings.saving') : t('dashboard.settings.absences.add_btn')}
               </Button>
             </div>

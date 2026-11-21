@@ -111,7 +111,7 @@ export default function FooterLogoSection({
               type="button"
               variant="luxury"
               onClick={() => logoFooterRef.current?.click()}
-              className="text-xs font-bold rounded-2xl py-5 flex-1 shadow-luxury text-stone-950 transition-all duration-300"
+              className="text-xs font-bold rounded-2xl py-5 flex-1 shadow-luxury !text-white transition-all duration-300"
             >
               {settings.logo_footer_b64 
                 ? (t('dashboard.branding.footer_logo.change_btn') || 'Cambiar Logotipo del Footer')

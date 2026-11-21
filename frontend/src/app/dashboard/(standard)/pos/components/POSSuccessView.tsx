@@ -98,7 +98,7 @@ export function POSSuccessView({
           onClick={onNewSale}
           variant="luxury"
           size="lg"
-          className="w-full sm:w-auto h-12 px-7 gap-2 shadow-luxury text-stone-950 font-bold"
+          className="w-full sm:w-auto h-12 px-7 gap-2 shadow-luxury !text-white font-bold"
         >
           <Plus size={16} />
           <span>{t('dashboard.pos.new_sale') || 'Nueva Venta'}</span>

@@ -212,7 +212,7 @@ export default function ConsentsTab() {
               type="submit" 
               variant="luxury"
               disabled={isSaving}
-              className="px-6 py-2.5 rounded-xl font-bold shadow-luxury text-xs text-stone-950 flex items-center gap-2"
+              className="px-6 py-2.5 rounded-xl font-bold shadow-luxury text-xs !text-white flex items-center gap-2"
             >
               <Save size={15} />
               {isSaving ? 'Guardando...' : 'Guardar Plantilla'}
@@ -227,7 +227,7 @@ export default function ConsentsTab() {
     <div className="bg-white rounded-3xl md:rounded-[2.5rem] border border-stone-200/80 p-5 md:p-8 shadow-sm animate-in slide-in-from-bottom-2 duration-300">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-stone-100">
         <div className="flex items-center gap-3">
-          <span className="w-10 h-10 rounded-2xl bg-[#D4AF37]/10 border border-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37] shadow-inner">
+          <span className="w-10 h-10 rounded-2xl bg-[#FF6B00]/10 border border-[#FF6B00]/20 flex items-center justify-center text-[#FF6B00] shadow-inner">
             <FileText size={18} strokeWidth={1.5} />
           </span>
           <div>
@@ -240,7 +240,7 @@ export default function ConsentsTab() {
           type="button"
           variant="luxury"
           onClick={() => setEditingTemplate({ title: '', body_text: '' })}
-          className="rounded-xl px-5 font-bold text-xs shadow-luxury text-stone-950 flex items-center justify-center gap-2 self-start sm:self-auto"
+          className="rounded-xl px-5 font-bold text-xs shadow-luxury !text-white flex items-center justify-center gap-2 self-start sm:self-auto"
         >
           <Plus size={16} strokeWidth={2} />
           Nueva Plantilla

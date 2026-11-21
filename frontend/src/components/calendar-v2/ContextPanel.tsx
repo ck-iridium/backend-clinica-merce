@@ -185,7 +185,7 @@ export function ContextPanel({
                                             ${isSelected 
                                                 ? 'bg-[#FF6B00] text-white font-black shadow-sm scale-105' 
                                                 : isToday
-                                                ? 'bg-orange-50 text-[#FF6B00] font-black border border-orange-200'
+                                                ? 'bg-[#FF6B00] text-white font-black shadow-sm'
                                                 : item.currentMonth 
                                                 ? 'text-stone-700 font-medium hover:bg-orange-50 hover:text-[#FF6B00]' 
                                                 : 'text-stone-200 pointer-events-none'
@@ -316,21 +316,23 @@ export function ContextPanel({
                                 onClick={() => onSelectStaffFilter?.('ALL')}
                                 className={`w-full flex items-center justify-between p-2.5 rounded-2xl transition-all border shadow-2xs ${
                                     selectedStaffFilter === 'ALL'
-                                        ? 'bg-orange-50/70 border-[#FF6B00]/50 text-stone-900 font-bold'
+                                        ? 'bg-[#FF6B00] border-[#FF6B00] text-white font-bold shadow-md'
                                         : 'bg-white border-stone-200/70 text-stone-600 hover:border-stone-300'
                                 }`}
                             >
                                 <div className="flex items-center gap-2.5 min-w-0">
                                     <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 border ${
                                         selectedStaffFilter === 'ALL'
-                                            ? 'bg-stone-900 text-[#FF6B00] border-[#FF6B00]/40'
+                                            ? 'bg-white text-[#FF6B00] border-white'
                                             : 'bg-stone-100 text-stone-500 border-stone-200'
                                     }`}>
                                         <Users size={13} />
                                     </div>
                                     <span className="text-xs truncate">{t('dashboard.calendar.all_team') || 'Todo el equipo'}</span>
                                 </div>
-                                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-stone-100 text-stone-700 shrink-0">
+                                <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                                    selectedStaffFilter === 'ALL' ? 'bg-white/20 text-white font-bold' : 'bg-stone-100 text-stone-700'
+                                }`}>
                                     {Object.values(staffAppointmentCounts || {}).reduce((acc, curr) => acc + curr, 0)}
                                 </span>
                             </button>
@@ -347,7 +349,7 @@ export function ContextPanel({
                                         onClick={() => onSelectStaffFilter?.(isSelected ? 'ALL' : staff.id)}
                                         className={`w-full flex items-center justify-between p-2.5 rounded-2xl transition-all border shadow-2xs ${
                                             isSelected
-                                                ? 'bg-orange-50/70 border-[#FF6B00] text-stone-950 font-bold ring-1 ring-[#FF6B00]/30'
+                                                ? 'bg-[#FF6B00] border-[#FF6B00] text-white font-bold shadow-md'
                                                 : 'bg-white border-stone-200/70 text-stone-700 hover:border-stone-300'
                                         }`}
                                     >
@@ -356,20 +358,26 @@ export function ContextPanel({
                                                 <img
                                                     src={staff.avatar_url}
                                                     alt={staff.full_name}
-                                                    className="w-7 h-7 rounded-full object-cover shrink-0 border border-[#FF6B00]/30"
+                                                    className={`w-7 h-7 rounded-full object-cover shrink-0 border ${
+                                                        isSelected ? 'border-white/50' : 'border-[#FF6B00]/30'
+                                                    }`}
                                                 />
                                             ) : (
-                                                <div className="w-7 h-7 rounded-full bg-stone-900 text-[#FF6B00] font-sans font-bold text-xs flex items-center justify-center shrink-0">
+                                                <div className={`w-7 h-7 rounded-full font-sans font-bold text-xs flex items-center justify-center shrink-0 ${
+                                                    isSelected ? 'bg-white text-[#FF6B00]' : 'bg-stone-900 text-[#FF6B00]'
+                                                }`}>
                                                     {staff.full_name?.charAt(0) || 'E'}
                                                 </div>
                                             )}
                                             <div className="text-left min-w-0 flex-1">
                                                 <p className="text-xs truncate leading-tight">{staff.full_name}</p>
-                                                <p className="text-[10px] text-stone-400 capitalize leading-none mt-0.5 truncate">{staff.role || 'Especialista'}</p>
+                                                <p className={`text-[10px] capitalize leading-none mt-0.5 truncate ${
+                                                    isSelected ? 'text-white/80' : 'text-stone-400'
+                                                }`}>{staff.role || 'Especialista'}</p>
                                             </div>
                                         </div>
                                         <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full shrink-0 ${
-                                            isSelected ? 'bg-orange-100 text-[#EA5E00] font-bold' : 'bg-stone-100 text-stone-600'
+                                            isSelected ? 'bg-white/20 text-white font-bold' : 'bg-stone-100 text-stone-600'
                                         }`}>
                                             {count}
                                         </span>

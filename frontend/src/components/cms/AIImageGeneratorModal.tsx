@@ -244,9 +244,9 @@ export default function AIImageGeneratorModal({
         onInteractOutside={(e) => e.preventDefault()}
         onPointerDownOutside={(e) => e.preventDefault()}
       >
-        <DialogHeader className="p-6 sm:p-7 pb-5 bg-gradient-to-b from-[#d4af37]/10 via-[#d4af37]/5 to-transparent border-b border-stone-100 relative">
+        <DialogHeader className="p-6 sm:p-7 pb-5 bg-gradient-to-b from-[#FF6B00]/10 via-[#FF6B00]/5 to-transparent border-b border-stone-100 relative">
           <div className="flex items-center gap-3.5 pr-10">
-            <div className="w-10 h-10 rounded-2xl bg-[#D4AF37]/15 border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37] shadow-xs shrink-0">
+            <div className="w-10 h-10 rounded-2xl bg-[#FF6B00]/15 border border-[#FF6B00]/30 flex items-center justify-center text-[#FF6B00] shadow-xs shrink-0">
               <Sparkles size={20} strokeWidth={2} />
             </div>
             <div>
@@ -259,10 +259,10 @@ export default function AIImageGeneratorModal({
               </DialogTitle>
               <DialogDescription className="text-stone-400 text-xs sm:text-sm font-sans mt-0.5 leading-relaxed">
                 {language === 'fr' 
-                  ? "Décrivez ce que vous souhaitez voir. L'IA créera une photo premium dans le style 'Quiet Luxury' de la clinique." 
+                  ? "Décrivez ce que vous souhaitez voir. L'IA créera une photo premium dans le style de votre établissement." 
                   : language === 'en' 
-                    ? "Describe what you want to see. The AI will create a premium photo matching the clinic's 'Quiet Luxury' style." 
-                    : "Describe lo que quieres ver. La IA creará una foto premium con el estilo 'Quiet Luxury' de la clínica."}
+                    ? "Describe what you want to see. The AI will create a premium photo matching your clinic's style." 
+                    : "Describe lo que quieres ver. La IA creará una foto premium con el estilo de tu negocio."}
               </DialogDescription>
             </div>
           </div>
@@ -282,12 +282,12 @@ export default function AIImageGeneratorModal({
                 type="button"
                 onClick={handleOptimizePrompt}
                 disabled={isOptimizing || isGenerating || !serviceName}
-                className="text-[11px] font-bold text-stone-800 flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#D4AF37]/10 hover:bg-[#D4AF37]/20 border border-[#D4AF37]/30 transition-all disabled:opacity-50 shadow-2xs"
+                className="text-[11px] font-bold text-stone-800 flex items-center gap-1.5 px-3 py-1 rounded-xl bg-orange-50 hover:bg-orange-100 border border-orange-200 transition-all disabled:opacity-50 shadow-2xs"
               >
                 {isOptimizing ? (
-                  <Loader2 size={12} className="animate-spin text-[#D4AF37]" />
+                  <Loader2 size={12} className="animate-spin text-[#FF6B00]" />
                 ) : (
-                  <Sparkles size={12} className="text-[#D4AF37]" />
+                  <Sparkles size={12} className="text-[#FF6B00]" />
                 )}
                 {language === 'fr' 
                   ? "Autocompléter avec IA" 
@@ -306,7 +306,7 @@ export default function AIImageGeneratorModal({
                     ? "Describe what you want to see or use auto-complete..." 
                     : "Describe lo que quieres ver o usa el autocompletado..."
               }
-              className="w-full px-4 py-3.5 rounded-2xl border border-stone-200/80 bg-stone-50/60 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30 focus:border-[#D4AF37] transition-all text-sm font-medium text-stone-800 resize-none min-h-[110px] leading-relaxed placeholder:text-stone-400"
+              className="w-full px-4 py-3.5 rounded-2xl border border-stone-200/80 bg-stone-50/60 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/30 focus:border-[#FF6B00] transition-all text-sm font-medium text-stone-800 resize-none min-h-[110px] leading-relaxed placeholder:text-stone-400"
               disabled={isGenerating || isOptimizing}
             />
           </div>
@@ -338,7 +338,7 @@ export default function AIImageGeneratorModal({
                     <span>{language === 'fr' ? "Prise de vue" : language === 'en' ? "Shot Type" : "Toma"}</span>
                   </label>
                   <Select disabled={isGenerating} value={shotType} onValueChange={setShotType}>
-                    <SelectTrigger className="w-full h-10 rounded-xl border-stone-200 bg-white text-xs font-semibold text-stone-800 focus:ring-1 focus:ring-[#D4AF37]">
+                    <SelectTrigger className="w-full h-10 rounded-xl border-stone-200 bg-white text-xs font-semibold text-stone-800 focus:ring-1 focus:ring-[#FF6B00]">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="rounded-2xl border-stone-200/80 shadow-luxury bg-white/95 backdrop-blur-md">
@@ -375,7 +375,7 @@ export default function AIImageGeneratorModal({
                     <span>{language === 'fr' ? "Style" : language === 'en' ? "Style" : "Estilo"}</span>
                   </label>
                   <Select disabled={isGenerating} value={visualStyle} onValueChange={setVisualStyle}>
-                    <SelectTrigger className="w-full h-10 rounded-xl border-stone-200 bg-white text-xs font-semibold text-stone-800 focus:ring-1 focus:ring-[#D4AF37]">
+                    <SelectTrigger className="w-full h-10 rounded-xl border-stone-200 bg-white text-xs font-semibold text-stone-800 focus:ring-1 focus:ring-[#FF6B00]">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="rounded-2xl border-stone-200/80 shadow-luxury bg-white/95 backdrop-blur-md">
@@ -387,7 +387,7 @@ export default function AIImageGeneratorModal({
                       </SelectItem>
                       <SelectItem value="luxury" className="text-xs font-medium cursor-pointer">
                         <div className="flex items-center gap-2">
-                          <Crown size={13} className="text-[#D4AF37]" />
+                          <Crown size={13} className="text-[#FF6B00]" />
                           <span>{language === 'fr' ? "Luxe" : language === 'en' ? "Luxury" : "Lujo"}</span>
                         </div>
                       </SelectItem>
@@ -412,11 +412,11 @@ export default function AIImageGeneratorModal({
                     : "Formato (Aspect Ratio) *"}
               </label>
               <Select disabled={isGenerating} value={aspectRatio} onValueChange={setAspectRatio}>
-                <SelectTrigger className="w-full h-11 rounded-xl border-stone-200/80 bg-stone-50/60 hover:bg-stone-50 focus:bg-white text-xs font-semibold text-stone-800 focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37] shadow-2xs">
+                <SelectTrigger className="w-full h-11 rounded-xl border-stone-200/80 bg-stone-50/60 hover:bg-stone-50 focus:bg-white text-xs font-semibold text-stone-800 focus:ring-1 focus:ring-[#FF6B00] focus:border-[#FF6B00] shadow-2xs">
                   <div className="flex items-center gap-2.5">
-                    {aspectRatio === '9:16' && <Smartphone size={14} className="text-[#D4AF37] shrink-0" strokeWidth={2} />}
-                    {aspectRatio === '1:1' && <Square size={13} className="text-[#D4AF37] shrink-0" strokeWidth={2} />}
-                    {aspectRatio === '16:9' && <Monitor size={14} className="text-[#D4AF37] shrink-0" strokeWidth={2} />}
+                    {aspectRatio === '9:16' && <Smartphone size={14} className="text-[#FF6B00] shrink-0" strokeWidth={2} />}
+                    {aspectRatio === '1:1' && <Square size={13} className="text-[#FF6B00] shrink-0" strokeWidth={2} />}
+                    {aspectRatio === '16:9' && <Monitor size={14} className="text-[#FF6B00] shrink-0" strokeWidth={2} />}
                     <span>
                       {aspectRatio === '9:16' 
                         ? (language === 'fr' ? "Vertical (9:16 - Mobile)" : language === 'en' ? "Vertical (9:16 - Mobile)" : "Vertical (9:16 - Móvil)")
@@ -482,7 +482,7 @@ export default function AIImageGeneratorModal({
                   checked={excludeText} 
                   onChange={(e) => setExcludeText(e.target.checked)} 
                 />
-                <div className="w-11 h-6 bg-stone-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#d4af37]"></div>
+                <div className="w-11 h-6 bg-stone-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#FF6B00]"></div>
               </label>
             </div>
 
@@ -509,9 +509,9 @@ export default function AIImageGeneratorModal({
                     const file = e.dataTransfer.files?.[0];
                     if (file) processImageFile(file);
                   }}
-                  className="w-full py-5 border-2 border-dashed border-stone-200/80 hover:border-[#d4af37] bg-stone-50/50 hover:bg-[#d4af37]/5 rounded-2xl flex flex-col items-center justify-center text-stone-400 hover:text-stone-700 transition-all cursor-pointer group"
+                  className="w-full py-5 border-2 border-dashed border-stone-200/80 hover:border-[#FF6B00] bg-stone-50/50 hover:bg-[#FF6B00]/5 rounded-2xl flex flex-col items-center justify-center text-stone-400 hover:text-stone-700 transition-all cursor-pointer group"
                 >
-                  <ImageIcon size={22} className="mb-1 text-stone-400 group-hover:text-[#D4AF37] group-hover:scale-110 transition-all" />
+                  <ImageIcon size={22} className="mb-1 text-stone-400 group-hover:text-[#FF6B00] group-hover:scale-110 transition-all" />
                   <span className="text-[11px] font-semibold">
                     {language === 'fr' 
                       ? "Cliquez, glissez ou collez (Ctrl+V) une image" 
@@ -533,7 +533,7 @@ export default function AIImageGeneratorModal({
               ) : (
                 <div className="space-y-4 animate-in zoom-in-95 duration-300 p-1">
                   <div className="flex items-center gap-4">
-                    <div className="relative w-20 h-20 rounded-2xl overflow-hidden border-2 border-[#d4af37] shadow-md shrink-0">
+                    <div className="relative w-20 h-20 rounded-2xl overflow-hidden border-2 border-[#FF6B00] shadow-md shrink-0">
                       <img src={referenceImage} alt="Referencia" className="w-full h-full object-cover" />
                       <button 
                         type="button"
@@ -546,8 +546,8 @@ export default function AIImageGeneratorModal({
                     </div>
                     
                     <div className="flex-1 bg-stone-50/80 p-3.5 rounded-2xl border border-stone-200 shadow-2xs">
-                      <label className="text-[10px] font-bold text-[#b08e23] uppercase mb-1.5 flex items-center gap-1.5 tracking-wider">
-                        <Layers size={13} className="text-[#b08e23]" />
+                      <label className="text-[10px] font-bold text-[#FF6B00] uppercase mb-1.5 flex items-center gap-1.5 tracking-wider">
+                        <Layers size={13} className="text-[#FF6B00]" />
                         <span>{language === 'fr' ? "Mode de référence" : language === 'en' ? "Reference Mode" : "Modo de Referencia"}</span>
                       </label>
                       <Select disabled={isGenerating} value={referenceType} onValueChange={setReferenceType}>
@@ -602,11 +602,11 @@ export default function AIImageGeneratorModal({
             size="sm"
             onClick={handleGenerate}
             disabled={isGenerating || !prompt.trim()}
-            className="rounded-xl px-6 font-bold text-xs text-stone-950 shadow-luxury h-10 gap-2"
+            className="rounded-xl px-6 font-bold text-xs !text-white shadow-luxury h-10 gap-2"
           >
             {isGenerating ? (
               <>
-                <Loader2 size={16} className="animate-spin text-stone-950" />
+                <Loader2 size={16} className="animate-spin text-white" />
                 {language === 'fr' ? "Traitement" : language === 'en' ? "Processing" : "Procesando"} ({generationTime}s)...
               </>
             ) : (

@@ -312,7 +312,7 @@ export default function LocationsPage() {
           </div>
           <button
             onClick={handleCreateOpen}
-            className="text-stone-800 font-bold border-b-2 border-stone-900 hover:text-[#d4af37] hover:border-[#d4af37] transition-all py-0.5 text-sm"
+            className="text-stone-800 font-bold border-b-2 border-stone-900 hover:text-[#FF6B00] hover:border-[#FF6B00] transition-all py-0.5 text-sm"
           >
             {t('dashboard.locations.empty_cta')}
           </button>

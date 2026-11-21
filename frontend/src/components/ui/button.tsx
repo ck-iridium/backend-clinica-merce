@@ -11,7 +11,7 @@ const buttonVariants = cva(
         default:
           "bg-stone-900 text-white shadow-sm hover:bg-stone-800 active:scale-[0.99]",
         luxury:
-          "bg-gradient-to-r from-[#FF6B00] via-[#F97316] to-[#EA580C] text-white font-semibold shadow-md shadow-orange-500/20 hover:shadow-lg hover:shadow-orange-500/30 hover:brightness-105 active:scale-[0.99] border border-orange-400/20",
+          "bg-gradient-to-r from-[#FF6B00] via-[#F97316] to-[#EA580C] !text-white font-bold shadow-md shadow-orange-500/20 hover:shadow-lg hover:shadow-orange-500/30 hover:brightness-105 active:scale-[0.99] border border-orange-400/20",
         outline:
           "border border-stone-200 bg-white/90 text-stone-700 hover:bg-stone-50 hover:text-stone-900 shadow-sm active:scale-[0.99]",
         secondary:
