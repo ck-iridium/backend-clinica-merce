@@ -53,13 +53,17 @@ def read_tenant_limits(db: Session = Depends(database.get_db)):
         has_own_key = bool(key and key.strip())
         
     is_gold = plan.lower() == "gold"
-    daily_actions_limit = limits.get("ai_smart_actions_daily", 35)
-    daily_actions_used = tenant.ai_daily_actions_used or 0
-    actions_remaining = 999999 if (has_own_key or is_gold) else max(0, daily_actions_limit - daily_actions_used)
+    is_unlimited = bool(getattr(tenant, "ai_unlimited", False))
+    bonus_images = getattr(tenant, "ai_bonus_images", 0) or 0
+    bonus_actions = getattr(tenant, "ai_bonus_daily_actions", 0) or 0
 
-    # Permitir IA si tiene clave propia (BYOK), es Gold, o aún dispone de cuota diaria incluida en su plan
-    ai_allowed = has_own_key or is_gold or (actions_remaining > 0)
-    ai_requires_byok = not is_gold and not has_own_key and (actions_remaining <= 0)
+    daily_actions_limit = limits.get("ai_smart_actions_daily", 35) + bonus_actions
+    daily_actions_used = tenant.ai_daily_actions_used or 0
+    actions_remaining = 999999 if (is_unlimited or has_own_key or is_gold) else max(0, daily_actions_limit - daily_actions_used)
+
+    # Permitir IA si tiene Super-Admin unlimited, clave propia (BYOK), es Gold, o aún dispone de cuota diaria incluida
+    ai_allowed = is_unlimited or has_own_key or is_gold or (actions_remaining > 0)
+    ai_requires_byok = not is_unlimited and not is_gold and not has_own_key and (actions_remaining <= 0)
 
     admin_user = db.query(models.User).filter(models.User.tenant_id == tenant_id, models.User.role == "admin").first()
     email_verified = admin_user.email_verified if admin_user else True
@@ -67,14 +71,14 @@ def read_tenant_limits(db: Session = Depends(database.get_db)):
     status = (tenant.subscription_status or "").lower()
     is_trial = status in ["trial", "trialing"] or plan == "free"
 
-    if has_own_key:
+    if is_unlimited or has_own_key:
         images_remaining = 999999
-        images_monthly_limit = 5 if is_trial else limits.get("ai_images_monthly", 30)
+        images_monthly_limit = (5 if is_trial else limits.get("ai_images_monthly", 30)) + bonus_images
     elif is_trial:
-        images_monthly_limit = 5
-        images_remaining = max(0, 5 - (tenant.ai_trial_images_used or 0))
+        images_monthly_limit = 5 + bonus_images
+        images_remaining = max(0, images_monthly_limit - (tenant.ai_trial_images_used or 0))
     else:
-        images_monthly_limit = limits.get("ai_images_monthly", 30)
+        images_monthly_limit = limits.get("ai_images_monthly", 30) + bonus_images
         images_remaining = max(0, images_monthly_limit - (tenant.ai_monthly_images_used or 0))
 
     return {
@@ -104,7 +108,10 @@ def read_tenant_limits(db: Session = Depends(database.get_db)):
             "ai_images_remaining": images_remaining,
             "is_trial": is_trial,
             "ai_allowed": ai_allowed,
-            "ai_requires_byok": ai_requires_byok
+            "ai_requires_byok": ai_requires_byok,
+            "ai_unlimited": is_unlimited,
+            "ai_bonus_images": bonus_images,
+            "ai_bonus_daily_actions": bonus_actions
         },
         "usage": {
             "specialists": specialists_count,

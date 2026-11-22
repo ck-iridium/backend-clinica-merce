@@ -22,6 +22,9 @@ class Tenant(Base):
     ai_monthly_images_used = Column(Integer, default=0, nullable=False)
     ai_trial_images_used = Column(Integer, default=0, nullable=False)
     ai_images_reset_at = Column(DateTime, nullable=True)
+    ai_unlimited = Column(Boolean, default=False, nullable=True)
+    ai_bonus_images = Column(Integer, default=0, nullable=False)
+    ai_bonus_daily_actions = Column(Integer, default=0, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 class User(Base):

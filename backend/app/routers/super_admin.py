@@ -29,6 +29,17 @@ class TenantOut(BaseModel):
     custom_domain: Optional[str] = None
     created_at: Optional[datetime] = None
     business_sector: Optional[str] = None
+    # Cuotas y Control IA
+    ai_unlimited: Optional[bool] = False
+    ai_bonus_images: Optional[int] = 0
+    ai_bonus_daily_actions: Optional[int] = 0
+    ai_images_remaining: Optional[int] = 0
+    ai_images_limit: Optional[int] = 5
+    ai_images_used: Optional[int] = 0
+    ai_actions_remaining: Optional[int] = 35
+    ai_actions_limit: Optional[int] = 35
+    ai_actions_used: Optional[int] = 0
+    has_own_key: Optional[bool] = False
 
     class Config:
         from_attributes = True
@@ -72,10 +83,59 @@ def verify_super_admin(authorization: str = Header(None)) -> dict:
     except Exception as e:
         raise HTTPException(status_code=401, detail=f"Token inválido: {str(e)}")
 
+class TenantAiQuotaUpdate(BaseModel):
+    action: str  # "add_images", "add_actions", "reset_images", "reset_actions", "set_unlimited"
+    amount: Optional[int] = 0
+    unlimited: Optional[bool] = None
+
 def get_tenant_out(tenant, db: Session) -> TenantOut:
+    from ..limits import get_tenant_limits, check_and_reset_ai_quotas
+    check_and_reset_ai_quotas(db, tenant)
+
     settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == tenant.id).first()
     t_out = TenantOut.model_validate(tenant) if hasattr(TenantOut, "model_validate") else TenantOut.from_orm(tenant)
     t_out.business_sector = settings.business_sector if settings else "general"
+
+    has_own_key = False
+    if settings:
+        provider = settings.ai_provider or "gemini"
+        key = settings.gemini_api_key if provider == "gemini" else settings.openai_api_key
+        has_own_key = bool(key and key.strip())
+    t_out.has_own_key = has_own_key
+
+    is_unlimited = bool(getattr(tenant, "ai_unlimited", False))
+    t_out.ai_unlimited = is_unlimited
+    
+    bonus_images = getattr(tenant, "ai_bonus_images", 0) or 0
+    bonus_actions = getattr(tenant, "ai_bonus_daily_actions", 0) or 0
+    t_out.ai_bonus_images = bonus_images
+    t_out.ai_bonus_daily_actions = bonus_actions
+
+    plan = (tenant.plan_type or "free").lower()
+    status = (tenant.subscription_status or "").lower()
+    is_trial = status in ["trial", "trialing"] or plan == "free"
+    limits = get_tenant_limits(plan)
+
+    daily_actions_limit = limits.get("ai_smart_actions_daily", 35) + bonus_actions
+    daily_actions_used = tenant.ai_daily_actions_used or 0
+    actions_remaining = 999999 if (is_unlimited or has_own_key or plan == "gold") else max(0, daily_actions_limit - daily_actions_used)
+    
+    t_out.ai_actions_limit = daily_actions_limit
+    t_out.ai_actions_used = daily_actions_used
+    t_out.ai_actions_remaining = actions_remaining
+
+    if is_trial:
+        images_limit = 5 + bonus_images
+        images_used = tenant.ai_trial_images_used or 0
+    else:
+        images_limit = limits.get("ai_images_monthly", 30) + bonus_images
+        images_used = tenant.ai_monthly_images_used or 0
+        
+    images_remaining = 999999 if (is_unlimited or has_own_key) else max(0, images_limit - images_used)
+    t_out.ai_images_limit = images_limit
+    t_out.ai_images_used = images_used
+    t_out.ai_images_remaining = images_remaining
+
     return t_out
 
 # ---------------------------------------------------------------------
@@ -198,6 +258,64 @@ def update_tenant_sector(
             site_content.about_image_url = sc_blueprint.get("about_image_url")
     
     db.commit()
+    return get_tenant_out(tenant, db)
+
+# ---------------------------------------------------------------------
+# GESTIÓN DE CUOTAS Y CONTROL DE IA PARA TENANTS
+# ---------------------------------------------------------------------
+@router.get("/tenants/{tenant_id}/ai-quota", response_model=TenantOut)
+def get_tenant_ai_quota(
+    tenant_id: str,
+    db: Session = Depends(database.get_db),
+    admin_payload: dict = Depends(verify_super_admin)
+):
+    """
+    Obtiene la cuota, consumos y estado del modo ilimitado de IA de un inquilino.
+    """
+    tenant = db.query(models.Tenant).filter(models.Tenant.id == tenant_id).first()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Inquilino no encontrado")
+    return get_tenant_out(tenant, db)
+
+@router.post("/tenants/{tenant_id}/ai-quota", response_model=TenantOut)
+def update_tenant_ai_quota(
+    tenant_id: str,
+    payload: TenantAiQuotaUpdate,
+    db: Session = Depends(database.get_db),
+    admin_payload: dict = Depends(verify_super_admin)
+):
+    """
+    Gestiona las cuotas y límites de IA para un inquilino:
+    - add_images: suma N imágenes extra de bono
+    - add_actions: suma N acciones de redacción diarias de bono
+    - reset_images: resetea a 0 el consumo de imágenes (trial y mensual)
+    - reset_actions: resetea a 0 el consumo de acciones de texto del día
+    - set_unlimited: conmuta el modo ilimitado VIP para este tenant
+    """
+    tenant = db.query(models.Tenant).filter(models.Tenant.id == tenant_id).first()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Inquilino no encontrado")
+
+    action = payload.action.lower()
+    amount = payload.amount or 0
+
+    if action == "add_images":
+        tenant.ai_bonus_images = max(0, (tenant.ai_bonus_images or 0) + amount)
+    elif action == "add_actions":
+        tenant.ai_bonus_daily_actions = max(0, (tenant.ai_bonus_daily_actions or 0) + amount)
+    elif action == "reset_images":
+        tenant.ai_trial_images_used = 0
+        tenant.ai_monthly_images_used = 0
+    elif action == "reset_actions":
+        tenant.ai_daily_actions_used = 0
+    elif action == "set_unlimited":
+        if payload.unlimited is not None:
+            tenant.ai_unlimited = payload.unlimited
+    else:
+        raise HTTPException(status_code=400, detail=f"Acción '{payload.action}' no válida")
+
+    db.commit()
+    db.refresh(tenant)
     return get_tenant_out(tenant, db)
 
 # ---------------------------------------------------------------------

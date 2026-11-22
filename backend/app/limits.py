@@ -212,11 +212,12 @@ def check_and_deduct_text_action(db: Session, tenant: models.Tenant, settings: m
         (settings.ai_provider == "openai" and settings.openai_api_key and settings.openai_api_key.strip())
     ))
 
-    if has_byok or plan == "gold":
+    if getattr(tenant, "ai_unlimited", False) or has_byok or plan == "gold":
         return {"unlimited": True, "remaining": 999999, "limit": 999999, "used": tenant.ai_daily_actions_used or 0}
 
     limits = get_tenant_limits(plan)
-    daily_limit = limits.get("ai_smart_actions_daily", 15)
+    bonus_actions = getattr(tenant, "ai_bonus_daily_actions", 0) or 0
+    daily_limit = limits.get("ai_smart_actions_daily", 15) + bonus_actions
     used = tenant.ai_daily_actions_used or 0
 
     if used >= daily_limit:
@@ -233,8 +234,8 @@ def check_and_deduct_text_action(db: Session, tenant: models.Tenant, settings: m
 def check_and_deduct_image_quota(db: Session, tenant: models.Tenant, settings: models.ClinicSettings = None):
     """
     Verifica y descuenta 1 imagen de la bolsa mensual (o trial).
-    Si el tenant tiene BYOK configurado, es ILIMITADO (no descuenta de la bolsa).
-    Si usa la clave maestra de ProBookia, descuenta de su bolsa mensual (o de las 5 del trial).
+    Si el tenant tiene BYOK configurado o ai_unlimited activo, es ILIMITADO (no descuenta de la bolsa).
+    Si usa la clave maestra de ProBookia, descuenta de su bolsa mensual (o de las 5 del trial + bonus).
     Si agota la bolsa, lanza HTTPException 429.
     """
     check_and_reset_ai_quotas(db, tenant)
@@ -247,24 +248,26 @@ def check_and_deduct_image_quota(db: Session, tenant: models.Tenant, settings: m
         (settings.ai_provider == "openai" and settings.openai_api_key and settings.openai_api_key.strip())
     ))
 
-    if has_byok:
+    if getattr(tenant, "ai_unlimited", False) or has_byok:
         return {
             "unlimited": True,
-            "has_byok": True,
+            "has_byok": has_byok,
             "remaining": 999999,
             "limit": 999999,
             "used": tenant.ai_monthly_images_used or 0,
             "reset_at": tenant.ai_images_reset_at.isoformat() if tenant.ai_images_reset_at else None
         }
 
+    bonus_images = getattr(tenant, "ai_bonus_images", 0) or 0
+
     if is_trial:
-        # En trial son exactamente 5 imágenes en total durante todo el trial
-        max_images = 5
+        # En trial son 5 imágenes en total + bonus
+        max_images = 5 + bonus_images
         used = tenant.ai_trial_images_used or 0
         if used >= max_images:
             raise HTTPException(
                 status_code=429,
-                detail=f"Has agotado las {max_images} imágenes de prueba de tu trial. Conecta tu propia API Key en Ajustes > Avanzado para generar sin límites o activa tu suscripción."
+                detail=f"Has agotado las {max_images} imágenes disponibles de tu cuenta. Conecta tu propia API Key en Ajustes > Avanzado para generar sin límites o contacta con soporte."
             )
         tenant.ai_trial_images_used = used + 1
         db.commit()
@@ -280,12 +283,12 @@ def check_and_deduct_image_quota(db: Session, tenant: models.Tenant, settings: m
     else:
         # En planes de pago activos (basic, pro, gold)
         limits = get_tenant_limits(plan)
-        max_images = limits.get("ai_images_monthly", 30)
+        max_images = limits.get("ai_images_monthly", 30) + bonus_images
         used = tenant.ai_monthly_images_used or 0
         if used >= max_images:
             raise HTTPException(
                 status_code=429,
-                detail=f"Has alcanzado tu cupo mensual de {max_images} imágenes incluidas para este ciclo. Conecta tu propia API Key en Ajustes > Avanzado para imágenes ilimitadas o mejora tu plan."
+                detail=f"Has alcanzado tu cupo de {max_images} imágenes incluidas para este ciclo. Conecta tu propia API Key en Ajustes > Avanzado para imágenes ilimitadas o mejora tu plan."
             )
         tenant.ai_monthly_images_used = used + 1
         db.commit()

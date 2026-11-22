@@ -24,6 +24,7 @@ import { cn } from '@/lib/utils'
 import TenantOverviewTab from './detail/TenantOverviewTab'
 import TenantStripeTab from './detail/TenantStripeTab'
 import TenantConfigTab from './detail/TenantConfigTab'
+import TenantAiQuotaTab from './detail/TenantAiQuotaTab'
 import DomainConnectionModal from './detail/DomainConnectionModal'
 import DeleteConfirmModal from './detail/DeleteConfirmModal'
 
@@ -39,6 +40,16 @@ interface Tenant {
   created_at: string | null
   custom_domain?: string | null
   business_sector?: string | null
+  ai_unlimited?: boolean
+  ai_bonus_images?: number
+  ai_bonus_daily_actions?: number
+  ai_images_remaining?: number
+  ai_images_limit?: number
+  ai_images_used?: number
+  ai_actions_remaining?: number
+  ai_actions_limit?: number
+  ai_actions_used?: number
+  has_own_key?: boolean
 }
 
 interface TenantDetailProps {
@@ -49,7 +60,7 @@ interface TenantDetailProps {
 }
 
 export default function TenantDetail({ tenant, onUpdateStatus, onUpdateTenant, onDeleteTenant }: TenantDetailProps) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'stripe' | 'config'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'stripe' | 'config' | 'ai'>('overview')
   const [redirectingPlan, setRedirectingPlan] = useState<string | null>(null)
   const [impersonating, setImpersonating] = useState(false)
   const [customDomain, setCustomDomain] = useState<string | null>(tenant.custom_domain || null)
@@ -492,11 +503,12 @@ export default function TenantDetail({ tenant, onUpdateStatus, onUpdateTenant, o
         {/* 4. SECCIÓN DE PESTAÑAS (Tabs con Card) */}
         <Card className="overflow-hidden border-stone-200/70 bg-white/95">
           {/* Pestañas horizontales */}
-          <div className="flex border-b border-stone-100 bg-stone-50/60 p-1.5 gap-1.5">
+          <div className="flex border-b border-stone-100 bg-stone-50/60 p-1.5 gap-1.5 flex-wrap">
             {[
               { id: 'overview', label: 'Resumen', icon: Layers },
               { id: 'stripe', label: 'Pasarela Stripe', icon: DollarSign },
-              { id: 'config', label: 'Configuración DNS', icon: Globe }
+              { id: 'config', label: 'Configuración DNS', icon: Globe },
+              { id: 'ai', label: 'Inteligencia Artificial', icon: Sparkles }
             ].map(tab => {
               const IconComp = tab.icon
               const isActive = activeTab === tab.id
@@ -506,14 +518,17 @@ export default function TenantDetail({ tenant, onUpdateStatus, onUpdateTenant, o
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
                   className={cn(
-                    "px-5 py-2.5 text-xs font-semibold rounded-xl flex items-center justify-center gap-2 transition-all duration-200 focus:outline-none",
+                    "px-4 sm:px-5 py-2.5 text-xs font-semibold rounded-xl flex items-center justify-center gap-2 transition-all duration-200 focus:outline-none",
                     isActive 
                       ? "bg-white text-stone-900 shadow-sm border border-stone-200/60 font-bold" 
                       : "text-stone-500 hover:text-stone-900 hover:bg-white/50"
                   )}
                 >
-                  <IconComp className={cn("w-3.5 h-3.5", isActive ? "text-[#D4AF37]" : "text-stone-400")} />
+                  <IconComp className={cn("w-3.5 h-3.5", isActive ? (tab.id === 'ai' ? "text-[#FF6B00]" : "text-[#FF6B00]") : "text-stone-400")} />
                   {tab.label}
+                  {tab.id === 'ai' && tenant.ai_unlimited && (
+                    <span className="text-[9px] font-black uppercase tracking-wider bg-orange-100 text-[#FF6B00] px-1.5 py-0.2 rounded">VIP</span>
+                  )}
                 </button>
               )
             })}
@@ -541,6 +556,14 @@ export default function TenantDetail({ tenant, onUpdateStatus, onUpdateTenant, o
                 onOpenDomainModal={() => setShowDomainModal(true)}
                 onOpenDeleteModal={() => setShowDeleteModal(true)}
                 onUpdateSector={handleUpdateSector}
+              />
+            )}
+
+            {activeTab === 'ai' && (
+              <TenantAiQuotaTab 
+                tenant={tenant}
+                onUpdateTenant={onUpdateTenant}
+                getJwtToken={getJwtToken}
               />
             )}
           </div>

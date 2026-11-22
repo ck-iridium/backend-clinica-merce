@@ -27,7 +27,18 @@ interface Tenant {
   plan_type?: string;
   subscription_expires_at?: string | null;
   custom_domain?: string | null;
+  business_sector?: string | null;
   created_at: string | null;
+  ai_unlimited?: boolean;
+  ai_bonus_images?: number;
+  ai_bonus_daily_actions?: number;
+  ai_images_remaining?: number;
+  ai_images_limit?: number;
+  ai_images_used?: number;
+  ai_actions_remaining?: number;
+  ai_actions_limit?: number;
+  ai_actions_used?: number;
+  has_own_key?: boolean;
 }
 
 export default function SuperAdminPage() {

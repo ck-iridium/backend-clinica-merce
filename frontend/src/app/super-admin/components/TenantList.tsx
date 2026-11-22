@@ -1,6 +1,6 @@
 "use client"
 
-import { Search, Building2, CheckCircle2, AlertCircle, Clock } from 'lucide-react'
+import { Search, Building2, CheckCircle2, AlertCircle, Clock, Sparkles } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -21,6 +21,18 @@ interface Tenant {
   plan_type?: string
   subscription_expires_at?: string | null
   created_at: string | null
+  custom_domain?: string | null
+  business_sector?: string | null
+  ai_unlimited?: boolean
+  ai_bonus_images?: number
+  ai_bonus_daily_actions?: number
+  ai_images_remaining?: number
+  ai_images_limit?: number
+  ai_images_used?: number
+  ai_actions_remaining?: number
+  ai_actions_limit?: number
+  ai_actions_used?: number
+  has_own_key?: boolean
 }
 
 interface TenantListProps {
@@ -163,6 +175,17 @@ export default function TenantList({
                         ? 'Gracia'
                         : 'Pausa'}
                     </span>
+                    {tenant.ai_unlimited ? (
+                      <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-orange-50 text-[#FF6B00] border border-orange-200/80 inline-flex items-center gap-1 shadow-2xs">
+                        <Sparkles size={9} />
+                        Ilim.
+                      </span>
+                    ) : tenant.ai_images_remaining !== undefined ? (
+                      <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-md bg-stone-100/80 text-stone-600 border border-stone-200/60 inline-flex items-center gap-1">
+                        <Sparkles size={8} className="text-[#FF6B00]" />
+                        {tenant.ai_images_remaining} fotos
+                      </span>
+                    ) : null}
                   </div>
                   <h3 className={cn(
                     "text-xs font-bold text-stone-900 group-hover:text-[#B38F26] transition-colors truncate",
