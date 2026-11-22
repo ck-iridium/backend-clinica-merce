@@ -122,13 +122,19 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
       {/* ─── 1. HERO SECTION (Adaptativo según Viewport) ─── */}
       <section className={`relative w-full ${
         viewportDevice === 'mobile' || viewportDevice === 'tablet'
-          ? 'h-full min-h-[580px] shrink-0 flex flex-col justify-between'
-          : 'min-h-[700px] lg:min-h-[760px] h-[calc(100vh-140px)] shrink-0 flex flex-col justify-between'
+          ? 'h-full min-h-[580px] shrink-0 flex flex-col'
+          : 'min-h-[700px] lg:min-h-[760px] h-[calc(100vh-140px)] shrink-0 flex flex-col'
+      } ${
+        heroAlignment === 'top'
+          ? (viewportDevice === 'mobile' ? 'justify-start pt-20 pb-8' : viewportDevice === 'tablet' ? 'justify-start pt-24 pb-10' : 'justify-start pt-28 pb-12')
+          : heroAlignment === 'bottom'
+          ? (viewportDevice === 'mobile' ? 'justify-end pb-12 pt-8' : viewportDevice === 'tablet' ? 'justify-end pb-16 pt-10' : 'justify-end pb-20 pt-12')
+          : 'justify-center py-12'
       } overflow-hidden`}>
         
         {/* Navbar Simulado para Vista Móvil y Tablet (con Logo Real de la Clínica) */}
         {(viewportDevice === 'mobile' || viewportDevice === 'tablet') && (
-          <div className="relative z-20 w-full px-6 pt-5 pb-3 flex items-center justify-between pointer-events-none select-none">
+          <div className="absolute top-0 left-0 right-0 z-20 w-full px-6 pt-5 pb-3 flex items-center justify-between pointer-events-none select-none">
             {settings?.logo_mobile_b64 || settings?.logo_app_b64 ? (
               <img 
                 src={settings.logo_mobile_b64 || settings.logo_app_b64}
@@ -152,7 +158,7 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
 
         {/* Navbar Simulado para Vista Desktop (con Logo Real de la Clínica y Enlaces) */}
         {viewportDevice === 'desktop' && (
-          <div className="relative z-20 w-full px-10 pt-6 pb-4 flex items-center justify-between pointer-events-none select-none">
+          <div className="absolute top-0 left-0 right-0 z-20 w-full px-10 pt-6 pb-4 flex items-center justify-between pointer-events-none select-none">
             {settings?.logo_app_b64 || settings?.logo_mobile_b64 ? (
               <img 
                 src={settings.logo_app_b64 || settings.logo_mobile_b64}
@@ -329,10 +335,10 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
           return (
             <div className={`relative z-10 w-full ${
               viewportDevice === 'mobile' 
-                ? `px-5 ${heroAlignment === 'top' ? 'pt-4 pb-auto' : heroAlignment === 'center' ? 'my-auto' : 'pb-10 pt-auto'}`
+                ? 'px-5'
                 : viewportDevice === 'tablet'
-                ? `px-8 ${heroAlignment === 'top' ? 'pt-8 pb-auto' : heroAlignment === 'center' ? 'my-auto' : 'pb-14 pt-auto'}`
-                : `px-0 ${heroAlignment === 'top' ? 'pt-8 pb-auto' : heroAlignment === 'center' ? 'my-auto' : 'pb-16 pt-auto'} ${
+                ? 'px-8'
+                : `px-0 ${
                     (activeSlide?.hero_content_fullwidth ?? formData?.hero_content_fullwidth)
                       ? `max-w-7xl ${heroHorizontalAlignment === 'left' ? 'text-left ml-0 mr-auto' : heroHorizontalAlignment === 'right' ? 'text-right mr-0 ml-auto' : 'text-center mx-auto'}`
                       : `max-w-7xl mx-auto ${heroHorizontalAlignment === 'left' ? 'text-left' : heroHorizontalAlignment === 'right' ? 'text-right' : 'text-center'}`

@@ -207,11 +207,19 @@ export default function HeroSlider({ content }: HeroSliderProps) {
           const isPriceActive = !!(slide.hero_price_enabled ?? content.hero_price_enabled) && (slide.hero_price_amount || slide.hero_price_prefix || content.hero_price_amount || content.hero_price_prefix);
           const priceConfig = getPriceStyleConfig(slide.hero_price_style || content.hero_price_style);
 
-          const alignment = slide.hero_alignment || content.hero_alignment || 'center';
-          const horizontalAlignment = slide.hero_horizontal_alignment || content.hero_horizontal_alignment || 'center';
+          const alignment = slide.hero_responsive_config?.mobile?.hero_alignment 
+            ?? slide.hero_responsive_config?.tablet?.hero_alignment 
+            ?? slide.hero_alignment 
+            ?? content.hero_alignment 
+            ?? 'center';
+          const horizontalAlignment = slide.hero_responsive_config?.mobile?.hero_horizontal_alignment 
+            ?? slide.hero_responsive_config?.tablet?.hero_horizontal_alignment 
+            ?? slide.hero_horizontal_alignment 
+            ?? content.hero_horizontal_alignment 
+            ?? 'center';
 
           const alignClasses = `
-            ${alignment === 'top' ? 'items-start pt-48' : alignment === 'bottom' ? 'items-end pb-32' : 'items-center'}
+            ${alignment === 'top' ? 'items-start pt-28 sm:pt-36 md:pt-40' : alignment === 'bottom' ? 'items-end pb-20 sm:pb-24 md:pb-28' : 'items-center'}
             ${isFullwidth 
               ? (horizontalAlignment === 'left' ? 'justify-start' : horizontalAlignment === 'right' ? 'justify-end' : 'justify-center') 
               : 'justify-center'

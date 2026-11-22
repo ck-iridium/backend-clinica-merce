@@ -1,7 +1,7 @@
 "use client";
 import React from 'react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
-import { Tag, Sliders } from 'lucide-react';
+import { Tag, Sliders, Palette } from 'lucide-react';
 import { HeroSubCardProps, parseSizeScale } from './types';
 
 export default function HeroPriceCard({
@@ -116,7 +116,7 @@ export default function HeroPriceCard({
           </div>
 
           {/* PERSONALIZACIÓN DE COLORES DEL PRECIO */}
-          <div className="p-4 rounded-2xl bg-white dark:bg-stone-800/80 border border-stone-200/80 dark:border-stone-700/60 space-y-3.5 shadow-2xs">
+          <div className="p-4 rounded-2xl bg-white dark:bg-stone-800/80 border border-stone-200/80 dark:border-stone-700/60 space-y-4 shadow-2xs">
             <div className="flex items-center justify-between pb-2 border-b border-stone-100 dark:border-stone-800">
               <span className="text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-stone-300">
                 Colores del Bloque de Precio
@@ -126,38 +126,37 @@ export default function HeroPriceCard({
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex flex-col space-y-4">
               {/* 1. Color de Etiqueta y Símbolo (DESDE, €, Periodo) */}
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-[11px] font-bold text-stone-700 dark:text-stone-300">
-                    Etiqueta y Símbolo (Desde, €)
+                    Color de Etiqueta y Símbolo (Desde, €)
                   </label>
                   {data.hero_price_label_color && (
                     <button
                       type="button"
                       onClick={() => onChange('hero_price_label_color', '')}
-                      className="text-[10px] text-stone-400 hover:text-stone-600 underline"
+                      className="text-[10px] text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 underline"
                     >
                       Restablecer
                     </button>
                   )}
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2.5">
+                  {/* Swatches neutros: Blanco, Gris, Negro */}
                   <div className="flex items-center gap-1.5 p-1 rounded-xl bg-stone-100 dark:bg-stone-800 border border-stone-200/60 dark:border-stone-700">
                     {[
                       { label: 'Blanco', value: '#FFFFFF', bg: 'bg-white border-stone-300' },
-                      { label: 'Piedra', value: '#D6D3D1', bg: 'bg-stone-300 border-stone-400' },
-                      { label: 'Dorado', value: '#D4AF37', bg: 'bg-[#D4AF37] border-amber-600' },
-                      { label: 'Naranja', value: '#FF6B00', bg: 'bg-[#FF6B00] border-orange-600' },
-                      { label: 'Oscuro', value: '#1C1917', bg: 'bg-stone-900 border-black' },
+                      { label: 'Gris', value: '#9CA3AF', bg: 'bg-stone-400 border-stone-500' },
+                      { label: 'Negro', value: '#1C1917', bg: 'bg-stone-900 border-black' },
                     ].map((swatch) => (
                       <button
                         key={swatch.value}
                         type="button"
                         title={swatch.label}
                         onClick={() => onChange('hero_price_label_color', swatch.value)}
-                        className={`w-6 h-6 rounded-lg border transition-all ${swatch.bg} ${
+                        className={`w-7 h-7 rounded-lg border transition-all ${swatch.bg} ${
                           (data.hero_price_label_color || '').toUpperCase() === swatch.value.toUpperCase()
                             ? 'ring-2 ring-[#FF6B00] scale-110 shadow-xs'
                             : 'hover:scale-105 opacity-80 hover:opacity-100'
@@ -166,16 +165,36 @@ export default function HeroPriceCard({
                     ))}
                   </div>
 
-                  {/* Custom Picker */}
-                  <div className="flex items-center gap-1.5 flex-1">
-                    <input
-                      type="color"
-                      value={data.hero_price_label_color || '#FFFFFF'}
-                      onChange={(e) => onChange('hero_price_label_color', e.target.value)}
-                      className="w-7 h-7 rounded-lg border border-stone-200 dark:border-stone-700 cursor-pointer p-0.5 bg-white dark:bg-stone-800 shrink-0"
-                      title="Elegir color libre"
+                  {/* Selector Multicolor Libre */}
+                  <div className="relative group shrink-0">
+                    <div 
+                      title="Elegir color personalizado en la paleta"
+                      className={`w-8 h-8 rounded-xl p-[2px] transition-transform group-hover:scale-105 cursor-pointer shadow-xs bg-[conic-gradient(from_90deg_at_50%_50%,#f43f5e,#ec4899,#8b5cf6,#3b82f6,#06b6d4,#10b981,#84cc16,#eab308,#f97316,#f43f5e)] ${
+                        data.hero_price_label_color && !['#FFFFFF', '#9CA3AF', '#1C1917'].includes(data.hero_price_label_color.toUpperCase())
+                          ? 'ring-2 ring-[#FF6B00] scale-105'
+                          : ''
+                      }`}
+                    >
+                      <div className="w-full h-full rounded-[9px] bg-white/90 dark:bg-stone-900/90 flex items-center justify-center">
+                        <Palette size={14} className="text-stone-700 dark:text-stone-300 group-hover:text-black dark:group-hover:text-white transition-colors" />
+                      </div>
+                      <input
+                        type="color"
+                        value={data.hero_price_label_color || '#FFFFFF'}
+                        onChange={(e) => onChange('hero_price_label_color', e.target.value)}
+                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                        title="Selector de color personalizado"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Previsualización del valor seleccionado */}
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 dark:bg-stone-800 border border-stone-200/60 dark:border-stone-700 flex-1 min-w-0">
+                    <div 
+                      className="w-3.5 h-3.5 rounded-full border border-stone-300 dark:border-stone-600 shrink-0 shadow-2xs"
+                      style={{ backgroundColor: data.hero_price_label_color || '#FFFFFF' }}
                     />
-                    <span className="font-mono text-[10px] font-bold text-stone-500 uppercase truncate">
+                    <span className="font-mono text-[10px] font-bold text-stone-600 dark:text-stone-300 uppercase truncate">
                       {data.hero_price_label_color || 'Por defecto'}
                     </span>
                   </div>
@@ -183,36 +202,35 @@ export default function HeroPriceCard({
               </div>
 
               {/* 2. Color del Importe (Cifra numérica: 15) */}
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-[11px] font-bold text-stone-700 dark:text-stone-300">
-                    Importe / Cifra ({data.hero_price_amount || '15'})
+                    Color del Importe / Cifra ({data.hero_price_amount || '15'})
                   </label>
                   {data.hero_price_amount_color && (
                     <button
                       type="button"
                       onClick={() => onChange('hero_price_amount_color', '')}
-                      className="text-[10px] text-stone-400 hover:text-stone-600 underline"
+                      className="text-[10px] text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 underline"
                     >
                       Restablecer
                     </button>
                   )}
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2.5">
+                  {/* Swatches neutros: Blanco, Gris, Negro */}
                   <div className="flex items-center gap-1.5 p-1 rounded-xl bg-stone-100 dark:bg-stone-800 border border-stone-200/60 dark:border-stone-700">
                     {[
                       { label: 'Blanco', value: '#FFFFFF', bg: 'bg-white border-stone-300' },
-                      { label: 'Piedra', value: '#D6D3D1', bg: 'bg-stone-300 border-stone-400' },
-                      { label: 'Dorado', value: '#D4AF37', bg: 'bg-[#D4AF37] border-amber-600' },
-                      { label: 'Naranja', value: '#FF6B00', bg: 'bg-[#FF6B00] border-orange-600' },
-                      { label: 'Oscuro', value: '#1C1917', bg: 'bg-stone-900 border-black' },
+                      { label: 'Gris', value: '#9CA3AF', bg: 'bg-stone-400 border-stone-500' },
+                      { label: 'Negro', value: '#1C1917', bg: 'bg-stone-900 border-black' },
                     ].map((swatch) => (
                       <button
                         key={swatch.value}
                         type="button"
                         title={swatch.label}
                         onClick={() => onChange('hero_price_amount_color', swatch.value)}
-                        className={`w-6 h-6 rounded-lg border transition-all ${swatch.bg} ${
+                        className={`w-7 h-7 rounded-lg border transition-all ${swatch.bg} ${
                           (data.hero_price_amount_color || '').toUpperCase() === swatch.value.toUpperCase()
                             ? 'ring-2 ring-[#FF6B00] scale-110 shadow-xs'
                             : 'hover:scale-105 opacity-80 hover:opacity-100'
@@ -221,16 +239,36 @@ export default function HeroPriceCard({
                     ))}
                   </div>
 
-                  {/* Custom Picker */}
-                  <div className="flex items-center gap-1.5 flex-1">
-                    <input
-                      type="color"
-                      value={data.hero_price_amount_color || '#FFFFFF'}
-                      onChange={(e) => onChange('hero_price_amount_color', e.target.value)}
-                      className="w-7 h-7 rounded-lg border border-stone-200 dark:border-stone-700 cursor-pointer p-0.5 bg-white dark:bg-stone-800 shrink-0"
-                      title="Elegir color libre"
+                  {/* Selector Multicolor Libre */}
+                  <div className="relative group shrink-0">
+                    <div 
+                      title="Elegir color personalizado en la paleta"
+                      className={`w-8 h-8 rounded-xl p-[2px] transition-transform group-hover:scale-105 cursor-pointer shadow-xs bg-[conic-gradient(from_90deg_at_50%_50%,#f43f5e,#ec4899,#8b5cf6,#3b82f6,#06b6d4,#10b981,#84cc16,#eab308,#f97316,#f43f5e)] ${
+                        data.hero_price_amount_color && !['#FFFFFF', '#9CA3AF', '#1C1917'].includes(data.hero_price_amount_color.toUpperCase())
+                          ? 'ring-2 ring-[#FF6B00] scale-105'
+                          : ''
+                      }`}
+                    >
+                      <div className="w-full h-full rounded-[9px] bg-white/90 dark:bg-stone-900/90 flex items-center justify-center">
+                        <Palette size={14} className="text-stone-700 dark:text-stone-300 group-hover:text-black dark:group-hover:text-white transition-colors" />
+                      </div>
+                      <input
+                        type="color"
+                        value={data.hero_price_amount_color || '#FFFFFF'}
+                        onChange={(e) => onChange('hero_price_amount_color', e.target.value)}
+                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                        title="Selector de color personalizado"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Previsualización del valor seleccionado */}
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 dark:bg-stone-800 border border-stone-200/60 dark:border-stone-700 flex-1 min-w-0">
+                    <div 
+                      className="w-3.5 h-3.5 rounded-full border border-stone-300 dark:border-stone-600 shrink-0 shadow-2xs"
+                      style={{ backgroundColor: data.hero_price_amount_color || '#FFFFFF' }}
                     />
-                    <span className="font-mono text-[10px] font-bold text-stone-500 uppercase truncate">
+                    <span className="font-mono text-[10px] font-bold text-stone-600 dark:text-stone-300 uppercase truncate">
                       {data.hero_price_amount_color || 'Por defecto'}
                     </span>
                   </div>

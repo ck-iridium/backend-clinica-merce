@@ -122,184 +122,173 @@ export default function HeroSlideManager({
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-            {/* Tarjeta 1: Reproducción y Tiempos */}
-            <div className="p-4 rounded-xl bg-white dark:bg-stone-900 border border-stone-200/70 dark:border-stone-800 space-y-4 shadow-2xs">
-              <div className="flex items-center justify-between">
+          <div className="flex flex-col space-y-3 text-xs">
+            {/* Control 1: Reproducción Automática */}
+            <div className="flex items-center justify-between p-3.5 rounded-xl bg-white dark:bg-stone-900 border border-stone-200/70 dark:border-stone-800 shadow-2xs">
+              <div>
+                <span className="font-bold text-stone-800 dark:text-stone-200 block text-xs">
+                  {t('cms.hero.autoplay') || 'Reproducción Automática'}
+                </span>
+                <span className="text-[11px] text-stone-400 font-medium">
+                  {autoplay ? 'Transición continua activa' : 'Avance manual por el visitante'}
+                </span>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={autoplay}
+                onClick={() => onUpdateSliderConfig('hero_slider_autoplay', !autoplay)}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                  autoplay ? 'bg-[#FF6B00]' : 'bg-stone-300 dark:bg-stone-700'
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    autoplay ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+
+            {/* Control 2: Tiempo por Diapositiva */}
+            <div className="p-3.5 rounded-xl bg-white dark:bg-stone-900 border border-stone-200/70 dark:border-stone-800 space-y-2.5 shadow-2xs">
+              <div className="flex justify-between items-center">
                 <div>
                   <span className="font-bold text-stone-800 dark:text-stone-200 block text-xs">
-                    {t('cms.hero.autoplay') || 'Reproducción Automática'}
-                  </span>
-                  <span className="text-[11px] text-stone-400 font-medium">
-                    {autoplay ? 'Transición continua activa' : 'Avance manual por el visitante'}
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={autoplay}
-                  onClick={() => onUpdateSliderConfig('hero_slider_autoplay', !autoplay)}
-                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                    autoplay ? 'bg-[#FF6B00]' : 'bg-stone-300 dark:bg-stone-700'
-                  }`}
-                >
-                  <span
-                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                      autoplay ? 'translate-x-5' : 'translate-x-0'
-                    }`}
-                  />
-                </button>
-              </div>
-
-              {/* Intervalo / Tiempo por Slide */}
-              <div className="space-y-2 pt-2 border-t border-stone-100 dark:border-stone-800">
-                <div className="flex justify-between items-center">
-                  <span className="font-medium text-stone-700 dark:text-stone-300">
                     {t('cms.hero.interval') || 'Tiempo por Diapositiva'}
                   </span>
-                  <span className="font-mono text-xs font-bold text-[#FF6B00] bg-orange-50 dark:bg-orange-950/40 border border-orange-200/60 px-2 py-0.5 rounded-full">
-                    {interval}s
+                  <span className="text-[11px] text-stone-400 font-medium">
+                    Duración de cada diapositiva en pantalla
                   </span>
                 </div>
-                <div className="flex items-center gap-2.5">
-                  <span className="text-[10px] font-bold text-stone-400">3s</span>
-                  <input
-                    type="range"
-                    min={3}
-                    max={12}
-                    step={1}
-                    value={interval}
-                    disabled={!autoplay}
-                    onChange={(e) => onUpdateSliderConfig('hero_slider_interval', parseInt(e.target.value, 10))}
-                    className="w-full accent-[#FF6B00] h-1.5 bg-stone-200 dark:bg-stone-700 rounded-lg cursor-pointer disabled:opacity-40"
-                  />
-                  <span className="text-[10px] font-bold text-stone-400">12s</span>
-                </div>
-                {/* Presets rápidos */}
-                <div className="flex items-center justify-between pt-1">
-                  <span className="text-[10px] text-stone-400 font-medium">Ajuste rápido:</span>
-                  <div className="flex items-center gap-1">
-                    {[3, 5, 8, 10].map((sec) => (
-                      <button
-                        key={sec}
-                        type="button"
-                        disabled={!autoplay}
-                        onClick={() => onUpdateSliderConfig('hero_slider_interval', sec)}
-                        className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition-all ${
-                          interval === sec
-                            ? 'bg-[#FF6B00] text-white shadow-2xs'
-                            : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200'
-                        }`}
-                      >
-                        {sec}s
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Efecto de Transición */}
-              <div className="space-y-1.5 pt-2 border-t border-stone-100 dark:border-stone-800">
-                <span className="font-medium text-stone-700 dark:text-stone-300 block">
-                  {t('cms.hero.effect') || 'Efecto de Transición'}
+                <span className="font-mono text-xs font-bold text-[#FF6B00] bg-orange-50 dark:bg-orange-950/40 border border-orange-200/60 px-2.5 py-0.5 rounded-full">
+                  {interval}s
                 </span>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => onUpdateSliderConfig('hero_slider_effect', 'fade')}
-                    className={`py-1.5 px-3 text-center rounded-xl text-xs font-bold transition-all ${
-                      effect === 'fade'
-                        ? 'bg-[#FF6B00] text-white shadow-xs'
-                        : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700'
-                    }`}
-                  >
-                    Fade (Lujo)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => onUpdateSliderConfig('hero_slider_effect', 'slide')}
-                    className={`py-1.5 px-3 text-center rounded-xl text-xs font-bold transition-all ${
-                      effect === 'slide'
-                        ? 'bg-[#FF6B00] text-white shadow-xs'
-                        : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700'
-                    }`}
-                  >
-                    Slide
-                  </button>
+              </div>
+              <div className="flex items-center gap-3 pt-1">
+                <span className="text-[10px] font-bold text-stone-400">3s</span>
+                <input
+                  type="range"
+                  min={3}
+                  max={12}
+                  step={1}
+                  value={interval}
+                  disabled={!autoplay}
+                  onChange={(e) => onUpdateSliderConfig('hero_slider_interval', parseInt(e.target.value, 10))}
+                  className="w-full accent-[#FF6B00] h-1.5 bg-stone-200 dark:bg-stone-700 rounded-lg cursor-pointer disabled:opacity-40"
+                />
+                <span className="text-[10px] font-bold text-stone-400">12s</span>
+              </div>
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-[10px] text-stone-400 font-medium">Ajuste rápido:</span>
+                <div className="flex items-center gap-1.5">
+                  {[3, 5, 8, 10].map((sec) => (
+                    <button
+                      key={sec}
+                      type="button"
+                      disabled={!autoplay}
+                      onClick={() => onUpdateSliderConfig('hero_slider_interval', sec)}
+                      className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ${
+                        interval === sec
+                          ? 'bg-[#FF6B00] text-white shadow-2xs'
+                          : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700'
+                      }`}
+                    >
+                      {sec}s
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
 
-            {/* Tarjeta 2: Controles de Navegación del Visitante */}
-            <div className="p-4 rounded-xl bg-white dark:bg-stone-900 border border-stone-200/70 dark:border-stone-800 space-y-4 shadow-2xs flex flex-col justify-between">
+            {/* Control 3: Efecto de Transición */}
+            <div className="p-3.5 rounded-xl bg-white dark:bg-stone-900 border border-stone-200/70 dark:border-stone-800 space-y-2 shadow-2xs">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-stone-800 dark:text-stone-200 block text-xs">
+                  {t('cms.hero.effect') || 'Efecto de Transición'}
+                </span>
+                <span className="text-[11px] text-stone-400 font-medium">
+                  {effect === 'fade' ? 'Suave difuminado' : 'Desplazamiento horizontal'}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => onUpdateSliderConfig('hero_slider_effect', 'fade')}
+                  className={`py-2 px-3 text-center rounded-xl text-xs font-bold transition-all ${
+                    effect === 'fade'
+                      ? 'bg-[#FF6B00] text-white shadow-xs'
+                      : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700'
+                  }`}
+                >
+                  Fade (Suave)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onUpdateSliderConfig('hero_slider_effect', 'slide')}
+                  className={`py-2 px-3 text-center rounded-xl text-xs font-bold transition-all ${
+                    effect === 'slide'
+                      ? 'bg-[#FF6B00] text-white shadow-xs'
+                      : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700'
+                  }`}
+                >
+                  Slide (Deslizamiento)
+                </button>
+              </div>
+            </div>
+
+            {/* Control 4: Flechas de Navegación */}
+            <div className="flex items-center justify-between p-3.5 rounded-xl bg-white dark:bg-stone-900 border border-stone-200/70 dark:border-stone-800 shadow-2xs">
               <div>
-                <h5 className="font-bold text-stone-800 dark:text-stone-200 text-xs mb-1">
-                  Navegación Visual
-                </h5>
-                <p className="text-[11px] text-stone-400 font-medium mb-3">
-                  Elementos interactivos visibles para tus clientes en la web.
-                </p>
-
-                <div className="divide-y divide-stone-100 dark:divide-stone-800 space-y-3">
-                  {/* Flechas Laterales */}
-                  <div className="flex items-center justify-between pt-2">
-                    <div>
-                      <span className="font-medium text-stone-800 dark:text-stone-200 block">
-                        {t('cms.hero.show_arrows') || 'Flechas de Navegación'}
-                      </span>
-                      <span className="text-[11px] text-stone-400">
-                        Botones laterales anterior/siguiente
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      role="switch"
-                      aria-checked={showArrows}
-                      onClick={() => onUpdateSliderConfig('hero_slider_show_arrows', !showArrows)}
-                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                        showArrows ? 'bg-[#FF6B00]' : 'bg-stone-300 dark:bg-stone-700'
-                      }`}
-                    >
-                      <span
-                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                          showArrows ? 'translate-x-5' : 'translate-x-0'
-                        }`}
-                      />
-                    </button>
-                  </div>
-
-                  {/* Puntos Indicadores */}
-                  <div className="flex items-center justify-between pt-3">
-                    <div>
-                      <span className="font-medium text-stone-800 dark:text-stone-200 block">
-                        {t('cms.hero.show_dots') || 'Puntos Indicadores'}
-                      </span>
-                      <span className="text-[11px] text-stone-400">
-                        Barra inferior de diapositivas
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      role="switch"
-                      aria-checked={showDots}
-                      onClick={() => onUpdateSliderConfig('hero_slider_show_dots', !showDots)}
-                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                        showDots ? 'bg-[#FF6B00]' : 'bg-stone-300 dark:bg-stone-700'
-                      }`}
-                    >
-                      <span
-                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                          showDots ? 'translate-x-5' : 'translate-x-0'
-                        }`}
-                      />
-                    </button>
-                  </div>
-                </div>
+                <span className="font-bold text-stone-800 dark:text-stone-200 block text-xs">
+                  {t('cms.hero.show_arrows') || 'Flechas de Navegación'}
+                </span>
+                <span className="text-[11px] text-stone-400 font-medium">
+                  Botones laterales anterior y siguiente
+                </span>
               </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={showArrows}
+                onClick={() => onUpdateSliderConfig('hero_slider_show_arrows', !showArrows)}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                  showArrows ? 'bg-[#FF6B00]' : 'bg-stone-300 dark:bg-stone-700'
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    showArrows ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
 
-              <div className="p-2.5 rounded-lg bg-stone-50 dark:bg-stone-800/50 border border-stone-200/50 dark:border-stone-700/50 text-[11px] text-stone-500">
-                💡 Consejo: Si activas la reproducción continua (Autoplay), te recomendamos mantener los puntos indicadores visibles.
+            {/* Control 5: Puntos Indicadores */}
+            <div className="flex items-center justify-between p-3.5 rounded-xl bg-white dark:bg-stone-900 border border-stone-200/70 dark:border-stone-800 shadow-2xs">
+              <div>
+                <span className="font-bold text-stone-800 dark:text-stone-200 block text-xs">
+                  {t('cms.hero.show_dots') || 'Puntos Indicadores'}
+                </span>
+                <span className="text-[11px] text-stone-400 font-medium">
+                  Barra inferior de diapositivas
+                </span>
               </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={showDots}
+                onClick={() => onUpdateSliderConfig('hero_slider_show_dots', !showDots)}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                  showDots ? 'bg-[#FF6B00]' : 'bg-stone-300 dark:bg-stone-700'
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    showDots ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
             </div>
           </div>
         </div>
