@@ -35,9 +35,9 @@ const getPriceStyleConfig = (style?: string) => {
     case 'outline':
       return {
         boxClass: 'bg-transparent border-2 border-white/40 rounded-2xl px-4 py-2 sm:px-5 sm:py-3 text-white backdrop-blur-xs',
-        prefixClass: 'text-[#d4af37]',
+        prefixClass: 'text-white/80',
         amountClass: 'text-white drop-shadow-md',
-        suffixClass: 'text-[#d4af37]'
+        suffixClass: 'text-white/80'
       };
     case 'minimal':
       return {
@@ -49,17 +49,17 @@ const getPriceStyleConfig = (style?: string) => {
     case 'solid_white':
       return {
         boxClass: 'bg-white/95 dark:bg-stone-900/95 backdrop-blur-md border border-white/50 dark:border-stone-800 rounded-2xl px-4 py-2 sm:px-5 sm:py-3 text-stone-900 dark:text-white shadow-md',
-        prefixClass: 'text-[#d4af37]',
+        prefixClass: 'text-stone-500 dark:text-stone-400',
         amountClass: 'text-stone-900 dark:text-white',
-        suffixClass: 'text-[#d4af37]'
+        suffixClass: 'text-stone-500 dark:text-stone-400'
       };
     case 'capsule_dark':
     default:
       return {
         boxClass: 'backdrop-blur-xl bg-black/45 dark:bg-stone-950/60 border border-white/25 rounded-2xl px-4 py-2.5 sm:px-5 sm:py-3.5 text-white',
-        prefixClass: 'text-[#d4af37]',
+        prefixClass: 'text-white/80',
         amountClass: 'text-white drop-shadow-md',
-        suffixClass: 'text-[#d4af37]'
+        suffixClass: 'text-white/80'
       };
   }
 };
@@ -268,15 +268,19 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
             if (!isPriceActive) return null;
             const prefixText = translate(activeSlide?.hero_price_prefix ?? formData?.hero_price_prefix, activeSlide?.translations || formData?.translations, 'hero_price_prefix');
             const periodText = translate(activeSlide?.hero_price_period ?? formData?.hero_price_period, activeSlide?.translations || formData?.translations, 'hero_price_period');
+            const customLabelColor = activeSlide?.hero_price_label_color || formData?.hero_price_label_color || '';
+            const customAmountColor = activeSlide?.hero_price_amount_color || formData?.hero_price_amount_color || '';
+
             return (
               <div className={`relative group ${priceConfig.boxClass} select-none`}>
                 <div className="relative flex flex-col items-start text-left">
                   {prefixText && (
                     <span 
                       style={{
-                        marginBottom: `${desdeMarginBottom}px`
+                        marginBottom: `${desdeMarginBottom}px`,
+                        ...(customLabelColor ? { color: customLabelColor } : {})
                       }}
-                      className={`text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-[0.22em] ${priceConfig.prefixClass} block leading-none pl-0.5 select-none relative z-10 transition-all`}
+                      className={`text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-[0.22em] ${customLabelColor ? '' : priceConfig.prefixClass} block leading-none pl-0.5 select-none relative z-10 transition-all`}
                     >
                       {prefixText}
                     </span>
@@ -285,9 +289,10 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
                     <span 
                       style={{ 
                         fontSize: priceAmountFontSize,
-                        fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif"
+                        fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif",
+                        ...(customAmountColor ? { color: customAmountColor } : {})
                       }}
-                      className={`font-serif font-bold ${priceConfig.amountClass} leading-[0.88] tracking-tight drop-shadow-md`}
+                      className={`font-serif font-bold ${customAmountColor ? '' : priceConfig.amountClass} leading-[0.88] tracking-tight drop-shadow-md`}
                     >
                       {activeSlide?.hero_price_amount || formData?.hero_price_amount || '15'}
                     </span>
@@ -295,9 +300,10 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
                       <span 
                         style={{ 
                           fontSize: priceSuffixFontSize,
-                          fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif"
+                          fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif",
+                          ...(customLabelColor ? { color: customLabelColor } : {})
                         }}
-                        className={`font-serif font-bold ${priceConfig.suffixClass} leading-none`}
+                        className={`font-serif font-bold ${customLabelColor ? '' : priceConfig.suffixClass} leading-none`}
                       >
                         {activeSlide?.hero_price_suffix || formData?.hero_price_suffix || '€'}
                       </span>
@@ -305,9 +311,10 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
                         <span 
                           style={{
                             fontSize: periodFontSize,
-                            marginTop: `${3 + periodOffsetY}px`
+                            marginTop: `${3 + periodOffsetY}px`,
+                            ...(customLabelColor ? { color: customLabelColor } : {})
                           }}
-                          className={`font-black uppercase tracking-[0.18em] ${priceConfig.suffixClass} opacity-90 leading-tight block transition-all`}
+                          className={`font-black uppercase tracking-[0.18em] ${customLabelColor ? '' : priceConfig.suffixClass} opacity-90 leading-tight block transition-all`}
                         >
                           {periodText}
                         </span>

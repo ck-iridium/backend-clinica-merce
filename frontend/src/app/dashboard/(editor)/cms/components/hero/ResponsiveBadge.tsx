@@ -35,7 +35,7 @@ export default function ResponsiveBadge({
           }`}
           title="Escritorio (Desktop)"
         >
-          <Monitor size={11} className={device === 'desktop' ? 'text-[#d4af37]' : ''} />
+          <Monitor size={11} className={device === 'desktop' ? 'text-[#FF6B00]' : ''} />
         </button>
         <button
           type="button"
@@ -47,7 +47,7 @@ export default function ResponsiveBadge({
           }`}
           title="Tablet (768px)"
         >
-          <Tablet size={11} className={device === 'tablet' ? 'text-[#d4af37]' : ''} />
+          <Tablet size={11} className={device === 'tablet' ? 'text-[#FF6B00]' : ''} />
         </button>
         <button
           type="button"
@@ -59,7 +59,7 @@ export default function ResponsiveBadge({
           }`}
           title="Móvil (390px)"
         >
-          <Smartphone size={11} className={device === 'mobile' ? 'text-[#d4af37]' : ''} />
+          <Smartphone size={11} className={device === 'mobile' ? 'text-[#FF6B00]' : ''} />
         </button>
       </div>
 

@@ -24,6 +24,8 @@ export interface HeroSlideData {
   hero_price_offset_y?: number;
   hero_price_period_size?: number;
   hero_price_period_offset_y?: number;
+  hero_price_label_color?: string;
+  hero_price_amount_color?: string;
   
   // Botón de Acción (CTA)
   hero_show_button?: boolean;

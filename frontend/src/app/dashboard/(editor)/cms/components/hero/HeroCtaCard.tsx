@@ -26,7 +26,7 @@ export default function HeroCtaCard({
     <div className="p-6 rounded-3xl bg-stone-50/70 dark:bg-stone-900/40 border border-stone-200/70 dark:border-stone-800 shadow-sm space-y-4">
       <div className="flex items-center justify-between pb-3 border-b border-stone-200/60 dark:border-stone-800">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-[#d4af37]/10 text-[#d4af37]">
+          <div className="p-2 rounded-xl bg-orange-500/10 text-[#FF6B00]">
             <MousePointerClick size={18} />
           </div>
           <div>
@@ -45,7 +45,7 @@ export default function HeroCtaCard({
           aria-checked={data.hero_show_button !== false}
           onClick={() => onChange('hero_show_button', data.hero_show_button === false ? true : false)}
           className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-            data.hero_show_button !== false ? 'bg-[#d4af37]' : 'bg-stone-300 dark:bg-stone-700'
+            data.hero_show_button !== false ? 'bg-[#FF6B00]' : 'bg-stone-300 dark:bg-stone-700'
           }`}
         >
           <span
@@ -71,7 +71,7 @@ export default function HeroCtaCard({
                 onClick={() => onChange('hero_button_style', 'glass')}
                 className={`p-3 rounded-2xl border text-center transition-all flex flex-col items-center gap-1.5 ${
                   buttonStyle === 'glass'
-                    ? 'border-[#d4af37] bg-[#d4af37]/10 shadow-xs'
+                    ? 'border-[#FF6B00] bg-orange-50/20 dark:bg-orange-950/20 shadow-xs'
                     : 'border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 hover:border-stone-300'
                 }`}
               >
@@ -89,11 +89,11 @@ export default function HeroCtaCard({
                 onClick={() => onChange('hero_button_style', 'gold_solid')}
                 className={`p-3 rounded-2xl border text-center transition-all flex flex-col items-center gap-1.5 ${
                   buttonStyle === 'gold_solid'
-                    ? 'border-[#d4af37] bg-[#d4af37]/10 shadow-xs'
+                    ? 'border-[#FF6B00] bg-orange-50/20 dark:bg-orange-950/20 shadow-xs'
                     : 'border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 hover:border-stone-300'
                 }`}
               >
-                <div className="w-full py-2 px-3 rounded-full bg-[#d4af37] text-white text-xs font-bold shadow-xs">
+                <div className="w-full py-2 px-3 rounded-full bg-[#FF6B00] text-white text-xs font-bold shadow-xs">
                   Color
                 </div>
                 <span className="text-[11px] font-bold text-stone-600 dark:text-stone-300">
@@ -107,7 +107,7 @@ export default function HeroCtaCard({
                 onClick={() => onChange('hero_button_style', 'outline')}
                 className={`p-3 rounded-2xl border text-center transition-all flex flex-col items-center gap-1.5 ${
                   buttonStyle === 'outline'
-                    ? 'border-[#d4af37] bg-[#d4af37]/10 shadow-xs'
+                    ? 'border-[#FF6B00] bg-orange-50/20 dark:bg-orange-950/20 shadow-xs'
                     : 'border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 hover:border-stone-300'
                 }`}
               >
@@ -125,7 +125,7 @@ export default function HeroCtaCard({
                 onClick={() => onChange('hero_button_style', 'solid_white')}
                 className={`p-3 rounded-2xl border text-center transition-all flex flex-col items-center gap-1.5 ${
                   buttonStyle === 'solid_white'
-                    ? 'border-[#d4af37] bg-[#d4af37]/10 shadow-xs'
+                    ? 'border-[#FF6B00] bg-orange-50/20 dark:bg-orange-950/20 shadow-xs'
                     : 'border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 hover:border-stone-300'
                 }`}
               >
@@ -150,7 +150,7 @@ export default function HeroCtaCard({
                 value={data.hero_button_text || ""} 
                 onChange={e => onChange('hero_button_text', e.target.value)} 
                 placeholder="Reservar Tratamiento"
-                className="w-full px-4 py-3 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 text-sm font-bold" 
+                className="w-full px-4 py-3 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/30 text-sm font-bold" 
               />
             </div>
 
@@ -163,7 +163,7 @@ export default function HeroCtaCard({
                   id="cms-hero-smart-link-btn"
                   type="button"
                   onClick={() => setIsLinkPickerOpen(true)}
-                  className="text-[10px] font-extrabold uppercase text-[#d4af37] hover:underline flex items-center gap-1"
+                  className="text-[10px] font-extrabold uppercase text-[#FF6B00] hover:underline flex items-center gap-1"
                 >
                   <Wand2 size={12} />
                   {t('cms.hero.open_link_picker') || 'Elegir Enlace Smart'}
@@ -176,12 +176,12 @@ export default function HeroCtaCard({
                   value={data.hero_button_link || ""} 
                   onChange={e => onChange('hero_button_link', e.target.value)} 
                   placeholder="/reservar o #tratamientos"
-                  className="w-full pl-4 pr-10 py-3 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 text-sm font-medium font-mono" 
+                  className="w-full pl-4 pr-10 py-3 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/30 text-sm font-medium font-mono" 
                 />
                 <button
                   type="button"
                   onClick={() => setIsLinkPickerOpen(true)}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 rounded-lg bg-stone-100 dark:bg-stone-700 hover:bg-[#d4af37]/10 text-stone-500 hover:text-[#d4af37] transition-colors"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 rounded-lg bg-stone-100 dark:bg-stone-700 hover:bg-orange-500/10 text-stone-500 hover:text-[#FF6B00] transition-colors"
                   title={t('cms.hero.open_link_picker') || 'Abrir selector inteligente de enlaces'}
                 >
                   <Wand2 size={15} />

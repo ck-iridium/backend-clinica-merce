@@ -20,9 +20,9 @@ const getPriceStyleConfig = (style?: string) => {
     case 'outline':
       return {
         boxClass: 'bg-transparent border-2 border-white/40 rounded-3xl px-6 py-3.5 sm:px-8 sm:py-4.5 md:px-9 md:py-6 text-white backdrop-blur-xs',
-        prefixClass: 'text-[#d4af37]',
+        prefixClass: 'text-white/80',
         amountClass: 'text-white drop-shadow-md',
-        suffixClass: 'text-[#d4af37]'
+        suffixClass: 'text-white/80'
       };
     case 'minimal':
       return {
@@ -34,17 +34,17 @@ const getPriceStyleConfig = (style?: string) => {
     case 'solid_white':
       return {
         boxClass: 'bg-white/95 dark:bg-stone-900/95 backdrop-blur-md border border-white/50 dark:border-stone-800 rounded-3xl px-6 py-3.5 sm:px-8 sm:py-4.5 md:px-9 md:py-6 text-stone-900 dark:text-white shadow-lg',
-        prefixClass: 'text-[#d4af37]',
+        prefixClass: 'text-stone-500 dark:text-stone-400',
         amountClass: 'text-stone-900 dark:text-white',
-        suffixClass: 'text-[#d4af37]'
+        suffixClass: 'text-stone-500 dark:text-stone-400'
       };
     case 'capsule_dark':
     default:
       return {
-        boxClass: 'backdrop-blur-xl bg-black/45 dark:bg-stone-950/60 border border-white/25 rounded-3xl px-6 py-3.5 sm:px-8 sm:py-4.5 md:px-9 md:py-6 text-white hover:border-[#d4af37]/60 transition-all duration-300',
-        prefixClass: 'text-[#d4af37]',
+        boxClass: 'backdrop-blur-xl bg-black/45 dark:bg-stone-950/60 border border-white/25 rounded-3xl px-6 py-3.5 sm:px-8 sm:py-4.5 md:px-9 md:py-6 text-white hover:border-white/40 transition-all duration-300',
+        prefixClass: 'text-white/80',
         amountClass: 'text-white drop-shadow-[0_8px_16px_rgba(0,0,0,0.7)]',
-        suffixClass: 'text-[#d4af37]'
+        suffixClass: 'text-white/80'
       };
   }
 };
@@ -135,6 +135,9 @@ export default function HeroLuxury({ data, settings }: { data: any, settings?: a
 
   const renderPriceCapsule = () => {
     if (!isPriceActive) return null;
+    const customLabelColor = data?.hero_price_label_color || '';
+    const customAmountColor = data?.hero_price_amount_color || '';
+
     return (
       <div className={`relative group ${priceConfig.boxClass} select-none`}>
         <div className="relative flex flex-col items-start text-left">
@@ -144,8 +147,9 @@ export default function HeroLuxury({ data, settings }: { data: any, settings?: a
                 '--hero-price-prefix-mb-mobile': `${mobileDesdeMb}px`,
                 '--hero-price-prefix-mb-tablet': `${tabletDesdeMb}px`,
                 '--hero-price-prefix-mb-desktop': `${desktopDesdeMb}px`,
+                ...(customLabelColor ? { color: customLabelColor } : {})
               } as React.CSSProperties}
-              className={`text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-[0.22em] ${priceConfig.prefixClass} block leading-none pl-0.5 select-none relative z-10 transition-all mb-[var(--hero-price-prefix-mb-mobile)] md:mb-[var(--hero-price-prefix-mb-tablet)] lg:mb-[var(--hero-price-prefix-mb-desktop)]`}
+              className={`text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-[0.22em] ${customLabelColor ? '' : priceConfig.prefixClass} block leading-none pl-0.5 select-none relative z-10 transition-all mb-[var(--hero-price-prefix-mb-mobile)] md:mb-[var(--hero-price-prefix-mb-tablet)] lg:mb-[var(--hero-price-prefix-mb-desktop)]`}
             >
               {data?.hero_price_prefix}
             </span>
@@ -154,9 +158,10 @@ export default function HeroLuxury({ data, settings }: { data: any, settings?: a
             <span 
               style={{ 
                 fontSize: `clamp(${(3.4 * mobilePriceScale).toFixed(2)}rem, ${(5.0 * tabletPriceScale).toFixed(2)}rem, ${(7.5 * desktopPriceScale).toFixed(2)}rem)`,
-                fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif"
+                fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif",
+                ...(customAmountColor ? { color: customAmountColor } : {})
               }}
-              className={`font-serif font-bold ${priceConfig.amountClass} leading-[0.88] tracking-tight drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]`}
+              className={`font-serif font-bold ${customAmountColor ? '' : priceConfig.amountClass} leading-[0.88] tracking-tight drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]`}
             >
               {data?.hero_price_amount || '15'}
             </span>
@@ -164,9 +169,10 @@ export default function HeroLuxury({ data, settings }: { data: any, settings?: a
               <span 
                 style={{ 
                   fontSize: `clamp(${(1.6 * mobilePriceScale).toFixed(2)}rem, ${(2.2 * tabletPriceScale).toFixed(2)}rem, ${(3.2 * desktopPriceScale).toFixed(2)}rem)`,
-                  fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif"
+                  fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif",
+                  ...(customLabelColor ? { color: customLabelColor } : {})
                 }}
-                className={`font-serif font-bold ${priceConfig.suffixClass} leading-none`}
+                className={`font-serif font-bold ${customLabelColor ? '' : priceConfig.suffixClass} leading-none`}
               >
                 {data?.hero_price_suffix || '€'}
               </span>
@@ -177,8 +183,9 @@ export default function HeroLuxury({ data, settings }: { data: any, settings?: a
                     '--hero-price-period-mt-tablet': `${tabletPeriodMt}px`,
                     '--hero-price-period-mt-desktop': `${desktopPeriodMt}px`,
                     fontSize: `clamp(${(0.55 * mobilePeriodScale).toFixed(2)}rem, ${(0.62 * tabletPeriodScale).toFixed(2)}rem, ${(0.70 * desktopPeriodScale).toFixed(2)}rem)`,
+                    ...(customLabelColor ? { color: customLabelColor } : {})
                   } as React.CSSProperties}
-                  className={`font-black uppercase tracking-[0.18em] ${priceConfig.suffixClass} opacity-90 leading-tight block mt-[var(--hero-price-period-mt-mobile)] md:mt-[var(--hero-price-period-mt-tablet)] lg:mt-[var(--hero-price-period-mt-desktop)] transition-all`}
+                  className={`font-black uppercase tracking-[0.18em] ${customLabelColor ? '' : priceConfig.suffixClass} opacity-90 leading-tight block mt-[var(--hero-price-period-mt-mobile)] md:mt-[var(--hero-price-period-mt-tablet)] lg:mt-[var(--hero-price-period-mt-desktop)] transition-all`}
                 >
                   {data?.hero_price_period}
                 </span>

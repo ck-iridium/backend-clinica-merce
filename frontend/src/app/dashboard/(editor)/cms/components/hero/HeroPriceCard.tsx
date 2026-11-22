@@ -23,14 +23,14 @@ export default function HeroPriceCard({
     <div className="p-6 rounded-3xl bg-stone-50/70 dark:bg-stone-900/40 border border-stone-200/70 dark:border-stone-800 shadow-sm space-y-4">
       <div className="flex items-center justify-between pb-3 border-b border-stone-200/60 dark:border-stone-800">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-[#d4af37]/10 text-[#d4af37]">
+          <div className="p-2 rounded-xl bg-orange-500/10 text-[#FF6B00]">
             <Tag size={18} />
           </div>
           <div>
             <h4 className="font-serif font-bold text-sm text-stone-900 dark:text-stone-100 flex items-center gap-2">
               {t('cms.hero.card_price_title') || 'Bloque de Precio / Oferta'}
               {data.hero_price_enabled && (
-                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-[#d4af37]/20 text-[#997a15] dark:text-[#f3d36b]">
+                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-orange-500/15 text-[#EA5E00]">
                   Activo
                 </span>
               )}
@@ -48,7 +48,7 @@ export default function HeroPriceCard({
           aria-checked={!!data.hero_price_enabled}
           onClick={() => onChange('hero_price_enabled', !data.hero_price_enabled)}
           className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-            data.hero_price_enabled ? 'bg-[#d4af37]' : 'bg-stone-300 dark:bg-stone-700'
+            data.hero_price_enabled ? 'bg-[#FF6B00]' : 'bg-stone-300 dark:bg-stone-700'
           }`}
         >
           <span
@@ -71,7 +71,7 @@ export default function HeroPriceCard({
                 value={data.hero_price_prefix ?? 'Desde'} 
                 onChange={e => onChange('hero_price_prefix', e.target.value)} 
                 placeholder="Desde"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30" 
+                className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/30" 
               />
             </div>
 
@@ -84,7 +84,7 @@ export default function HeroPriceCard({
                 value={data.hero_price_amount || ''} 
                 onChange={e => onChange('hero_price_amount', e.target.value)} 
                 placeholder="45"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-sm font-serif font-extrabold focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 text-[#d4af37]" 
+                className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-sm font-serif font-extrabold focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/30 text-stone-900 dark:text-stone-100" 
               />
             </div>
 
@@ -97,7 +97,7 @@ export default function HeroPriceCard({
                 value={data.hero_price_suffix ?? '€'} 
                 onChange={e => onChange('hero_price_suffix', e.target.value)} 
                 placeholder="€"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30" 
+                className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/30" 
               />
             </div>
 
@@ -110,8 +110,132 @@ export default function HeroPriceCard({
                 value={data.hero_price_period || ''} 
                 onChange={e => onChange('hero_price_period', e.target.value)} 
                 placeholder="MES, AÑO, SESIÓN..."
-                className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30" 
+                className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/30" 
               />
+            </div>
+          </div>
+
+          {/* PERSONALIZACIÓN DE COLORES DEL PRECIO */}
+          <div className="p-4 rounded-2xl bg-white dark:bg-stone-800/80 border border-stone-200/80 dark:border-stone-700/60 space-y-3.5 shadow-2xs">
+            <div className="flex items-center justify-between pb-2 border-b border-stone-100 dark:border-stone-800">
+              <span className="text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-stone-300">
+                Colores del Bloque de Precio
+              </span>
+              <span className="text-[10px] text-stone-400 font-medium">
+                Personaliza etiqueta, símbolo y número
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* 1. Color de Etiqueta y Símbolo (DESDE, €, Periodo) */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-[11px] font-bold text-stone-700 dark:text-stone-300">
+                    Etiqueta y Símbolo (Desde, €)
+                  </label>
+                  {data.hero_price_label_color && (
+                    <button
+                      type="button"
+                      onClick={() => onChange('hero_price_label_color', '')}
+                      className="text-[10px] text-stone-400 hover:text-stone-600 underline"
+                    >
+                      Restablecer
+                    </button>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 p-1 rounded-xl bg-stone-100 dark:bg-stone-800 border border-stone-200/60 dark:border-stone-700">
+                    {[
+                      { label: 'Blanco', value: '#FFFFFF', bg: 'bg-white border-stone-300' },
+                      { label: 'Piedra', value: '#D6D3D1', bg: 'bg-stone-300 border-stone-400' },
+                      { label: 'Dorado', value: '#D4AF37', bg: 'bg-[#D4AF37] border-amber-600' },
+                      { label: 'Naranja', value: '#FF6B00', bg: 'bg-[#FF6B00] border-orange-600' },
+                      { label: 'Oscuro', value: '#1C1917', bg: 'bg-stone-900 border-black' },
+                    ].map((swatch) => (
+                      <button
+                        key={swatch.value}
+                        type="button"
+                        title={swatch.label}
+                        onClick={() => onChange('hero_price_label_color', swatch.value)}
+                        className={`w-6 h-6 rounded-lg border transition-all ${swatch.bg} ${
+                          (data.hero_price_label_color || '').toUpperCase() === swatch.value.toUpperCase()
+                            ? 'ring-2 ring-[#FF6B00] scale-110 shadow-xs'
+                            : 'hover:scale-105 opacity-80 hover:opacity-100'
+                        }`}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Custom Picker */}
+                  <div className="flex items-center gap-1.5 flex-1">
+                    <input
+                      type="color"
+                      value={data.hero_price_label_color || '#FFFFFF'}
+                      onChange={(e) => onChange('hero_price_label_color', e.target.value)}
+                      className="w-7 h-7 rounded-lg border border-stone-200 dark:border-stone-700 cursor-pointer p-0.5 bg-white dark:bg-stone-800 shrink-0"
+                      title="Elegir color libre"
+                    />
+                    <span className="font-mono text-[10px] font-bold text-stone-500 uppercase truncate">
+                      {data.hero_price_label_color || 'Por defecto'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. Color del Importe (Cifra numérica: 15) */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-[11px] font-bold text-stone-700 dark:text-stone-300">
+                    Importe / Cifra ({data.hero_price_amount || '15'})
+                  </label>
+                  {data.hero_price_amount_color && (
+                    <button
+                      type="button"
+                      onClick={() => onChange('hero_price_amount_color', '')}
+                      className="text-[10px] text-stone-400 hover:text-stone-600 underline"
+                    >
+                      Restablecer
+                    </button>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 p-1 rounded-xl bg-stone-100 dark:bg-stone-800 border border-stone-200/60 dark:border-stone-700">
+                    {[
+                      { label: 'Blanco', value: '#FFFFFF', bg: 'bg-white border-stone-300' },
+                      { label: 'Piedra', value: '#D6D3D1', bg: 'bg-stone-300 border-stone-400' },
+                      { label: 'Dorado', value: '#D4AF37', bg: 'bg-[#D4AF37] border-amber-600' },
+                      { label: 'Naranja', value: '#FF6B00', bg: 'bg-[#FF6B00] border-orange-600' },
+                      { label: 'Oscuro', value: '#1C1917', bg: 'bg-stone-900 border-black' },
+                    ].map((swatch) => (
+                      <button
+                        key={swatch.value}
+                        type="button"
+                        title={swatch.label}
+                        onClick={() => onChange('hero_price_amount_color', swatch.value)}
+                        className={`w-6 h-6 rounded-lg border transition-all ${swatch.bg} ${
+                          (data.hero_price_amount_color || '').toUpperCase() === swatch.value.toUpperCase()
+                            ? 'ring-2 ring-[#FF6B00] scale-110 shadow-xs'
+                            : 'hover:scale-105 opacity-80 hover:opacity-100'
+                        }`}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Custom Picker */}
+                  <div className="flex items-center gap-1.5 flex-1">
+                    <input
+                      type="color"
+                      value={data.hero_price_amount_color || '#FFFFFF'}
+                      onChange={(e) => onChange('hero_price_amount_color', e.target.value)}
+                      className="w-7 h-7 rounded-lg border border-stone-200 dark:border-stone-700 cursor-pointer p-0.5 bg-white dark:bg-stone-800 shrink-0"
+                      title="Elegir color libre"
+                    />
+                    <span className="font-mono text-[10px] font-bold text-stone-500 uppercase truncate">
+                      {data.hero_price_amount_color || 'Por defecto'}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -128,7 +252,7 @@ export default function HeroPriceCard({
                 onClick={() => onChange('hero_price_style', 'capsule_dark')}
                 className={`p-3 rounded-2xl border text-center transition-all flex flex-col items-center gap-1.5 ${
                   priceStyle === 'capsule_dark'
-                    ? 'border-[#d4af37] bg-[#d4af37]/10 shadow-xs'
+                    ? 'border-[#FF6B00] bg-orange-50/20 dark:bg-orange-950/20 shadow-xs'
                     : 'border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 hover:border-stone-300'
                 }`}
               >
@@ -146,7 +270,7 @@ export default function HeroPriceCard({
                 onClick={() => onChange('hero_price_style', 'outline')}
                 className={`p-3 rounded-2xl border text-center transition-all flex flex-col items-center gap-1.5 ${
                   priceStyle === 'outline'
-                    ? 'border-[#d4af37] bg-[#d4af37]/10 shadow-xs'
+                    ? 'border-[#FF6B00] bg-orange-50/20 dark:bg-orange-950/20 shadow-xs'
                     : 'border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 hover:border-stone-300'
                 }`}
               >
@@ -164,7 +288,7 @@ export default function HeroPriceCard({
                 onClick={() => onChange('hero_price_style', 'minimal')}
                 className={`p-3 rounded-2xl border text-center transition-all flex flex-col items-center gap-1.5 ${
                   priceStyle === 'minimal'
-                    ? 'border-[#d4af37] bg-[#d4af37]/10 shadow-xs'
+                    ? 'border-[#FF6B00] bg-orange-50/20 dark:bg-orange-950/20 shadow-xs'
                     : 'border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 hover:border-stone-300'
                 }`}
               >
@@ -182,7 +306,7 @@ export default function HeroPriceCard({
                 onClick={() => onChange('hero_price_style', 'solid_white')}
                 className={`p-3 rounded-2xl border text-center transition-all flex flex-col items-center gap-1.5 ${
                   priceStyle === 'solid_white'
-                    ? 'border-[#d4af37] bg-[#d4af37]/10 shadow-xs'
+                    ? 'border-[#FF6B00] bg-orange-50/20 dark:bg-orange-950/20 shadow-xs'
                     : 'border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800 hover:border-stone-300'
                 }`}
               >
@@ -200,14 +324,14 @@ export default function HeroPriceCard({
           <div className="p-3.5 rounded-2xl bg-white dark:bg-stone-800/60 border border-stone-200/60 dark:border-stone-700/60 space-y-2.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
-                <Sliders size={13} className="text-[#d4af37]" />
+                <Sliders size={13} className="text-[#FF6B00]" />
                 <span className="text-[11px] font-bold uppercase tracking-wider text-stone-600 dark:text-stone-300">
                   {t('cms.hero.price_size') || 'Escala Visual del Precio'}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 {renderBadge('hero_price_size')}
-                <span className="font-mono text-xs font-extrabold text-[#d4af37] bg-[#d4af37]/10 px-2.5 py-0.5 rounded-full">
+                <span className="font-mono text-xs font-extrabold text-[#FF6B00] bg-orange-50 dark:bg-orange-950/40 border border-orange-200/60 px-2.5 py-0.5 rounded-full">
                   {priceScale}%
                 </span>
               </div>
@@ -223,7 +347,7 @@ export default function HeroPriceCard({
                 step="5"
                 value={priceScale}
                 onChange={e => setResponsiveValue('hero_price_size', e.target.value)}
-                className="w-full accent-[#d4af37] h-1.5 bg-stone-200 dark:bg-stone-700 rounded-lg cursor-pointer"
+                className="w-full accent-[#FF6B00] h-1.5 bg-stone-200 dark:bg-stone-700 rounded-lg cursor-pointer"
               />
               <span className="text-[10px] font-bold text-stone-400">200%</span>
             </div>
@@ -239,7 +363,7 @@ export default function HeroPriceCard({
                     onClick={() => setResponsiveValue('hero_price_size', String(preset))}
                     className={`px-2 py-0.5 rounded-md transition-all ${
                       priceScale === preset
-                        ? 'bg-[#d4af37] text-white'
+                        ? 'bg-[#FF6B00] text-white shadow-2xs'
                         : 'bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-200'
                     }`}
                   >
@@ -254,14 +378,14 @@ export default function HeroPriceCard({
           <div className="p-3.5 rounded-2xl bg-white dark:bg-stone-800/60 border border-stone-200/60 dark:border-stone-700/60 space-y-2.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
-                <Sliders size={13} className="text-[#d4af37]" />
+                <Sliders size={13} className="text-[#FF6B00]" />
                 <span className="text-[11px] font-bold uppercase tracking-wider text-stone-600 dark:text-stone-300">
                   {t('cms.hero.price_offset_y') || 'Proximidad / Separación del DESDE'}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 {renderBadge('hero_price_offset_y')}
-                <span className="font-mono text-xs font-extrabold text-[#d4af37] bg-[#d4af37]/10 px-2.5 py-0.5 rounded-full">
+                <span className="font-mono text-xs font-extrabold text-[#FF6B00] bg-orange-50 dark:bg-orange-950/40 border border-orange-200/60 px-2.5 py-0.5 rounded-full">
                   {priceOffsetY > 0 ? `+${priceOffsetY}px` : `${priceOffsetY}px`}
                 </span>
               </div>
@@ -277,7 +401,7 @@ export default function HeroPriceCard({
                 step="1"
                 value={priceOffsetY}
                 onChange={e => setResponsiveValue('hero_price_offset_y', parseInt(e.target.value, 10))}
-                className="w-full accent-[#d4af37] h-1.5 bg-stone-200 dark:bg-stone-700 rounded-lg cursor-pointer"
+                className="w-full accent-[#FF6B00] h-1.5 bg-stone-200 dark:bg-stone-700 rounded-lg cursor-pointer"
               />
               <span className="text-[10px] font-bold text-stone-400">Separar (+40)</span>
             </div>
@@ -293,7 +417,7 @@ export default function HeroPriceCard({
                     onClick={() => setResponsiveValue('hero_price_offset_y', preset)}
                     className={`px-2 py-0.5 rounded-md transition-all ${
                       priceOffsetY === preset
-                        ? 'bg-[#d4af37] text-white'
+                        ? 'bg-[#FF6B00] text-white shadow-2xs'
                         : 'bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-200'
                     }`}
                   >
@@ -308,14 +432,14 @@ export default function HeroPriceCard({
           <div className="p-3.5 rounded-2xl bg-white dark:bg-stone-800/60 border border-stone-200/60 dark:border-stone-700/60 space-y-2.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
-                <Sliders size={13} className="text-[#d4af37]" />
+                <Sliders size={13} className="text-[#FF6B00]" />
                 <span className="text-[11px] font-bold uppercase tracking-wider text-stone-600 dark:text-stone-300">
                   {t('cms.hero.price_period_size') || 'Escala / Tamaño de SESIÓN'}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 {renderBadge('hero_price_period_size')}
-                <span className="font-mono text-xs font-extrabold text-[#d4af37] bg-[#d4af37]/10 px-2 py-0.5 rounded-full">
+                <span className="font-mono text-xs font-extrabold text-[#FF6B00] bg-orange-50 dark:bg-orange-950/40 border border-orange-200/60 px-2 py-0.5 rounded-full">
                   {pricePeriodSize}%
                 </span>
               </div>
@@ -331,7 +455,7 @@ export default function HeroPriceCard({
                 step="5"
                 value={pricePeriodSize}
                 onChange={e => setResponsiveValue('hero_price_period_size', e.target.value)}
-                className="w-full accent-[#d4af37] h-1.5 bg-stone-200 dark:bg-stone-700 rounded-lg cursor-pointer"
+                className="w-full accent-[#FF6B00] h-1.5 bg-stone-200 dark:bg-stone-700 rounded-lg cursor-pointer"
               />
               <span className="text-[10px] font-bold text-stone-400">160%</span>
             </div>
@@ -347,7 +471,7 @@ export default function HeroPriceCard({
                     onClick={() => setResponsiveValue('hero_price_period_size', String(preset))}
                     className={`px-2 py-0.5 rounded-md transition-all ${
                       pricePeriodSize === preset
-                        ? 'bg-[#d4af37] text-white'
+                        ? 'bg-[#FF6B00] text-white shadow-2xs'
                         : 'bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-200'
                     }`}
                   >
@@ -362,14 +486,14 @@ export default function HeroPriceCard({
           <div className="p-3.5 rounded-2xl bg-white dark:bg-stone-800/60 border border-stone-200/60 dark:border-stone-700/60 space-y-2.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
-                <Sliders size={13} className="text-[#d4af37]" />
+                <Sliders size={13} className="text-[#FF6B00]" />
                 <span className="text-[11px] font-bold uppercase tracking-wider text-stone-600 dark:text-stone-300">
                   {t('cms.hero.price_period_offset_y') || 'Ajuste Vertical / Separación de SESIÓN'}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 {renderBadge('hero_price_period_offset_y')}
-                <span className="font-mono text-xs font-extrabold text-[#d4af37] bg-[#d4af37]/10 px-2.5 py-0.5 rounded-full">
+                <span className="font-mono text-xs font-extrabold text-[#FF6B00] bg-orange-50 dark:bg-orange-950/40 border border-orange-200/60 px-2.5 py-0.5 rounded-full">
                   {pricePeriodOffsetY > 0 ? `+${pricePeriodOffsetY}px` : `${pricePeriodOffsetY}px`}
                 </span>
               </div>
@@ -385,7 +509,7 @@ export default function HeroPriceCard({
                 step="1"
                 value={pricePeriodOffsetY}
                 onChange={e => setResponsiveValue('hero_price_period_offset_y', parseInt(e.target.value, 10))}
-                className="w-full accent-[#d4af37] h-1.5 bg-stone-200 dark:bg-stone-700 rounded-lg cursor-pointer"
+                className="w-full accent-[#FF6B00] h-1.5 bg-stone-200 dark:bg-stone-700 rounded-lg cursor-pointer"
               />
               <span className="text-[10px] font-bold text-stone-400">Separar (+20)</span>
             </div>
@@ -401,7 +525,7 @@ export default function HeroPriceCard({
                     onClick={() => setResponsiveValue('hero_price_period_offset_y', preset)}
                     className={`px-2 py-0.5 rounded-md transition-all ${
                       pricePeriodOffsetY === preset
-                        ? 'bg-[#d4af37] text-white'
+                        ? 'bg-[#FF6B00] text-white shadow-2xs'
                         : 'bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-200'
                     }`}
                   >
@@ -412,9 +536,9 @@ export default function HeroPriceCard({
             </div>
           </div>
 
-          {/* Vista previa compacta de 2 columnas con precio encapsulado (Muestra el estilo visual) */}
+          {/* Vista previa compacta de 2 columnas con precio encapsulado (Muestra el estilo visual y colores) */}
           <div className="p-4 rounded-2xl bg-stone-950 text-white space-y-2 border border-stone-800">
-            <span className="text-[10px] uppercase font-bold tracking-widest text-[#d4af37] block">
+            <span className="text-[10px] uppercase font-bold tracking-widest text-[#FF6B00] block">
               {t('cms.hero.preview_badge') || 'Previsualización del Badge'}
             </span>
             <div className="flex items-center justify-between gap-4">
@@ -431,7 +555,7 @@ export default function HeroPriceCard({
                 </div>
               </div>
 
-              {/* Col 2: Cápsula de Precio con Estilo Seleccionado */}
+              {/* Col 2: Cápsula de Precio con Estilo y Colores Seleccionados */}
               <div className={`shrink-0 text-left transition-all ${
                 priceStyle === 'outline' ? 'px-4 py-2.5 rounded-2xl bg-transparent border-2 border-white/40' :
                 priceStyle === 'minimal' ? 'p-1 bg-transparent border-0' :
@@ -441,10 +565,11 @@ export default function HeroPriceCard({
                 <div className="flex flex-col items-start">
                   <span 
                     style={{
-                      marginBottom: `${-4 + Math.round(priceOffsetY / 5)}px`
+                      marginBottom: `${-4 + Math.round(priceOffsetY / 5)}px`,
+                      ...(data.hero_price_label_color ? { color: data.hero_price_label_color } : {})
                     }}
                     className={`text-[9px] uppercase tracking-widest font-black block leading-none select-none transition-all ${
-                      priceStyle === 'minimal' ? 'text-white/80' : 'text-[#d4af37]'
+                      data.hero_price_label_color ? '' : (priceStyle === 'solid_white' ? 'text-stone-500' : 'text-white/80')
                     }`}
                   >
                     {data.hero_price_prefix || 'Desde'}
@@ -453,9 +578,12 @@ export default function HeroPriceCard({
                     <span 
                       style={{ 
                         fontSize: `${(1.5 * (priceScale / 100)).toFixed(2)}rem`,
-                        fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif" 
+                        fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif",
+                        ...(data.hero_price_amount_color ? { color: data.hero_price_amount_color } : {})
                       }}
-                      className={`font-serif font-bold ${priceStyle === 'solid_white' ? 'text-stone-900' : 'text-white'}`}
+                      className={`font-serif font-bold ${
+                        data.hero_price_amount_color ? '' : (priceStyle === 'solid_white' ? 'text-stone-900' : 'text-white')
+                      }`}
                     >
                       {data.hero_price_amount || '15'}
                     </span>
@@ -463,9 +591,12 @@ export default function HeroPriceCard({
                       <span 
                         style={{ 
                           fontSize: `${(0.85 * (priceScale / 100)).toFixed(2)}rem`,
-                          fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif" 
+                          fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif",
+                          ...(data.hero_price_label_color ? { color: data.hero_price_label_color } : {})
                         }}
-                        className={`font-serif font-bold ${priceStyle === 'minimal' ? 'text-white' : 'text-[#d4af37]'}`}
+                        className={`font-serif font-bold ${
+                          data.hero_price_label_color ? '' : (priceStyle === 'solid_white' ? 'text-stone-500' : 'text-white/80')
+                        }`}
                       >
                         {data.hero_price_suffix || '€'}
                       </span>
@@ -473,9 +604,12 @@ export default function HeroPriceCard({
                         <span 
                           style={{
                             fontSize: `${(0.55 * (pricePeriodSize / 100)).toFixed(2)}rem`,
-                            marginTop: `${2 + Math.round(pricePeriodOffsetY / 2)}px`
+                            marginTop: `${2 + Math.round(pricePeriodOffsetY / 2)}px`,
+                            ...(data.hero_price_label_color ? { color: data.hero_price_label_color } : {})
                           }}
-                          className={`font-black uppercase tracking-wider ${priceStyle === 'minimal' ? 'text-white/80' : 'text-[#d4af37]'} leading-tight block transition-all`}
+                          className={`font-black uppercase tracking-wider ${
+                            data.hero_price_label_color ? '' : (priceStyle === 'solid_white' ? 'text-stone-500' : 'text-white/80')
+                          } leading-tight block transition-all`}
                         >
                           {data.hero_price_period}
                         </span>
@@ -490,7 +624,7 @@ export default function HeroPriceCard({
             {data.hero_show_button !== false && (
               <div className="pt-2 border-t border-stone-800/60 flex items-center">
                 <span className="text-[10px] px-3 py-1 rounded-full bg-white/10 border border-white/20 text-white/90 font-bold inline-flex items-center gap-1">
-                  {data.hero_button_text || 'Reservar Cita'} <span className="text-[#d4af37]">→</span>
+                  {data.hero_button_text || 'Reservar Cita'} <span className="text-[#FF6B00]">→</span>
                 </span>
               </div>
             )}

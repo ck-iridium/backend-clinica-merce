@@ -20,7 +20,7 @@ export default function HeroTypographyCard({
   return (
     <div className="p-6 rounded-3xl bg-stone-50/70 dark:bg-stone-900/40 border border-stone-200/70 dark:border-stone-800 shadow-sm space-y-5">
       <div className="flex items-center gap-2.5 pb-3 border-b border-stone-200/60 dark:border-stone-800">
-        <div className="p-2 rounded-xl bg-[#d4af37]/10 text-[#d4af37]">
+        <div className="p-2 rounded-xl bg-orange-500/10 text-[#FF6B00]">
           <Type size={18} />
         </div>
         <div>
@@ -39,7 +39,7 @@ export default function HeroTypographyCard({
           <label className="text-xs font-bold uppercase tracking-wider text-stone-600 dark:text-stone-300">
             {t('cms.hero.main_title')}
           </label>
-          <span className="font-mono text-xs font-extrabold text-[#d4af37] bg-[#d4af37]/10 px-2.5 py-0.5 rounded-full">
+          <span className="font-mono text-xs font-extrabold text-[#FF6B00] bg-orange-50 dark:bg-orange-950/40 border border-orange-200/60 px-2.5 py-0.5 rounded-full">
             {titleScale}%
           </span>
         </div>
@@ -47,21 +47,21 @@ export default function HeroTypographyCard({
           type="text" 
           value={data.hero_title || ""} 
           onChange={e => onChange('hero_title', e.target.value)} 
-          className="w-full px-4 py-3 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 transition-all font-serif font-bold text-lg" 
+          className="w-full px-4 py-3 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/30 transition-all font-serif font-bold text-lg" 
         />
 
         {/* SLIDER DE ESCALA / TAMAÑO DEL TÍTULO */}
         <div className="p-3.5 rounded-2xl bg-white dark:bg-stone-800/60 border border-stone-200/60 dark:border-stone-700/60 space-y-2.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
-              <Sliders size={13} className="text-[#d4af37]" />
+              <Sliders size={13} className="text-[#FF6B00]" />
               <span className="text-[11px] font-bold uppercase tracking-wider text-stone-600 dark:text-stone-300">
                 {t('cms.hero.title_size_slider') || 'Escala / Tamaño del Titular'}
               </span>
             </div>
             <div className="flex items-center gap-2">
               {renderBadge('hero_title_size')}
-              <span className="font-mono text-xs font-extrabold text-[#d4af37] bg-[#d4af37]/10 px-2 py-0.5 rounded-full">
+              <span className="font-mono text-xs font-extrabold text-[#FF6B00] bg-orange-50 dark:bg-orange-950/40 border border-orange-200/60 px-2 py-0.5 rounded-full">
                 {titleScale}%
               </span>
             </div>
@@ -77,7 +77,7 @@ export default function HeroTypographyCard({
               step="5"
               value={titleScale}
               onChange={e => setResponsiveValue('hero_title_size', e.target.value)}
-              className="w-full accent-[#d4af37] h-1.5 bg-stone-200 dark:bg-stone-700 rounded-lg cursor-pointer"
+              className="w-full accent-[#FF6B00] h-1.5 bg-stone-200 dark:bg-stone-700 rounded-lg cursor-pointer"
             />
             <span className="text-[10px] font-bold text-stone-400">220%</span>
           </div>
@@ -93,7 +93,7 @@ export default function HeroTypographyCard({
                   onClick={() => setResponsiveValue('hero_title_size', String(preset))}
                   className={`px-2 py-0.5 rounded-md transition-all ${
                     titleScale === preset
-                      ? 'bg-[#d4af37] text-white'
+                      ? 'bg-[#FF6B00] text-white shadow-2xs'
                       : 'bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-200'
                   }`}
                 >
@@ -108,14 +108,14 @@ export default function HeroTypographyCard({
         <div className="p-3.5 rounded-2xl bg-white dark:bg-stone-800/60 border border-stone-200/60 dark:border-stone-700/60 space-y-2.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
-              <Sliders size={13} className="text-[#d4af37]" />
+              <Sliders size={13} className="text-[#FF6B00]" />
               <span className="text-[11px] font-bold uppercase tracking-wider text-stone-600 dark:text-stone-300">
                 {t('cms.hero.title_max_width') || 'Ancho Máximo del Titular'}
               </span>
             </div>
             <div className="flex items-center gap-2">
               {renderBadge('hero_title_max_width')}
-              <span className="font-mono text-xs font-extrabold text-[#d4af37] bg-[#d4af37]/10 px-2.5 py-0.5 rounded-full">
+              <span className="font-mono text-xs font-extrabold text-[#FF6B00] bg-orange-50 dark:bg-orange-950/40 border border-orange-200/60 px-2.5 py-0.5 rounded-full">
                 {titleMaxWidth}%
               </span>
             </div>
@@ -130,7 +130,7 @@ export default function HeroTypographyCard({
               step="5"
               value={titleMaxWidth}
               onChange={e => setResponsiveValue('hero_title_max_width', parseInt(e.target.value, 10))}
-              className="w-full accent-[#d4af37] h-1.5 bg-stone-200 dark:bg-stone-700 rounded-lg cursor-pointer"
+              className="w-full accent-[#FF6B00] h-1.5 bg-stone-200 dark:bg-stone-700 rounded-lg cursor-pointer"
             />
           </div>
 
@@ -145,7 +145,7 @@ export default function HeroTypographyCard({
                   onClick={() => setResponsiveValue('hero_title_max_width', preset)}
                   className={`px-2 py-0.5 rounded-md transition-all ${
                     titleMaxWidth === preset
-                      ? 'bg-[#d4af37] text-white'
+                      ? 'bg-[#FF6B00] text-white shadow-2xs'
                       : 'bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-200'
                   }`}
                 >
@@ -163,7 +163,7 @@ export default function HeroTypographyCard({
           <label className="text-xs font-bold uppercase tracking-wider text-stone-600 dark:text-stone-300">
             {t('cms.hero.subtitle')}
           </label>
-          <span className="font-mono text-xs font-extrabold text-[#d4af37] bg-[#d4af37]/10 px-2.5 py-0.5 rounded-full">
+          <span className="font-mono text-xs font-extrabold text-[#FF6B00] bg-orange-50 dark:bg-orange-950/40 border border-orange-200/60 px-2.5 py-0.5 rounded-full">
             {subtitleScale}%
           </span>
         </div>
@@ -172,21 +172,21 @@ export default function HeroTypographyCard({
           value={data.hero_subtitle || ""} 
           onChange={e => onChange('hero_subtitle', e.target.value)} 
           placeholder="Donde la belleza y el bienestar se encuentran en perfecta armonía."
-          className="w-full px-4 py-3 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-[#d4af37]/30 transition-all font-medium text-sm leading-relaxed" 
+          className="w-full px-4 py-3 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/30 transition-all font-medium text-sm leading-relaxed" 
         />
 
         {/* SLIDER DE ESCALA / TAMAÑO DEL SUBTÍTULO */}
         <div className="p-3.5 rounded-2xl bg-white dark:bg-stone-800/60 border border-stone-200/60 dark:border-stone-700/60 space-y-2.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
-              <Sliders size={13} className="text-[#d4af37]" />
+              <Sliders size={13} className="text-[#FF6B00]" />
               <span className="text-[11px] font-bold uppercase tracking-wider text-stone-600 dark:text-stone-300">
                 {t('cms.hero.subtitle_size_slider') || 'Escala / Tamaño del Subtítulo'}
               </span>
             </div>
             <div className="flex items-center gap-2">
               {renderBadge('hero_subtitle_size')}
-              <span className="font-mono text-xs font-extrabold text-[#d4af37] bg-[#d4af37]/10 px-2 py-0.5 rounded-full">
+              <span className="font-mono text-xs font-extrabold text-[#FF6B00] bg-orange-50 dark:bg-orange-950/40 border border-orange-200/60 px-2 py-0.5 rounded-full">
                 {subtitleScale}%
               </span>
             </div>
@@ -202,7 +202,7 @@ export default function HeroTypographyCard({
               step="5"
               value={Math.max(100, subtitleScale)}
               onChange={e => setResponsiveValue('hero_subtitle_size', e.target.value)}
-              className="w-full accent-[#d4af37] h-1.5 bg-stone-200 dark:bg-stone-700 rounded-lg cursor-pointer"
+              className="w-full accent-[#FF6B00] h-1.5 bg-stone-200 dark:bg-stone-700 rounded-lg cursor-pointer"
             />
             <span className="text-[10px] font-bold text-stone-400">200%</span>
           </div>
@@ -218,7 +218,7 @@ export default function HeroTypographyCard({
                   onClick={() => setResponsiveValue('hero_subtitle_size', String(preset))}
                   className={`px-2 py-0.5 rounded-md transition-all ${
                     subtitleScale === preset
-                      ? 'bg-[#d4af37] text-white'
+                      ? 'bg-[#FF6B00] text-white shadow-2xs'
                       : 'bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-200'
                   }`}
                 >

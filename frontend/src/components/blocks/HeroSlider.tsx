@@ -28,9 +28,9 @@ const getPriceStyleConfig = (style?: string) => {
     case 'outline':
       return {
         boxClass: 'bg-transparent border-2 border-white/40 rounded-3xl px-6 py-3.5 sm:px-8 sm:py-4.5 md:px-9 md:py-6 text-white backdrop-blur-xs',
-        prefixClass: 'text-[#d4af37]',
+        prefixClass: 'text-white/80',
         amountClass: 'text-white drop-shadow-md',
-        suffixClass: 'text-[#d4af37]'
+        suffixClass: 'text-white/80'
       };
     case 'minimal':
       return {
@@ -42,17 +42,17 @@ const getPriceStyleConfig = (style?: string) => {
     case 'solid_white':
       return {
         boxClass: 'bg-white/95 dark:bg-stone-900/95 backdrop-blur-md border border-white/50 dark:border-stone-800 rounded-3xl px-6 py-3.5 sm:px-8 sm:py-4.5 md:px-9 md:py-6 text-stone-900 dark:text-white shadow-lg',
-        prefixClass: 'text-[#d4af37]',
+        prefixClass: 'text-stone-500 dark:text-stone-400',
         amountClass: 'text-stone-900 dark:text-white',
-        suffixClass: 'text-[#d4af37]'
+        suffixClass: 'text-stone-500 dark:text-stone-400'
       };
     case 'capsule_dark':
     default:
       return {
-        boxClass: 'backdrop-blur-xl bg-black/45 dark:bg-stone-950/60 border border-white/25 rounded-3xl px-6 py-3.5 sm:px-8 sm:py-4.5 md:px-9 md:py-6 text-white hover:border-[#d4af37]/60 transition-all duration-300',
-        prefixClass: 'text-[#d4af37]',
+        boxClass: 'backdrop-blur-xl bg-black/45 dark:bg-stone-950/60 border border-white/25 rounded-3xl px-6 py-3.5 sm:px-8 sm:py-4.5 md:px-9 md:py-6 text-white hover:border-white/40 transition-all duration-300',
+        prefixClass: 'text-white/80',
         amountClass: 'text-white drop-shadow-[0_8px_16px_rgba(0,0,0,0.7)]',
-        suffixClass: 'text-[#d4af37]'
+        suffixClass: 'text-white/80'
       };
   }
 };
@@ -223,13 +223,16 @@ export default function HeroSlider({ content }: HeroSliderProps) {
             if (!isPriceActive) return null;
             const periodText = translate(slide.hero_price_period ?? content.hero_price_period, slide.translations || content.translations, 'hero_price_period');
             const prefixText = translate(slide.hero_price_prefix ?? content.hero_price_prefix, slide.translations || content.translations, 'hero_price_prefix');
+            const customLabelColor = slide.hero_price_label_color ?? content.hero_price_label_color ?? '';
+            const customAmountColor = slide.hero_price_amount_color ?? content.hero_price_amount_color ?? '';
 
             return (
               <div className={`relative group ${priceConfig.boxClass} select-none`}>
                 <div className="relative flex flex-col items-start text-left">
                   {prefixText && (
                     <span 
-                      className={`text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-[0.22em] ${priceConfig.prefixClass} block leading-none pl-0.5 select-none relative z-10 transition-all mb-[var(--hero-prefix-mb-mobile)] md:mb-[var(--hero-prefix-mb-tablet)] lg:mb-[var(--hero-prefix-mb-desktop)]`}
+                      style={customLabelColor ? { color: customLabelColor } : {}}
+                      className={`text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-[0.22em] ${customLabelColor ? '' : priceConfig.prefixClass} block leading-none pl-0.5 select-none relative z-10 transition-all mb-[var(--hero-prefix-mb-mobile)] md:mb-[var(--hero-prefix-mb-tablet)] lg:mb-[var(--hero-prefix-mb-desktop)]`}
                     >
                       {prefixText}
                     </span>
@@ -237,24 +240,27 @@ export default function HeroSlider({ content }: HeroSliderProps) {
                   <div className="flex items-end gap-1.5 sm:gap-2.5">
                     <span 
                       style={{ 
-                        fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif"
+                        fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif",
+                        ...(customAmountColor ? { color: customAmountColor } : {})
                       }}
-                      className={`font-serif font-bold text-[length:var(--hero-price-size-mobile)] md:text-[length:var(--hero-price-size-tablet)] lg:text-[length:var(--hero-price-size-desktop)] leading-[0.88] ${priceConfig.amountClass} tracking-tight drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]`}
+                      className={`font-serif font-bold text-[length:var(--hero-price-size-mobile)] md:text-[length:var(--hero-price-size-tablet)] lg:text-[length:var(--hero-price-size-desktop)] leading-[0.88] ${customAmountColor ? '' : priceConfig.amountClass} tracking-tight drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]`}
                     >
                       {slide.hero_price_amount || content.hero_price_amount || '15'}
                     </span>
                     <div className="flex flex-col items-start justify-center leading-none pl-1">
                       <span 
                         style={{ 
-                          fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif"
+                          fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif",
+                          ...(customLabelColor ? { color: customLabelColor } : {})
                         }}
-                        className={`font-serif font-bold text-[length:var(--hero-suffix-size-mobile)] md:text-[length:var(--hero-suffix-size-tablet)] lg:text-[length:var(--hero-suffix-size-desktop)] leading-none ${priceConfig.suffixClass}`}
+                        className={`font-serif font-bold text-[length:var(--hero-suffix-size-mobile)] md:text-[length:var(--hero-suffix-size-tablet)] lg:text-[length:var(--hero-suffix-size-desktop)] leading-none ${customLabelColor ? '' : priceConfig.suffixClass}`}
                       >
                         {slide.hero_price_suffix || content.hero_price_suffix || '€'}
                       </span>
                       {periodText && (
                         <span 
-                          className={`font-black uppercase tracking-[0.18em] text-[length:var(--hero-period-size-mobile)] md:text-[length:var(--hero-period-size-tablet)] lg:text-[length:var(--hero-period-size-desktop)] mt-[var(--hero-period-mt-mobile)] md:mt-[var(--hero-period-mt-tablet)] lg:mt-[var(--hero-period-mt-desktop)] ${priceConfig.suffixClass} opacity-90 leading-tight block transition-all`}
+                          style={customLabelColor ? { color: customLabelColor } : {}}
+                          className={`font-black uppercase tracking-[0.18em] text-[length:var(--hero-period-size-mobile)] md:text-[length:var(--hero-period-size-tablet)] lg:text-[length:var(--hero-period-size-desktop)] mt-[var(--hero-period-mt-mobile)] md:mt-[var(--hero-period-mt-tablet)] lg:mt-[var(--hero-period-mt-desktop)] ${customLabelColor ? '' : priceConfig.suffixClass} opacity-90 leading-tight block transition-all`}
                         >
                           {periodText}
                         </span>

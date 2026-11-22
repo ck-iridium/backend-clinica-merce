@@ -20,7 +20,7 @@ export default function HeroLayoutCard({
   return (
     <div className="p-6 rounded-3xl bg-stone-50/70 dark:bg-stone-900/40 border border-stone-200/70 dark:border-stone-800 shadow-sm space-y-4">
       <div className="flex items-center gap-2.5 pb-3 border-b border-stone-200/60 dark:border-stone-800">
-        <div className="p-2 rounded-xl bg-[#d4af37]/10 text-[#d4af37]">
+        <div className="p-2 rounded-xl bg-orange-500/10 text-[#FF6B00]">
           <Layout size={18} />
         </div>
         <div>
@@ -92,7 +92,7 @@ export default function HeroLayoutCard({
           aria-checked={!!data.hero_content_fullwidth}
           onClick={() => onChange('hero_content_fullwidth', !data.hero_content_fullwidth)}
           className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-            data.hero_content_fullwidth ? 'bg-[#d4af37]' : 'bg-stone-300 dark:bg-stone-700'
+            data.hero_content_fullwidth ? 'bg-[#FF6B00]' : 'bg-stone-300 dark:bg-stone-700'
           }`}
         >
           <span

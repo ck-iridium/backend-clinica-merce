@@ -223,9 +223,9 @@ export default function RosteringManager({ staffId, staffName }: RosteringManage
   }
 
   // Shared select style
-  const selectTriggerCls = "w-full bg-stone-50 border-stone-200 rounded-xl h-auto py-2.5 px-4 text-sm font-medium text-stone-700 focus:ring-2 focus:ring-[#d4af37]/20 focus:border-[#d4af37]"
+  const selectTriggerCls = "w-full bg-stone-50 border-stone-200 rounded-xl h-auto py-2.5 px-4 text-sm font-medium text-stone-700 focus:ring-2 focus:ring-[#FF6B00]/20 focus:border-[#FF6B00]"
   const selectContentCls = "rounded-xl border-stone-100 shadow-xl"
-  const selectItemCls = "rounded-lg font-medium text-stone-700 focus:bg-[#d4af37]/10 focus:text-stone-900"
+  const selectItemCls = "rounded-lg font-medium text-stone-700 focus:bg-orange-50 focus:text-stone-900"
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
@@ -233,7 +233,7 @@ export default function RosteringManager({ staffId, staffName }: RosteringManage
       {/* Header del profesional */}
       <div className="bg-stone-50 border border-stone-100 rounded-[2rem] p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-[#d4af37]/10 flex items-center justify-center text-[#bf9b30] border border-[#d4af37]/20 shadow-sm">
+          <div className="w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center text-[#FF6B00] border border-orange-200/70 shadow-sm">
             <CalendarDays size={22} strokeWidth={1.5} />
           </div>
           <div>
@@ -256,7 +256,7 @@ export default function RosteringManager({ staffId, staffName }: RosteringManage
         {/* ── COLUMNA 1: TURNOS SEMANALES ── */}
         <div className="bg-white border border-stone-100 rounded-[2.5rem] p-6 md:p-8 space-y-6 shadow-sm">
           <div className="space-y-1">
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-[#B38F26] bg-[#D4AF37]/10 px-3 py-1 rounded-full border border-[#D4AF37]/20">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-[#FF6B00] bg-orange-50 px-3 py-1 rounded-full border border-orange-200">
               {t('dashboard.my_schedule.weekly_label')}
             </span>
             <h3 className="text-2xl font-serif text-stone-900 pt-2 font-semibold">{t('dashboard.my_schedule.weekly_title')}</h3>
@@ -304,13 +304,13 @@ export default function RosteringManager({ staffId, staffName }: RosteringManage
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.my_schedule.start_label')}</label>
                 <input id="roster-weekly-start-input" type="time" value={weeklyStart} onChange={e => setWeeklyStart(e.target.value)}
-                  className="w-full bg-white border border-stone-200/80 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37] font-medium text-stone-800 transition-all shadow-xs"
+                  className="w-full bg-white border border-stone-200/80 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#FF6B00] focus:border-[#FF6B00] font-medium text-stone-800 transition-all shadow-xs"
                   required />
               </div>
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold uppercase tracking-wider text-stone-400">{t('dashboard.my_schedule.end_label')}</label>
                 <input id="roster-weekly-end-input" type="time" value={weeklyEnd} onChange={e => setWeeklyEnd(e.target.value)}
-                  className="w-full bg-white border border-stone-200/80 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37] font-medium text-stone-800 transition-all shadow-xs"
+                  className="w-full bg-white border border-stone-200/80 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#FF6B00] focus:border-[#FF6B00] font-medium text-stone-800 transition-all shadow-xs"
                   required />
               </div>
 
@@ -459,12 +459,12 @@ export default function RosteringManager({ staffId, staffName }: RosteringManage
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
                           <span className="font-bold text-stone-800 text-sm">{dateFormatted}</span>
-                          <span className="text-[10px] bg-[#d4af37]/5 border border-stone-200/40 px-2 py-0.5 rounded-full font-medium text-[#bf9b30]">
+                          <span className="text-[10px] bg-stone-100 border border-stone-200/40 px-2 py-0.5 rounded-full font-medium text-stone-500">
                             {sched.start_time} – {sched.end_time}
                           </span>
                         </div>
                         <div className="flex items-center gap-1 text-xs text-stone-400 font-medium">
-                          <MapPin size={12} className="text-[#d4af37]" />
+                          <MapPin size={12} className="text-[#FF6B00]" />
                           <span>{locName}</span>
                         </div>
                       </div>

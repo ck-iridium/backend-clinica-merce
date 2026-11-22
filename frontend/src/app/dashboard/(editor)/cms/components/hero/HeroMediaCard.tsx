@@ -26,7 +26,7 @@ export default function HeroMediaCard({
       {/* Cabecera a ancho completo */}
       <div className="space-y-3 pb-3 border-b border-stone-200/60 dark:border-stone-800">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-[#d4af37]/10 text-[#d4af37] shrink-0">
+          <div className="p-2 rounded-xl bg-orange-500/10 text-[#FF6B00] shrink-0">
             <ImageIcon size={18} />
           </div>
           <div>
@@ -65,7 +65,7 @@ export default function HeroMediaCard({
             <Film size={14} />
             {t('cms.hero.tab_video') || 'Vídeo (Opcional)'}
             {data.hero_video_url && (
-              <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B00]" />
             )}
           </button>
         </div>
