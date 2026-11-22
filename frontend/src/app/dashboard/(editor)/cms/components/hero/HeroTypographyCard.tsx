@@ -1,8 +1,35 @@
 "use client";
-import React from 'react';
+import React, { useState } from 'react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
-import { Type, Sliders } from 'lucide-react';
+import { Type, Sliders, Sparkles, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { HeroSubCardProps, parseSizeScale } from './types';
+
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+  return null;
+}
+
+function getAuthHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (typeof window === 'undefined') return headers;
+  let tenantId = getCookie('tenant_id') || '';
+  let authToken = '';
+  try {
+    const raw = localStorage.getItem('user');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (!tenantId) tenantId = parsed.tenant_id || '';
+      authToken = parsed.access_token || parsed.token || '';
+    }
+  } catch {}
+  if (tenantId) headers['X-Tenant-ID'] = tenantId;
+  if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+  return headers;
+}
 
 export default function HeroTypographyCard({
   data,
@@ -12,10 +39,39 @@ export default function HeroTypographyCard({
   renderBadge
 }: HeroSubCardProps) {
   const { t } = useLanguage();
+  const [isGeneratingCopy, setIsGeneratingCopy] = useState(false);
 
   const titleScale = parseSizeScale(getResponsiveValue('hero_title_size', data.hero_title_size ?? 100), 100);
   const subtitleScale = parseSizeScale(getResponsiveValue('hero_subtitle_size', data.hero_subtitle_size ?? 100), 100);
   const titleMaxWidth = getResponsiveValue('hero_title_max_width', data.hero_title_max_width ?? 100);
+
+  const handleGenerateHeroCopy = async () => {
+    setIsGeneratingCopy(true);
+    try {
+      const promptText = `Genera un titular H1 y un subtítulo elegante y memorable para la portada de una clínica de estética y bienestar. Titular actual: "${data.hero_title || ''}"`;
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ai/generate`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          prompt: promptText,
+          type: 'hero_copy',
+          tone: 'premium'
+        })
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || 'Error al generar titular con IA');
+      }
+      const resData = await res.json();
+      if (resData.hero_title) onChange('hero_title', resData.hero_title);
+      if (resData.hero_subtitle) onChange('hero_subtitle', resData.hero_subtitle);
+      toast.success('¡Titular y subtítulo generados con éxito!');
+    } catch (e: any) {
+      toast.error(e.message || 'Error al generar texto con IA');
+    } finally {
+      setIsGeneratingCopy(false);
+    }
+  };
 
   return (
     <div className="p-6 rounded-3xl bg-stone-50/70 dark:bg-stone-900/40 border border-stone-200/70 dark:border-stone-800 shadow-sm space-y-5">
@@ -39,9 +95,25 @@ export default function HeroTypographyCard({
           <label className="text-xs font-bold uppercase tracking-wider text-stone-600 dark:text-stone-300">
             {t('cms.hero.main_title')}
           </label>
-          <span className="font-mono text-xs font-extrabold text-[#FF6B00] bg-orange-50 dark:bg-orange-950/40 border border-orange-200/60 px-2.5 py-0.5 rounded-full">
-            {titleScale}%
-          </span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleGenerateHeroCopy}
+              disabled={isGeneratingCopy}
+              className="flex items-center gap-1.5 text-[10px] font-bold text-[#FF6B00] bg-orange-50 hover:bg-orange-100 border border-orange-200/80 px-2.5 py-1 rounded-xl transition-all shadow-2xs active:scale-95 disabled:opacity-50"
+              title="Generar titular y subtítulo con IA"
+            >
+              {isGeneratingCopy ? (
+                <Loader2 size={12} className="animate-spin text-[#FF6B00]" />
+              ) : (
+                <Sparkles size={12} className="text-[#FF6B00]" />
+              )}
+              <span>Generar con IA</span>
+            </button>
+            <span className="font-mono text-xs font-extrabold text-[#FF6B00] bg-orange-50 dark:bg-orange-950/40 border border-orange-200/60 px-2.5 py-0.5 rounded-full">
+              {titleScale}%
+            </span>
+          </div>
         </div>
         <input 
           type="text" 

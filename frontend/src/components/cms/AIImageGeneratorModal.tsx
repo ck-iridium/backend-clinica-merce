@@ -45,6 +45,32 @@ interface AIImageGeneratorModalProps {
   contentHtml?: string;
 }
 
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+  return null;
+}
+
+function getAuthHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (typeof window === 'undefined') return headers;
+  let tenantId = getCookie('tenant_id') || '';
+  let authToken = '';
+  try {
+    const raw = localStorage.getItem('user');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (!tenantId) tenantId = parsed.tenant_id || '';
+      authToken = parsed.access_token || parsed.token || '';
+    }
+  } catch {}
+  if (tenantId) headers['X-Tenant-ID'] = tenantId;
+  if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+  return headers;
+}
+
 export default function AIImageGeneratorModal({ 
   open, 
   onClose, 
@@ -64,6 +90,37 @@ export default function AIImageGeneratorModal({
   const [isGenerating, setIsGenerating] = useState(false);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [generationTime, setGenerationTime] = useState(0);
+
+  // Límites y cuota de imágenes
+  const [hasOwnKey, setHasOwnKey] = useState<boolean>(false);
+  const [imagesRemaining, setImagesRemaining] = useState<number>(0);
+  const [isPlanGold, setIsPlanGold] = useState<boolean>(false);
+  const [loadingLimits, setLoadingLimits] = useState<boolean>(true);
+
+  // Obtener cuota de fotos al abrir el modal
+  useEffect(() => {
+    if (!open) return;
+    async function fetchLimits() {
+      try {
+        setLoadingLimits(true);
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const res = await fetch(`${API_URL}/settings/limits`, {
+          headers: getAuthHeaders(),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setHasOwnKey(!!data.has_own_key);
+          setImagesRemaining(data.limits?.ai_images_remaining ?? 0);
+          setIsPlanGold(data.plan_type?.toLowerCase() === 'gold');
+        }
+      } catch (err) {
+        console.error("Error al obtener límites de plan en AIImageGeneratorModal:", err);
+      } finally {
+        setLoadingLimits(false);
+      }
+    }
+    fetchLimits();
+  }, [open]);
 
   // Timer para medir el tiempo de generación
   useEffect(() => {
@@ -174,7 +231,7 @@ export default function AIImageGeneratorModal({
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ai/optimize-prompt`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           service_name: serviceName,
           description: description || "",
@@ -250,13 +307,25 @@ export default function AIImageGeneratorModal({
               <Sparkles size={20} strokeWidth={2} />
             </div>
             <div>
-              <DialogTitle className="text-2xl font-serif font-bold text-stone-900 tracking-tight">
-                {language === 'fr' 
-                  ? "Studio Photo IA" 
-                  : language === 'en' 
-                    ? "AI Photo Studio" 
-                    : "Estudio Fotográfico IA"}
-              </DialogTitle>
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <DialogTitle className="text-2xl font-serif font-bold text-stone-900 tracking-tight">
+                  {language === 'fr' 
+                    ? "Studio Photo IA" 
+                    : language === 'en' 
+                      ? "AI Photo Studio" 
+                      : "Estudio Fotográfico IA"}
+                </DialogTitle>
+                {!loadingLimits && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#FF6B00]/10 text-[#FF6B00] border border-[#FF6B00]/25">
+                    <Sparkles size={11} className="text-[#FF6B00]" />
+                    {hasOwnKey 
+                      ? (language === 'fr' ? "✦ Illimité (Clé Propre)" : language === 'en' ? "✦ Unlimited (Own Key)" : "✦ Ilimitado (API Propia)")
+                      : isPlanGold 
+                        ? (language === 'fr' ? `✦ ${imagesRemaining} photos/mois (Plan Gold)` : language === 'en' ? `✦ ${imagesRemaining} photos/mo (Gold Plan)` : `✦ ${imagesRemaining} fotos/mes (Plan Gold)`)
+                        : (language === 'fr' ? `✦ ${imagesRemaining} photographies disponibles` : language === 'en' ? `✦ ${imagesRemaining} photos available` : `✦ ${imagesRemaining} fotografías disponibles`)}
+                  </span>
+                )}
+              </div>
               <DialogDescription className="text-stone-400 text-xs sm:text-sm font-sans mt-0.5 leading-relaxed">
                 {language === 'fr' 
                   ? "Décrivez ce que vous souhaitez voir. L'IA créera une photo premium dans le style de votre établissement." 
@@ -585,37 +654,51 @@ export default function AIImageGeneratorModal({
           </div>
         </div>
 
-        <DialogFooter className="p-4 sm:p-5 border-t border-stone-100 bg-stone-50/50 flex flex-row items-center justify-end gap-2.5 rounded-b-3xl">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={onClose}
-            disabled={isGenerating}
-            className="rounded-xl px-5 font-bold text-xs text-stone-600 hover:bg-stone-100 h-10 border-stone-200"
-          >
-            {language === 'fr' ? "Annuler" : language === 'en' ? "Cancel" : "Cancelar"}
-          </Button>
-          <Button
-            type="button"
-            variant="luxury"
-            size="sm"
-            onClick={handleGenerate}
-            disabled={isGenerating || !prompt.trim()}
-            className="rounded-xl px-6 font-bold text-xs !text-white shadow-luxury h-10 gap-2"
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 size={16} className="animate-spin text-white" />
-                {language === 'fr' ? "Traitement" : language === 'en' ? "Processing" : "Procesando"} ({generationTime}s)...
-              </>
-            ) : (
-              <>
-                <Sparkles size={16} strokeWidth={2} />
-                {language === 'fr' ? "Générer l'image" : language === 'en' ? "Generate Image" : "Generar Imagen"}
-              </>
+        <DialogFooter className="p-4 sm:p-5 border-t border-stone-100 bg-stone-50/50 flex flex-row items-center justify-between gap-2.5 rounded-b-3xl">
+          <div className="flex items-center gap-2">
+            {!loadingLimits && (
+              <span className="text-[11px] font-bold text-[#FF6B00] bg-orange-50/80 border border-orange-200/60 px-3 py-1.5 rounded-xl flex items-center gap-1.5 shadow-2xs">
+                <Sparkles size={12} className="text-[#FF6B00]" />
+                {hasOwnKey 
+                  ? (language === 'fr' ? "✦ Illimité (API Propre)" : language === 'en' ? "✦ Unlimited (Own API)" : "✦ Ilimitado (API Propia)")
+                  : isPlanGold 
+                    ? `✦ ${imagesRemaining} photos/mes (Gold)` 
+                    : (language === 'fr' ? `✦ ${imagesRemaining} photographies disponibles` : language === 'en' ? `✦ ${imagesRemaining} photos available` : `✦ ${imagesRemaining} fotografías disponibles`)}
+              </span>
             )}
-          </Button>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onClose}
+              disabled={isGenerating}
+              className="rounded-xl px-5 font-bold text-xs text-stone-600 hover:bg-stone-100 h-10 border-stone-200"
+            >
+              {language === 'fr' ? "Annuler" : language === 'en' ? "Cancel" : "Cancelar"}
+            </Button>
+            <Button
+              type="button"
+              variant="luxury"
+              size="sm"
+              onClick={handleGenerate}
+              disabled={isGenerating || !prompt.trim() || (!hasOwnKey && imagesRemaining <= 0 && !loadingLimits)}
+              className="rounded-xl px-6 font-bold text-xs !text-white shadow-luxury h-10 gap-2 bg-[#FF6B00] hover:bg-[#EA5E00]"
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 size={16} className="animate-spin text-white" />
+                  {language === 'fr' ? "Traitement" : language === 'en' ? "Processing" : "Procesando"} ({generationTime}s)...
+                </>
+              ) : (
+                <>
+                  <Sparkles size={16} strokeWidth={2} />
+                  {language === 'fr' ? "Générer l'image" : language === 'en' ? "Generate Image" : "Generar Imagen"}
+                </>
+              )}
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

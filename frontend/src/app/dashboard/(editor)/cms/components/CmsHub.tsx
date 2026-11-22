@@ -12,7 +12,7 @@ export default function CmsHub({ onSelectMode }: CmsHubProps) {
       
       {/* Header de Lujo */}
       <div className="max-w-5xl mx-auto mb-16 text-left">
-        <span className="text-[10px] font-black uppercase tracking-[0.25em] text-[#d4af37] block mb-2">
+        <span className="text-[10px] font-black uppercase tracking-[0.25em] text-[#FF6B00] block mb-2">
           Gestión Avanzada ProBookia
         </span>
         <h1 className="font-serif text-4xl md:text-5xl font-extrabold text-stone-800 tracking-tight leading-none mb-4">
@@ -34,14 +34,14 @@ export default function CmsHub({ onSelectMode }: CmsHubProps) {
         >
           <div>
             <div className="flex items-center justify-between mb-4">
-              <span className="text-[10px] font-bold text-[#d4af37] bg-amber-50 px-3 py-1 rounded-full uppercase tracking-wider">
+              <span className="text-[10px] font-bold text-[#FF6B00] bg-orange-50 px-3 py-1 rounded-full uppercase tracking-wider">
                 Home Builder
               </span>
-              <svg className="w-5 h-5 text-stone-300 group-hover:text-[#d4af37] transition-colors" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-stone-300 group-hover:text-[#FF6B00] transition-colors" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
               </svg>
             </div>
-            <h3 className="font-serif text-2xl font-bold text-stone-800 mb-3 group-hover:text-[#d4af37] transition-colors">
+            <h3 className="font-serif text-2xl font-bold text-stone-800 mb-3 group-hover:text-[#FF6B00] transition-colors">
               Portada Principal
             </h3>
             <p className="text-stone-500 font-sans text-xs md:text-sm leading-relaxed max-w-sm">
@@ -63,14 +63,14 @@ export default function CmsHub({ onSelectMode }: CmsHubProps) {
         >
           <div>
             <div className="flex items-center justify-between mb-4">
-              <span className="text-[10px] font-bold text-[#d4af37] bg-amber-50 px-3 py-1 rounded-full uppercase tracking-wider">
+              <span className="text-[10px] font-bold text-[#FF6B00] bg-orange-50 px-3 py-1 rounded-full uppercase tracking-wider">
                 Menú Dinámico
               </span>
-              <svg className="w-5 h-5 text-stone-300 group-hover:text-[#d4af37] transition-colors" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-stone-300 group-hover:text-[#FF6B00] transition-colors" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
               </svg>
             </div>
-            <h3 className="font-serif text-2xl font-bold text-stone-800 mb-3 group-hover:text-[#d4af37] transition-colors">
+            <h3 className="font-serif text-2xl font-bold text-stone-800 mb-3 group-hover:text-[#FF6B00] transition-colors">
               Menú de Navegación
             </h3>
             <p className="text-stone-500 font-sans text-xs md:text-sm leading-relaxed max-w-sm">
@@ -92,15 +92,15 @@ export default function CmsHub({ onSelectMode }: CmsHubProps) {
         >
           <div>
             <div className="flex items-center justify-between mb-4">
-              <span className="text-[10px] font-bold text-[#d4af37] bg-amber-50 px-3 py-1 rounded-full uppercase tracking-wider">
+              <span className="text-[10px] font-bold text-[#FF6B00] bg-orange-50 px-3 py-1 rounded-full uppercase tracking-wider">
                 Estilo & Branding
               </span>
-              <svg className="w-5 h-5 text-stone-300 group-hover:text-[#d4af37] transition-colors" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-stone-300 group-hover:text-[#FF6B00] transition-colors" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9.53 16.122a3 3 0 00-3.078 0L3.72 17.5a1 1 0 001.48 1.135L8 17l2.8 1.635a1 1 0 001.48-1.135l-2.732-1.378z" />
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v13m0-13L8 7m4-4l4 4" />
               </svg>
             </div>
-            <h3 className="font-serif text-2xl font-bold text-stone-800 mb-3 group-hover:text-[#d4af37] transition-colors">
+            <h3 className="font-serif text-2xl font-bold text-stone-800 mb-3 group-hover:text-[#FF6B00] transition-colors">
               Tipografía & Colores
             </h3>
             <p className="text-stone-500 font-sans text-xs md:text-sm leading-relaxed max-w-sm">
@@ -122,14 +122,14 @@ export default function CmsHub({ onSelectMode }: CmsHubProps) {
         >
           <div>
             <div className="flex items-center justify-between mb-4">
-              <span className="text-[10px] font-bold text-[#d4af37] bg-amber-50 px-3 py-1 rounded-full uppercase tracking-wider">
+              <span className="text-[10px] font-bold text-[#FF6B00] bg-orange-50 px-3 py-1 rounded-full uppercase tracking-wider">
                 Gestor Headless
               </span>
-              <svg className="w-5 h-5 text-stone-300 group-hover:text-[#d4af37] transition-colors" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-stone-300 group-hover:text-[#FF6B00] transition-colors" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
               </svg>
             </div>
-            <h3 className="font-serif text-2xl font-bold text-stone-800 mb-3 group-hover:text-[#d4af37] transition-colors">
+            <h3 className="font-serif text-2xl font-bold text-stone-800 mb-3 group-hover:text-[#FF6B00] transition-colors">
               Páginas del Sitio
             </h3>
             <p className="text-stone-500 font-sans text-xs md:text-sm leading-relaxed max-w-sm">

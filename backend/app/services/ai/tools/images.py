@@ -344,34 +344,46 @@ def generar_imagen(
         # 5. Generación de la imagen según el proveedor activo
         if ai_provider == "gemini":
             genai.configure(api_key=gemini_key)
-            model_name = settings.gemini_model_image or "imagen-3.0-generate-001"
+            preferred_model = settings.gemini_model_image
+            if not preferred_model or preferred_model.startswith("imagen-"):
+                preferred_model = "gemini-2.5-flash-image"
+
+            models_to_try = [preferred_model]
+            for m in ["gemini-2.5-flash-image", "gemini-3.1-flash-image", "gemini-3-pro-image"]:
+                if m not in models_to_try:
+                    models_to_try.append(m)
+
             aspect_prompt = f"{refined_prompt}. {ratio_label}. Commercial luxury photography, 8k, ultra-detailed, photorealistic."
 
-            try:
-                model = genai.GenerativeModel(model_name)
-                response = model.generate_content(aspect_prompt)
-                for part in response.candidates[0].content.parts:
-                    if hasattr(part, 'inline_data'):
-                        file_bytes = part.inline_data.data
-                        break
-                    elif hasattr(part, 'blob'):
-                        file_bytes = part.blob.data
-                        break
-            except Exception as gem_ex:
-                logger.warning(f"Error generando con modelo '{model_name}': {gem_ex}. Probando fallback a 'imagen-3.0-generate-001'")
+            last_gem_ex = None
+            for current_model_name in models_to_try:
                 try:
-                    fallback_model = genai.GenerativeModel("imagen-3.0-generate-001")
-                    response = fallback_model.generate_content(aspect_prompt)
-                    for part in response.candidates[0].content.parts:
-                        if hasattr(part, 'inline_data'):
-                            file_bytes = part.inline_data.data
-                            break
-                        elif hasattr(part, 'blob'):
-                            file_bytes = part.blob.data
-                            break
-                except Exception as fb_ex:
-                    logger.error(f"Error en Google Imagen: {fb_ex}")
-                    return f"Error al generar la imagen con Google Imagen: {str(fb_ex)}"
+                    model = genai.GenerativeModel(current_model_name)
+                    response = model.generate_content(aspect_prompt)
+                    if response and getattr(response, 'candidates', None):
+                        for candidate in response.candidates:
+                            content = getattr(candidate, 'content', None)
+                            if not content: continue
+                            for part in getattr(content, 'parts', []):
+                                inline_data = getattr(part, 'inline_data', None)
+                                if inline_data and getattr(inline_data, 'data', None):
+                                    file_bytes = inline_data.data
+                                    break
+                                blob = getattr(part, 'blob', None)
+                                if blob and getattr(blob, 'data', None):
+                                    file_bytes = blob.data
+                                    break
+                            if file_bytes:
+                                break
+                    if file_bytes:
+                        break
+                except Exception as gem_ex:
+                    last_gem_ex = gem_ex
+                    logger.warning(f"Error generando con modelo '{current_model_name}': {gem_ex}. Probando siguiente modelo...")
+
+            if not file_bytes and last_gem_ex:
+                logger.error(f"Error en Google Gemini Image: {last_gem_ex}")
+                return f"Error al generar la imagen con Google Gemini Image: {str(last_gem_ex)}"
 
         elif ai_provider == "openai":
             try:

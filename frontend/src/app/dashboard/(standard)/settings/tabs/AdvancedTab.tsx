@@ -161,23 +161,29 @@ export default function AdvancedTab({ settings, setSettings }: AdvancedTabProps)
                   <div>
                     <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1 mb-2 block">Modelo de Imagen</label>
                     <Select 
-                      value={settings.gemini_model_image || 'gemini-3.1-flash-image-preview'} 
+                      value={settings.gemini_model_image || 'gemini-2.5-flash-image'} 
                       onValueChange={val => setSettings({...settings, gemini_model_image: val})}
                     >
-                      <SelectTrigger id="advanced-gemini-model-image-trigger" className="w-full h-12 bg-white border-stone-200 rounded-xl focus:ring-[#D4AF37]/30 font-semibold text-stone-800">
+                      <SelectTrigger id="advanced-gemini-model-image-trigger" className="w-full h-12 bg-white border-stone-200 rounded-xl focus:ring-[#FF6B00]/30 font-semibold text-stone-800">
                         <SelectValue placeholder="Seleccionar modelo" />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl border-stone-200 shadow-xl">
-                        <SelectItem value="gemini-3.1-flash-image-preview" className="focus:bg-stone-50 focus:text-stone-900 rounded-lg py-3">
+                        <SelectItem value="gemini-2.5-flash-image" className="focus:bg-stone-50 focus:text-stone-900 rounded-lg py-3">
                           <div className="flex flex-col">
-                            <span className="font-bold">Nano Banana 2 (3.1 Flash)</span>
-                            <span className="text-[10px] text-[#D4AF37] font-bold uppercase">Recomendado (Image-to-Image)</span>
+                            <span className="font-bold">Gemini 2.5 Flash Image</span>
+                            <span className="text-[10px] text-[#FF6B00] font-bold uppercase">Recomendado (Rápido y Alta Fidelidad)</span>
                           </div>
                         </SelectItem>
-                        <SelectItem value="imagen-4.0-generate-001" className="focus:bg-stone-50 focus:text-stone-900 rounded-lg py-3">
+                        <SelectItem value="gemini-3.1-flash-image" className="focus:bg-stone-50 focus:text-stone-900 rounded-lg py-3">
                           <div className="flex flex-col">
-                            <span className="font-bold">Imagen 4.0 Standard</span>
-                            <span className="text-[10px] text-stone-400 uppercase">Calidad clásica estable</span>
+                            <span className="font-bold">Gemini 3.1 Flash Image</span>
+                            <span className="text-[10px] text-stone-400 uppercase">Fotorrealismo Editorial</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="gemini-3-pro-image" className="focus:bg-stone-50 focus:text-stone-900 rounded-lg py-3">
+                          <div className="flex flex-col">
+                            <span className="font-bold">Gemini 3 Pro Image</span>
+                            <span className="text-[10px] text-stone-400 uppercase">Máxima Resolución y Detalle</span>
                           </div>
                         </SelectItem>
                       </SelectContent>

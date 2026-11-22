@@ -12,6 +12,7 @@ export default function ImageUploadBlock({
   onClear, 
   onUpload, 
   accepts = 'both',
+  onGenerateAI,
   tenantId,
   token
 }: { 
@@ -21,6 +22,7 @@ export default function ImageUploadBlock({
   onClear: () => void, 
   onUpload: (url: string) => void,
   accepts?: 'image' | 'video' | 'both',
+  onGenerateAI?: () => void,
   tenantId?: string,
   token?: string
 }) {
@@ -150,13 +152,26 @@ export default function ImageUploadBlock({
 
   return (
     <div className="space-y-2">
-      <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-2">{label}</label>
+      <div className="flex items-center justify-between mb-1.5">
+        <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">{label}</label>
+        {onGenerateAI && accepts !== 'video' && (
+          <button
+            type="button"
+            onClick={onGenerateAI}
+            className="flex items-center gap-1.5 text-[10px] font-bold text-[#FF6B00] bg-orange-50 hover:bg-orange-100 border border-orange-200/80 px-2.5 py-1 rounded-xl transition-all shadow-2xs active:scale-95"
+            title="Generar fotografía de alta resolución con IA"
+          >
+            <Sparkles size={12} className="text-[#FF6B00]" />
+            <span>Generar con IA</span>
+          </button>
+        )}
+      </div>
       <div 
         onDragOver={handleDragOver}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        className={`relative group w-full aspect-video rounded-2xl overflow-hidden bg-stone-50 border transition-all duration-300 ${isDragging ? 'border-[#d4af37] ring-4 ring-[#d4af37]/10 bg-[#d4af37]/5 scale-[0.98] shadow-inner' : 'border-stone-200 shadow-sm hover:border-stone-300'}`}
+        className={`relative group w-full aspect-video rounded-2xl overflow-hidden bg-stone-50 border transition-all duration-300 ${isDragging ? 'border-[#FF6B00] ring-4 ring-[#FF6B00]/10 bg-[#FF6B00]/5 scale-[0.98] shadow-inner' : 'border-stone-200 shadow-sm hover:border-stone-300'}`}
       >
         {/* Overlay invisible para capturar eventos sin interferencias de hijos */}
         {isDragging && (
@@ -166,12 +181,12 @@ export default function ImageUploadBlock({
         {isUploading && (
           <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-center bg-white/90 backdrop-blur-md z-50">
              <div className="relative w-16 h-16 flex items-center justify-center mb-4">
-                <Loader2 size={32} className="text-[#d4af37] animate-spin absolute" />
+                <Loader2 size={32} className="text-[#FF6B00] animate-spin absolute" />
                 {processingProgress > 0 && (
-                  <span className="text-[10px] font-bold text-[#d4af37]">{processingProgress}%</span>
+                  <span className="text-[10px] font-bold text-[#FF6B00]">{processingProgress}%</span>
                 )}
              </div>
-             <span className="text-[10px] font-black uppercase tracking-widest text-[#d4af37]">
+             <span className="text-[10px] font-black uppercase tracking-widest text-[#FF6B00]">
                 {processingProgress > 0 ? 'Optimizando...' : 'Subiendo...'}
              </span>
           </div>
@@ -196,27 +211,38 @@ export default function ImageUploadBlock({
         {/* Capa de Drop Visual */}
         {isDragging && (
           <div className="absolute inset-0 z-[55] flex flex-col items-center justify-center pointer-events-none animate-in fade-in zoom-in duration-300">
-             <div className="w-16 h-16 bg-[#d4af37] rounded-full flex items-center justify-center shadow-2xl mb-4">
+             <div className="w-16 h-16 bg-[#FF6B00] rounded-full flex items-center justify-center shadow-2xl mb-4">
                 <Sparkles size={32} className="text-white animate-bounce" />
              </div>
-             <span className="text-xs font-black uppercase tracking-widest text-[#d4af37]">¡Suelta para subir!</span>
+             <span className="text-xs font-black uppercase tracking-widest text-[#FF6B00]">¡Suelta para subir!</span>
           </div>
         )}
 
-        <div className={`absolute inset-0 bg-stone-900/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-3 ${isDragging ? 'hidden' : ''}`}>
+        <div className={`absolute inset-0 bg-stone-900/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-2.5 flex-wrap px-4 ${isDragging ? 'hidden' : ''}`}>
           <button
             type="button"
             onClick={onSelect}
-            className="bg-white text-stone-900 px-4 py-2 rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-xl hover:scale-105 transition-transform flex items-center gap-2"
+            className="bg-white text-stone-900 px-3.5 py-2 rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-xl hover:scale-105 transition-transform flex items-center gap-2"
           >
             <Camera size={14} />
-            <span>{value ? 'Cambiar' : 'Seleccionar'}</span>
+            <span>{value ? 'Cambiar' : 'Galería'}</span>
           </button>
+          {onGenerateAI && accepts !== 'video' && (
+            <button
+              type="button"
+              onClick={onGenerateAI}
+              className="bg-[#FF6B00] hover:bg-[#EA5E00] text-white px-3.5 py-2 rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-xl hover:scale-105 transition-transform flex items-center gap-1.5"
+              title="Estudio Fotográfico IA"
+            >
+              <Sparkles size={14} />
+              <span>Estudio IA</span>
+            </button>
+          )}
           {value && (
             <button
               type="button"
               onClick={onClear}
-              className="w-10 h-10 bg-rose-500 text-white rounded-xl flex items-center justify-center shadow-xl hover:bg-rose-600 hover:scale-105 transition-all"
+              className="w-9 h-9 bg-rose-500 text-white rounded-xl flex items-center justify-center shadow-xl hover:bg-rose-600 hover:scale-105 transition-all"
               title="Eliminar"
             >
               <Trash2 size={16} />

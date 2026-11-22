@@ -81,6 +81,7 @@ export default function NavigationLivePreview({
   const logoHeight = Math.min(Math.max(settings?.header_logo_height ?? 42, 28), 52);
 
   // Lista de items de navegación dinámica
+  const primaryBrandColor = settings?.primary_color || '#1c1917';
   const visibleNavItems = Array.isArray(navigationItems) && navigationItems.length > 0
     ? navigationItems.filter(item => item.is_visible !== false)
     : [
@@ -152,13 +153,17 @@ export default function NavigationLivePreview({
                     }}
                     className={`text-sm font-bold tracking-tight transition-all duration-200 cursor-pointer relative py-2 ${
                       isItemActive
-                        ? 'text-[#d4af37]'
+                        ? ''
                         : 'text-stone-700 hover:text-stone-900'
                     }`}
+                    style={{ color: isItemActive ? primaryBrandColor : undefined }}
                   >
                     {item.label}
                     {isItemActive && (
-                      <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-[#d4af37] rounded-full" />
+                      <span 
+                        className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full" 
+                        style={{ backgroundColor: primaryBrandColor }}
+                      />
                     )}
                   </button>
                 );
@@ -174,7 +179,8 @@ export default function NavigationLivePreview({
             {/* Botón de Reserva (CTA de Lujo) */}
             <button
               type="button"
-              className="bg-[#d4af37] hover:bg-[#b38f2b] text-white px-5 py-2 rounded-full text-xs font-bold tracking-wide shadow-sm transition-all duration-300 cursor-default shrink-0"
+              style={{ backgroundColor: primaryBrandColor }}
+              className="text-white px-5 py-2 rounded-full text-xs font-bold tracking-wide shadow-sm transition-all duration-300 cursor-default shrink-0 hover:opacity-90"
             >
               {settings?.booking_button_text || 'Reservar Cita'}
             </button>
@@ -213,9 +219,10 @@ export default function NavigationLivePreview({
                             key={cat.id}
                             type="button"
                             onClick={() => setPreviewActiveCategory(cat.id)}
+                            style={{ color: isActive ? primaryBrandColor : undefined }}
                             className={`w-full text-left px-6 py-2.5 transition-all font-serif text-lg leading-tight whitespace-normal relative ${
                               isActive
-                                ? 'bg-white text-[#d4af37] font-semibold rounded-l-2xl -mr-[1px] z-10 shadow-[-10px_0_15px_-5px_rgba(0,0,0,0.02)]'
+                                ? 'bg-white font-semibold rounded-l-2xl -mr-[1px] z-10 shadow-[-10px_0_15px_-5px_rgba(0,0,0,0.02)]'
                                 : 'text-stone-300 hover:text-white rounded-xl mr-4 hover:bg-white/5'
                             }`}
                           >
@@ -271,7 +278,7 @@ export default function NavigationLivePreview({
                             {svc.duration_minutes && (
                               <div className="absolute top-3 right-3 z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                 <div className="bg-black/50 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-white/20">
-                                  <span className="text-[#d4af37] text-[11px] font-bold">
+                                  <span style={{ color: primaryBrandColor }} className="text-[11px] font-bold">
                                     {svc.duration_minutes} min
                                   </span>
                                 </div>
@@ -295,7 +302,10 @@ export default function NavigationLivePreview({
                         key={cat.id}
                         className="flex flex-col h-full bg-stone-50/50 p-6 rounded-3xl border border-stone-100/70"
                       >
-                        <span className="text-[12px] font-black uppercase tracking-[0.2em] text-[#d4af37] border-b border-stone-200/50 pb-3 mb-4 truncate shrink-0">
+                        <span 
+                          style={{ color: primaryBrandColor }}
+                          className="text-[12px] font-black uppercase tracking-[0.2em] border-b border-stone-200/50 pb-3 mb-4 truncate shrink-0"
+                        >
                           {cat.name}
                         </span>
 
@@ -305,7 +315,11 @@ export default function NavigationLivePreview({
                           ) : (
                             catServices.slice(0, 6).map((svc) => (
                               <div key={svc.id} className="block group shrink-0">
-                                <div className="text-sm font-bold text-stone-800 truncate group-hover:text-[#d4af37] transition-colors">
+                                <div 
+                                  className="text-sm font-bold text-stone-800 truncate transition-colors"
+                                  onMouseEnter={(e) => (e.currentTarget.style.color = primaryBrandColor)}
+                                  onMouseLeave={(e) => (e.currentTarget.style.color = '')}
+                                >
                                   {svc.name}
                                 </div>
                                 <div className="flex justify-between items-center text-[10px] text-stone-400 mt-0.5">

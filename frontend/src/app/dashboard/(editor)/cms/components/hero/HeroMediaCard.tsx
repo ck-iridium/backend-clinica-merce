@@ -9,12 +9,14 @@ interface HeroMediaCardProps {
   data: HeroSlideData;
   onChange: (field: string, value: any) => void;
   setPickerTarget: React.Dispatch<React.SetStateAction<any>>;
+  onOpenAIModal?: () => void;
 }
 
 export default function HeroMediaCard({
   data,
   onChange,
-  setPickerTarget
+  setPickerTarget,
+  onOpenAIModal
 }: HeroMediaCardProps) {
   const { t } = useLanguage();
   const [mediaTypeTab, setMediaTypeTab] = useState<'image' | 'video'>(
@@ -79,6 +81,7 @@ export default function HeroMediaCard({
             onSelect={() => setPickerTarget({ type: 'form', field: 'hero_image_url' })} 
             onClear={() => onChange('hero_image_url', '')} 
             onUpload={(url) => onChange('hero_image_url', url)}
+            onGenerateAI={onOpenAIModal}
             accepts="image"
           />
         </div>

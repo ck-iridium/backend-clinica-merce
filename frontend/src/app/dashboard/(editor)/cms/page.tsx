@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 import MediaPickerModal from '@/components/MediaPickerModal';
+import AIImageGeneratorModal from '@/components/cms/AIImageGeneratorModal';
 import { Skeleton } from "@/components/ui/skeleton";
 import HomeBuilderLayout from '@/components/cms/HomeBuilderLayout';
 import HomeBuilderPreview from '@/components/cms/HomeBuilderPreview';
@@ -30,6 +31,8 @@ export default function CMSPage() {
   const [sections, setSections] = useState<any[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [pickerTarget, setPickerTarget] = useState<{ type: 'form' | 'category' | 'hero_slide', id?: string, field: string, slideIndex?: number } | null>(null);
+  const [showAIImageModal, setShowAIImageModal] = useState(false);
+  const [aiImageTarget, setAiImageTarget] = useState<{ type: 'hero_slide' | 'about' | 'category', categoryId?: string } | null>(null);
 
   const defaultContent = {
     hero_title: '', hero_subtitle: '', hero_button_text: '', hero_button_link: '',
@@ -472,6 +475,33 @@ export default function CMSPage() {
     ));
   };
 
+  const handleAIImageGenerated = (url: string) => {
+    if (!aiImageTarget) return;
+    if (aiImageTarget.type === 'hero_slide') {
+      setFormData((prev: any) => {
+        const currentSlides = (Array.isArray(prev.hero_slides) && prev.hero_slides.length > 0)
+          ? [...prev.hero_slides]
+          : [{ ...prev, id: 'slide-1' }];
+        const activeIdx = Math.min(Math.max(0, prev._activeSlideIndex ?? 0), currentSlides.length - 1);
+        currentSlides[activeIdx] = {
+          ...currentSlides[activeIdx],
+          hero_image_url: url
+        };
+        const next = { ...prev, hero_slides: currentSlides };
+        if (activeIdx === 0) {
+          next.hero_image_url = url;
+        }
+        return next;
+      });
+    } else if (aiImageTarget.type === 'about') {
+      setFormData((prev: any) => ({ ...prev, about_image_url: url }));
+    } else if (aiImageTarget.type === 'category' && aiImageTarget.categoryId) {
+      handleCategoryChange(aiImageTarget.categoryId, 'image_url', url);
+    }
+    setShowAIImageModal(false);
+    setAiImageTarget(null);
+  };
+
   const renderActiveTabContent = () => {
     switch (activeTab) {
       case 'HERO':
@@ -484,6 +514,10 @@ export default function CMSPage() {
             services={services}
             activeDevice={viewportDevice}
             setActiveDevice={setViewportDevice}
+            onOpenAIModal={() => {
+              setAiImageTarget({ type: 'hero_slide' });
+              setShowAIImageModal(true);
+            }}
           />
         );
       case 'SOBRE MÍ':
@@ -492,6 +526,10 @@ export default function CMSPage() {
             formData={formData} 
             setFormData={setFormData} 
             setPickerTarget={setPickerTarget} 
+            onOpenAIModal={() => {
+              setAiImageTarget({ type: 'about' });
+              setShowAIImageModal(true);
+            }}
           />
         );
       case 'CATEGORÍAS':
@@ -505,6 +543,10 @@ export default function CMSPage() {
             handleCategoryChange={handleCategoryChange}
             formData={formData}
             setFormData={setFormData}
+            onOpenAICategoryModal={(categoryId: string) => {
+              setAiImageTarget({ type: 'category', categoryId });
+              setShowAIImageModal(true);
+            }}
           />
         );
       case 'CTA':
@@ -569,6 +611,32 @@ export default function CMSPage() {
             mediaType={pickerTarget.field === 'hero_video_url' ? 'video' : 'image'}
           />
         )}
+
+        {/* Generador de Imágenes IA */}
+        {showAIImageModal && (
+          <AIImageGeneratorModal
+            open={showAIImageModal}
+            onClose={() => {
+              setShowAIImageModal(false);
+              setAiImageTarget(null);
+            }}
+            onGenerate={handleAIImageGenerated}
+            serviceName={
+              aiImageTarget?.type === 'hero_slide'
+                ? formData.hero_title || 'Portada Clínica'
+                : aiImageTarget?.type === 'about'
+                ? formData.about_title || 'Sobre la Clínica'
+                : categories.find(c => c.id === aiImageTarget?.categoryId)?.name || 'Categoría'
+            }
+            description={
+              aiImageTarget?.type === 'hero_slide'
+                ? formData.hero_subtitle || ''
+                : aiImageTarget?.type === 'about'
+                ? formData.about_text || ''
+                : categories.find(c => c.id === aiImageTarget?.categoryId)?.description || ''
+            }
+          />
+        )}
       </div>
     );
   }
@@ -615,7 +683,7 @@ export default function CMSPage() {
             <button
               onClick={handleSaveClick}
               disabled={isSavingNavOrMegamenu}
-              className="bg-stone-900 hover:bg-[#d4af37] text-white px-4 py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-30 shadow-sm shrink-0"
+              className="bg-stone-900 hover:bg-[#FF6B00] text-white px-4 py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-30 shadow-sm shrink-0"
             >
               {isSavingNavOrMegamenu ? 'Guardando...' : 'Guardar'}
             </button>
@@ -627,7 +695,7 @@ export default function CMSPage() {
               onClick={() => setNavTab('links')}
               className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider text-center border-b-2 transition-all ${
                 navTab === 'links'
-                  ? 'border-[#d4af37] text-stone-800'
+                  ? 'border-[#FF6B00] text-stone-800'
                   : 'border-transparent text-stone-400 hover:text-stone-600'
               }`}
             >
@@ -637,7 +705,7 @@ export default function CMSPage() {
               onClick={() => setNavTab('megamenu')}
               className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider text-center border-b-2 transition-all ${
                 navTab === 'megamenu'
-                  ? 'border-[#d4af37] text-stone-800'
+                  ? 'border-[#FF6B00] text-stone-800'
                   : 'border-transparent text-stone-400 hover:text-stone-600'
               }`}
             >

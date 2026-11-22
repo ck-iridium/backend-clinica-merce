@@ -21,6 +21,7 @@ interface HeroTabProps {
   services?: any[];
   activeDevice?: DeviceType;
   setActiveDevice?: (device: DeviceType) => void;
+  onOpenAIModal?: () => void;
 }
 
 // Extrae una diapositiva a partir de las propiedades raíz del formData (retrocompatibilidad)
@@ -65,7 +66,8 @@ export default function HeroTab({
   categories = [],
   services = [],
   activeDevice = 'desktop',
-  setActiveDevice
+  setActiveDevice,
+  onOpenAIModal
 }: HeroTabProps) {
   const device = activeDevice || 'desktop';
 
@@ -402,6 +404,7 @@ export default function HeroTab({
       <HeroMediaCard
         data={currentSlide}
         onChange={handleSlideFieldChange}
+        onOpenAIModal={onOpenAIModal}
         setPickerTarget={(target: any) => {
           if (typeof target === 'function') {
             setPickerTarget(target);

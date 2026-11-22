@@ -47,10 +47,15 @@ def optimize_prompt(request: schemas.OptimizePromptRequest, db: Session = Depend
 
     ai_provider = settings.ai_provider or "gemini"
     system_prompt = (
-        "You are an elite beauty editorial commercial photographer. Create a professional image prompt in ENGLISH.\n"
-        "Focus on high-end commercial photography, radiant high-key lighting, flawless skin textures.\n"
-        "NO text, NO names, NO faces. Just the treatment area and luxurious vibe.\n"
-        "Return ONLY the prompt text."
+        "You are an elite beauty and aesthetic clinic commercial photographer and art director.\n"
+        "Create a professional, highly aesthetic image generation prompt in ENGLISH for a luxury clinic, salon, or spa.\n"
+        "Guidelines:\n"
+        "- The photo must depict an authentic, elegant commercial editorial scene of the service or treatment.\n"
+        "- Show an elegant, relaxed client in a serene luxury clinic atmosphere, receiving or experiencing the treatment (e.g., gentle hands applying luxurious serum with pipette, soothing facial relaxation, tranquil spa setting).\n"
+        "- Soft radiant high-key lighting, clean minimalist clinic aesthetics (warm cream, soft marble, champagne gold, delicate botanicals).\n"
+        "- Natural beauty, serene facial expressions, realistic proportions. NEVER create microscopic abstract skin pore closeups or flat flesh textures.\n"
+        "- NO text, NO watermarks, NO brand names, NO logos.\n"
+        "Return ONLY the refined prompt text in English."
     )
     
     try:
@@ -116,6 +121,43 @@ def generate_content(request: schemas.AIGenerationRequest, db: Session = Depends
             "- 'seo_keywords': Una lista de palabras clave relevantes separadas por comas (ej. 'depilacion laser, clinica estetica, triple onda').\n"
             "- NO rodees el JSON con bloques de código markdown, responde SOLO el JSON directo."
         )
+    elif request.type == "hero_copy":
+        system_prompt += (
+            "\nINSTRUCCIÓN CRÍTICA DE FORMATO:\n"
+            "- Debes generar una propuesta de Titular Principal (H1) y Subtítulo para la portada de una clínica de estética de alta gama.\n"
+            "- Responde ÚNICAMENTE un objeto JSON válido con las claves: 'hero_title' y 'hero_subtitle'.\n"
+            "- 'hero_title': Titular elegante, sugerente y memorable de entre 5 y 10 palabras.\n"
+            "- 'hero_subtitle': Subtítulo claro, aspiracional y cálido de entre 10 y 25 palabras.\n"
+            "- NO incluyas markdown, responde SOLO el JSON directo."
+        )
+    elif request.type == "about_bio":
+        system_prompt += (
+            "\nINSTRUCCIÓN CRÍTICA DE FORMATO:\n"
+            "- Debes generar el título de la sección y la biografía/filosofía corporativa para la portada.\n"
+            "- Responde ÚNICAMENTE un objeto JSON válido con las claves: 'about_title' y 'about_text'.\n"
+            "- 'about_title': Título refinado (ej. 'Nuestra Filosofía', 'El Arte del Cuidado Personalizado').\n"
+            "- 'about_text': Narrativa de alta gama (2-3 párrafos cortos) transmitiendo experiencia, calma y exclusividad.\n"
+            "- NO incluyas markdown, responde SOLO el JSON directo."
+        )
+    elif request.type == "cta_copy":
+        system_prompt += (
+            "\nINSTRUCCIÓN CRÍTICA DE FORMATO:\n"
+            "- Debes generar la sección de Llamada a la Acción (CTA) de la portada.\n"
+            "- Responde ÚNICAMENTE un objeto JSON válido con las claves: 'cta_title', 'cta_subtitle' y 'cta_button_text'.\n"
+            "- 'cta_title': Frase directa y de alto valor (ej. 'Comienza tu viaje hacia una piel radiante').\n"
+            "- 'cta_subtitle': Frase de apoyo que invite a reservar (ej. 'Agenda tu consulta de diagnóstico personalizada sin compromiso').\n"
+            "- 'cta_button_text': Texto corto del botón (ej. 'Reservar Cita').\n"
+            "- NO incluyas markdown, responde SOLO el JSON directo."
+        )
+    elif request.type == "category_copy":
+        system_prompt += (
+            "\nINSTRUCCIÓN CRÍTICA DE FORMATO:\n"
+            "- Debes generar el nombre y la descripción para una categoría de servicios estéticos.\n"
+            "- Responde ÚNICAMENTE un objeto JSON válido con las claves: 'name' y 'description'.\n"
+            "- 'name': Nombre claro y sofisticado de la categoría.\n"
+            "- 'description': Breve descripción de 1 o 2 frases presentando los tratamientos de esta área.\n"
+            "- NO incluyas markdown, responde SOLO el JSON directo."
+        )
 
     try:
         if ai_provider == "gemini":
@@ -133,7 +175,7 @@ def generate_content(request: schemas.AIGenerationRequest, db: Session = Depends
             )
             result_text = response.choices[0].message.content
         
-        if request.type == "seo":
+        if request.type in ["seo", "hero_copy", "about_bio", "cta_copy", "category_copy"]:
             try:
                 cleaned_text = result_text.strip()
                 if cleaned_text.startswith("```json"):
@@ -144,31 +186,27 @@ def generate_content(request: schemas.AIGenerationRequest, db: Session = Depends
                     cleaned_text = cleaned_text[:-3]
                 cleaned_text = cleaned_text.strip()
                 
-                seo_json = json.loads(cleaned_text)
-                return {
-                    "seo_title": seo_json.get("seo_title", ""),
-                    "seo_description": seo_json.get("seo_description", ""),
-                    "seo_keywords": seo_json.get("seo_keywords", "")
-                }
+                parsed_json = json.loads(cleaned_text)
+                return parsed_json
             except Exception as json_err:
-                logger.error(f"Error parsing SEO JSON: {json_err}. Text: {result_text}")
-                # Fallback parser
-                lines = result_text.split("\n")
-                title = ""
-                desc = ""
-                keywords = ""
-                for line in lines:
-                    if "title" in line.lower() or "titulo" in line.lower():
-                        title = line.split(":", 1)[-1].strip().strip('"').strip('{},')
-                    elif "description" in line.lower() or "descripcion" in line.lower():
-                        desc = line.split(":", 1)[-1].strip().strip('"').strip('{},')
-                    elif "keywords" in line.lower() or "palabras" in line.lower():
-                        keywords = line.split(":", 1)[-1].strip().strip('"').strip('{},')
-                return {
-                    "seo_title": title or "Tratamiento Premium",
-                    "seo_description": desc or "Descubre la experiencia exclusiva en nuestra clínica.",
-                    "seo_keywords": keywords or "medicina estetica, lujo, cuidado facial"
-                }
+                logger.error(f"Error parsing {request.type} JSON: {json_err}. Text: {result_text}")
+                if request.type == "seo":
+                    # Fallback parser
+                    lines = result_text.split("\n")
+                    title, desc, keywords = "", "", ""
+                    for line in lines:
+                        if "title" in line.lower() or "titulo" in line.lower():
+                            title = line.split(":", 1)[-1].strip().strip('"').strip('{},')
+                        elif "description" in line.lower() or "descripcion" in line.lower():
+                            desc = line.split(":", 1)[-1].strip().strip('"').strip('{},')
+                        elif "keywords" in line.lower() or "palabras" in line.lower():
+                            keywords = line.split(":", 1)[-1].strip().strip('"').strip('{},')
+                    return {
+                        "seo_title": title or "Tratamiento Premium",
+                        "seo_description": desc or "Descubre la experiencia exclusiva en nuestra clínica.",
+                        "seo_keywords": keywords or "medicina estetica, lujo, cuidado facial"
+                    }
+                return {"content": result_text.strip()}
 
         return {"content": result_text.strip()}
     except Exception as e:
@@ -182,11 +220,14 @@ def ai_enhance_image_prompt_sync(user_prompt: str, shot_type: str, visual_style:
         model = genai.GenerativeModel('gemini-2.5-flash')
         
         instruct = (
-            "You are a professional photography director. Refine the user prompt into a technical commercial photography prompt in English.\n"
-            "Style: Luxury, high-key lighting, flawless skin. NO faces, NO text.\n"
+            "You are an elite luxury beauty and aesthetic clinic creative director.\n"
+            "Refine the user's prompt into a high-end commercial photography prompt in English for a quiet luxury beauty clinic or spa.\n"
+            "Atmosphere: Serene, peaceful, soft diffused daylight, warm minimalist clinic interior with gentle treatment care.\n"
+            "Depict a realistic, highly appealing beauty clinic scene with relaxed client and professional aesthetic touch. Do NOT generate abstract microscope skin textures or flat flesh zooms.\n"
+            "NO text overlays, NO logos, NO watermarks.\n"
             f"User Prompt: {user_prompt}\n"
-            f"Shot Type: {shot_type}, Style: {visual_style}\n"
-            "Return only the refined prompt."
+            f"Shot Type: {shot_type}, Visual Style: {visual_style}\n"
+            "Return ONLY the refined English prompt text."
         )
         
         if reference_image:
@@ -218,6 +259,18 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
     # Validar y descontar cuota de imágenes mensual / trial / BYOK
     quota_info = check_and_deduct_image_quota(db, tenant, settings)
 
+    def _rollback_quota():
+        try:
+            if quota_info and not quota_info.get("has_byok") and not quota_info.get("unlimited"):
+                if quota_info.get("is_trial") and (tenant.ai_trial_images_used or 0) > 0:
+                    tenant.ai_trial_images_used -= 1
+                    db.commit()
+                elif not quota_info.get("is_trial") and (tenant.ai_monthly_images_used or 0) > 0:
+                    tenant.ai_monthly_images_used -= 1
+                    db.commit()
+        except Exception as rb_ex:
+            logger.error(f"Error revirtiendo cuota de imagen: {rb_ex}")
+
     ai_provider = settings.ai_provider or "gemini"
     
     try:
@@ -226,12 +279,17 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
         # Fallback a la clave maestra de Gemini si no se pudo resolver pero tenemos la variable de entorno
         gemini_key = os.getenv("GEMINI_API_KEY")
         if not gemini_key or not gemini_key.strip():
+            _rollback_quota()
             raise HTTPException(status_code=400, detail="Clave de API de Gemini no configurada en el sistema.")
         
     logger.info(f"START GENERATION: {request.prompt[:50]}...")
     
     # 1. Mejorar el prompt (Síncrono)
-    refined_prompt = ai_enhance_image_prompt_sync(request.prompt, request.shot_type, request.visual_style, gemini_key, request.reference_image)
+    try:
+        refined_prompt = ai_enhance_image_prompt_sync(request.prompt, request.shot_type, request.visual_style, gemini_key, request.reference_image)
+    except Exception as enh_err:
+        logger.warning(f"Error refinando prompt: {enh_err}. Usando original.")
+        refined_prompt = request.prompt
     
     file_bytes = None
 
@@ -240,36 +298,74 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
         try:
             openai_key = get_tenant_ai_key(db, "openai")
         except Exception:
-            logger.info("OpenAI API Key no configurada para el inquilino. Realizando fallback automático a Google Imagen 3 de la plataforma.")
+            logger.info("OpenAI API Key no configurada para el inquilino. Realizando fallback automático a Google Imagen/Gemini de la plataforma.")
             ai_provider = "gemini"
 
     if ai_provider == "gemini":
         try:
             genai.configure(api_key=gemini_key)
-            # Aseguramos el nombre del modelo de imagen correcto
-            model_name = settings.gemini_model_image or "imagen-3.0-generate-001"
-            model = genai.GenerativeModel(model_name)
+            preferred_model = settings.gemini_model_image
+            if not preferred_model or preferred_model.startswith("imagen-"):
+                preferred_model = "gemini-2.5-flash-image"
+
+            models_to_try = [preferred_model]
+            for m in ["gemini-2.5-flash-image", "gemini-3.1-flash-image", "gemini-3-pro-image"]:
+                if m not in models_to_try:
+                    models_to_try.append(m)
 
             aspect_text = "9:16 aspect ratio" if request.aspect_ratio == "9:16" else "16:9 aspect ratio" if request.aspect_ratio == "16:9" else "1:1 aspect ratio"
             final_prompt = f"{refined_prompt}. {aspect_text}. Commercial beauty photography, 8k, ultra-detailed."
 
-            start = time.time()
-            response = model.generate_content(final_prompt)
-            logger.info(f"Google Imagen finished in {time.time() - start:.2f}s")
+            last_gemini_error = None
+            for current_model_name in models_to_try:
+                try:
+                    logger.info(f"Intentando generar imagen con {current_model_name}...")
+                    model = genai.GenerativeModel(current_model_name)
+                    start = time.time()
+                    response = model.generate_content(final_prompt)
+                    logger.info(f"Google {current_model_name} finished in {time.time() - start:.2f}s")
 
-            for part in response.candidates[0].content.parts:
-                if hasattr(part, 'inline_data'): file_bytes = part.inline_data.data
-                elif hasattr(part, 'blob'): file_bytes = part.blob.data
-                break
-        except Exception as e:
-            logger.error(f"Imagen 3 error: {e}")
-            err_msg = str(e)
-            if "quota" in err_msg.lower() or "403" in err_msg or "permission" in err_msg.lower() or "api_key" in err_msg.lower() or "not found" in err_msg.lower():
+                    if response and getattr(response, 'candidates', None):
+                        for candidate in response.candidates:
+                            content = getattr(candidate, 'content', None)
+                            if not content: continue
+                            for part in getattr(content, 'parts', []):
+                                inline_data = getattr(part, 'inline_data', None)
+                                if inline_data and getattr(inline_data, 'data', None):
+                                    file_bytes = inline_data.data
+                                    break
+                                blob = getattr(part, 'blob', None)
+                                if blob and getattr(blob, 'data', None):
+                                    file_bytes = blob.data
+                                    break
+                            if file_bytes:
+                                break
+                    if file_bytes:
+                        break
+                except Exception as model_err:
+                    last_gemini_error = model_err
+                    logger.warning(f"Error generando con {current_model_name}: {model_err}. Probando siguiente modelo...")
+
+            if not file_bytes:
+                err_msg = str(last_gemini_error) if last_gemini_error else "No se generó contenido de imagen."
+                logger.error(f"Gemini image error: {err_msg}")
+                _rollback_quota()
+                if "quota" in err_msg.lower() or "429" in err_msg or "resource_exhausted" in err_msg.lower():
+                    raise HTTPException(
+                        status_code=429,
+                        detail="La cuota de generación de imágenes por minuto se ha agotado temporalmente en Google. Por favor, reintenta en unos instantes o conecta tu clave propia en Ajustes > Avanzado."
+                    )
                 raise HTTPException(
                     status_code=500,
-                    detail=f"La generación fotorrealista con la clave de la plataforma está en preparación o sin cuota en este momento. Puedes conectar tu propia API Key de Google Gemini u OpenAI en Ajustes > Avanzado para generar sin interrupciones."
+                    detail="La generación fotorrealista con la clave de la plataforma está en preparación o sin cuota en este momento. Puedes conectar tu propia API Key de Google Gemini u OpenAI en Ajustes > Avanzado para generar sin interrupciones."
                 )
-            raise HTTPException(status_code=500, detail=f"Error en Google Imagen: {err_msg}")
+        except HTTPException:
+            _rollback_quota()
+            raise
+        except Exception as e:
+            _rollback_quota()
+            logger.error(f"Gemini generation error: {e}")
+            raise HTTPException(status_code=500, detail=f"Error en Google Gemini: {str(e)}")
 
     elif ai_provider == "openai":
         try:
@@ -278,11 +374,14 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
             response = client.images.generate(model="dall-e-3", prompt=refined_prompt, n=1, quality="hd")
             file_bytes = requests.get(response.data[0].url).content
         except HTTPException:
+            _rollback_quota()
             raise
         except Exception as e:
+            _rollback_quota()
             raise HTTPException(status_code=500, detail=str(e))
 
     if not file_bytes:
+        _rollback_quota()
         raise HTTPException(status_code=500, detail="No se generó contenido de imagen.")
 
     # Guardar en Supabase
@@ -305,9 +404,6 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
         public_url = supabase.storage.from_("media").get_public_url(filename)
         
         # Guardar en DB
-        tenant_id = database.current_tenant_var.get()
-        if not tenant_id:
-            raise ValueError("Tenant ID is required but missing.")
         new_media = models.Media(
             tenant_id=tenant_id,
             filename=filename,
@@ -322,6 +418,7 @@ def generate_image(request: schemas.AIImageGenerationRequest, db: Session = Depe
         logger.info(f"SUCCESS: Generated and saved: {public_url}")
         return {"url": public_url, "quota": quota_info}
     except Exception as e:
+        _rollback_quota()
         logger.error(f"Save error: {e}")
         raise HTTPException(status_code=500, detail=f"Error al guardar: {str(e)}")
 

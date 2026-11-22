@@ -35,16 +35,16 @@ export default function MegamenuEditorTab({
             onClick={() => setMegamenuLayout('bento')}
             className={`p-4 rounded-3xl border cursor-pointer transition-all duration-300 ${
               megamenuLayout === 'bento'
-                ? 'border-[#d4af37] bg-amber-50/10 shadow-[0_4px_16px_rgba(212,175,55,0.08)]'
+                ? 'border-[#FF6B00] bg-orange-50/10 shadow-[0_4px_16px_rgba(212,175,55,0.08)]'
                 : 'border-stone-100 hover:border-stone-200 bg-white hover:bg-stone-50/50'
             }`}
           >
             <div className="h-16 w-full rounded-2xl bg-stone-50 border border-stone-100 flex items-center justify-center mb-3">
               <div className="grid grid-cols-3 gap-1 w-12 h-10">
-                <div className="bg-[#d4af37] rounded col-span-2"></div>
+                <div className="bg-[#FF6B00] rounded col-span-2"></div>
                 <div className="bg-stone-200 rounded"></div>
                 <div className="bg-stone-200 rounded"></div>
-                <div className="bg-[#d4af37]/60 rounded col-span-2"></div>
+                <div className="bg-[#FF6B00]/60 rounded col-span-2"></div>
               </div>
             </div>
             <div className="text-xs font-bold text-stone-800 text-center">Bento Grid</div>
@@ -56,24 +56,24 @@ export default function MegamenuEditorTab({
             onClick={() => setMegamenuLayout('directory')}
             className={`p-4 rounded-3xl border cursor-pointer transition-all duration-300 ${
               megamenuLayout === 'directory'
-                ? 'border-[#d4af37] bg-amber-50/10 shadow-[0_4px_16px_rgba(212,175,55,0.08)]'
+                ? 'border-[#FF6B00] bg-orange-50/10 shadow-[0_4px_16px_rgba(212,175,55,0.08)]'
                 : 'border-stone-100 hover:border-stone-200 bg-white hover:bg-stone-50/50'
             }`}
           >
             <div className="h-16 w-full rounded-2xl bg-stone-50 border border-stone-100 flex items-center justify-center mb-3">
               <div className="flex gap-2 w-14 h-10 items-center justify-center">
                 <div className="flex flex-col gap-1 w-4">
-                  <div className="h-1 bg-[#d4af37] rounded w-full"></div>
+                  <div className="h-1 bg-[#FF6B00] rounded w-full"></div>
                   <div className="h-1 bg-stone-200 rounded w-3"></div>
                   <div className="h-1 bg-stone-200 rounded w-2"></div>
                 </div>
                 <div className="flex flex-col gap-1 w-4">
-                  <div className="h-1 bg-[#d4af37] rounded w-full"></div>
+                  <div className="h-1 bg-[#FF6B00] rounded w-full"></div>
                   <div className="h-1 bg-stone-200 rounded w-3"></div>
                   <div className="h-1 bg-stone-200 rounded w-2"></div>
                 </div>
                 <div className="flex flex-col gap-1 w-4">
-                  <div className="h-1 bg-[#d4af37] rounded w-full"></div>
+                  <div className="h-1 bg-[#FF6B00] rounded w-full"></div>
                   <div className="h-1 bg-stone-200 rounded w-3"></div>
                   <div className="h-1 bg-stone-200 rounded w-2"></div>
                 </div>
@@ -122,7 +122,7 @@ export default function MegamenuEditorTab({
 
         {/* Selection Checklist */}
         {megamenuCategories === null ? (
-          <div className="bg-amber-50/20 border border-amber-100/50 rounded-2xl p-4 text-xs text-stone-600 leading-relaxed">
+          <div className="bg-orange-50/20 border border-amber-100/50 rounded-2xl p-4 text-xs text-stone-600 leading-relaxed">
             <span className="font-bold text-amber-800 block mb-1">💡 Modo automático activo</span>
             Todas las categorías de servicios activas se mostrarán dinámicamente. Al crear una nueva categoría, se incluirá de forma automática.
           </div>
@@ -145,7 +145,7 @@ export default function MegamenuEditorTab({
                       type="checkbox"
                       checked={isChecked}
                       onChange={() => toggleMegamenuCategory(cat.id)}
-                      className="rounded text-[#d4af37] focus:ring-[#d4af37] border-stone-200 w-4 h-4 cursor-pointer"
+                      className="rounded text-[#FF6B00] focus:ring-[#FF6B00] border-stone-200 w-4 h-4 cursor-pointer"
                     />
                     <span className={`font-semibold ${isChecked ? 'text-stone-800' : 'text-stone-400'}`}>
                       {cat.name}

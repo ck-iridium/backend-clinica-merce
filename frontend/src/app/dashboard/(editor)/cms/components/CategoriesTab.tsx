@@ -1,9 +1,36 @@
 "use client"
 import React, { useState, useEffect, memo } from 'react';
 import { Reorder } from 'framer-motion';
-import { GripVertical } from 'lucide-react';
+import { GripVertical, Sparkles, Loader2 } from 'lucide-react';
 import ImageUploadBlock from './ImageUploadBlock';
 import { useLanguage } from '@/app/contexts/LanguageContext';
+import { toast } from 'sonner';
+
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+  return null;
+}
+
+function getAuthHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (typeof window === 'undefined') return headers;
+  let tenantId = getCookie('tenant_id') || '';
+  let authToken = '';
+  try {
+    const raw = localStorage.getItem('user');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (!tenantId) tenantId = parsed.tenant_id || '';
+      authToken = parsed.access_token || parsed.token || '';
+    }
+  } catch {}
+  if (tenantId) headers['X-Tenant-ID'] = tenantId;
+  if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+  return headers;
+}
 
 const CategoriesTab = memo(({ 
   initialCategories, 
@@ -14,6 +41,7 @@ const CategoriesTab = memo(({
   handleCategoryChange,
   formData,
   setFormData,
+  onOpenAICategoryModal
 }: {
   initialCategories: any[],
   setCategories: React.Dispatch<React.SetStateAction<any[]>>,
@@ -23,8 +51,10 @@ const CategoriesTab = memo(({
   handleCategoryChange: (id: string, field: string, value: any) => void,
   formData: any,
   setFormData: React.Dispatch<React.SetStateAction<any>>,
+  onOpenAICategoryModal?: (categoryId: string) => void;
 }) => {
   const { t } = useLanguage();
+  const [isGeneratingCategoryCopy, setIsGeneratingCategoryCopy] = useState(false);
 
   // El estado vive AQUÍ, totalmente aislado del padre durante el drag
   const [localItems, setLocalItems] = useState(initialCategories);
@@ -35,6 +65,35 @@ const CategoriesTab = memo(({
   }, [initialCategories]);
 
   const selectedCategory = localItems.find((c: any) => c.id === selectedCategoryId) || localItems[0];
+
+  const handleGenerateCategoryCopy = async () => {
+    if (!selectedCategory) return;
+    setIsGeneratingCategoryCopy(true);
+    try {
+      const promptText = `Genera un nombre comercial elegante y una descripción breve (1 o 2 frases) para una categoría de tratamientos estéticos. Categoría actual: "${selectedCategory.name || ''}"`;
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ai/generate`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          prompt: promptText,
+          type: 'category_copy',
+          tone: 'premium'
+        })
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || 'Error al generar datos de categoría con IA');
+      }
+      const data = await res.json();
+      if (data.name) handleCategoryChange(selectedCategory.id, 'name', data.name);
+      if (data.description) handleCategoryChange(selectedCategory.id, 'description', data.description);
+      toast.success('¡Categoría redactada con éxito!');
+    } catch (e: any) {
+      toast.error(e.message || 'Error al generar texto con IA');
+    } finally {
+      setIsGeneratingCategoryCopy(false);
+    }
+  };
 
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -50,7 +109,7 @@ const CategoriesTab = memo(({
       
       {selectedCategory && (
          <div className="p-5 border border-stone-100 rounded-3xl bg-[#F7F7F5] shadow-sm space-y-4 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-1 h-full bg-[#d4af37]"></div>
+            <div className="absolute top-0 left-0 w-1 h-full bg-[#FF6B00]"></div>
             
             <div className="space-y-1">
               <ImageUploadBlock 
@@ -59,6 +118,7 @@ const CategoriesTab = memo(({
                 onSelect={() => setPickerTarget({ type: 'category', id: selectedCategory.id, field: 'image_url' })}
                 onClear={() => handleCategoryChange(selectedCategory.id, 'image_url', '')}
                 onUpload={(url) => handleCategoryChange(selectedCategory.id, 'image_url', url)}
+                onGenerateAI={() => onOpenAICategoryModal?.(selectedCategory.id)}
                 accepts="image"
               />
             </div>
@@ -87,7 +147,7 @@ const CategoriesTab = memo(({
                       title={opt.tooltip}
                       className={`py-2 px-1.5 rounded-xl border flex flex-col items-center justify-center transition-all duration-300 ${
                         isSelected 
-                          ? 'bg-stone-900 border-stone-900 text-[#d4af37] shadow-sm'
+                          ? 'bg-stone-900 border-stone-900 text-[#FF6B00] shadow-sm'
                           : 'bg-white border-stone-200 text-stone-500 hover:bg-stone-50 hover:text-stone-800'
                       }`}
                     >
@@ -100,17 +160,33 @@ const CategoriesTab = memo(({
             </div>
 
             <div>
-               <label className="block text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400 mb-2">
-                 {t('cms.categories.public_name')}
-               </label>
-               <input type="text" value={selectedCategory.name || ""} onChange={e => handleCategoryChange(selectedCategory.id, 'name', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 text-sm font-bold shadow-sm transition-all" />
+               <div className="flex items-center justify-between mb-2">
+                 <label className="block text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400">
+                   {t('cms.categories.public_name')}
+                 </label>
+                 <button
+                   type="button"
+                   onClick={handleGenerateCategoryCopy}
+                   disabled={isGeneratingCategoryCopy}
+                   className="flex items-center gap-1.5 text-[10px] font-bold text-[#FF6B00] bg-orange-50 hover:bg-orange-100 border border-orange-200/80 px-2 py-0.5 rounded-lg transition-all shadow-2xs active:scale-95 disabled:opacity-50"
+                   title="Generar nombre y descripción con IA"
+                 >
+                   {isGeneratingCategoryCopy ? (
+                     <Loader2 size={11} className="animate-spin text-[#FF6B00]" />
+                   ) : (
+                     <Sparkles size={11} className="text-[#FF6B00]" />
+                   )}
+                   <span>Generar con IA</span>
+                 </button>
+               </div>
+               <input type="text" value={selectedCategory.name || ""} onChange={e => handleCategoryChange(selectedCategory.id, 'name', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/20 text-sm font-bold shadow-sm transition-all" />
             </div>
             
             <div>
                <label className="block text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400 mb-2">
                  {t('cms.categories.short_description')}
                </label>
-               <textarea rows={3} value={selectedCategory.description || ""} onChange={e => handleCategoryChange(selectedCategory.id, 'description', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#d4af37]/20 text-xs font-medium shadow-sm leading-relaxed transition-all" placeholder={t('cms.categories.desc_placeholder')} />
+               <textarea rows={3} value={selectedCategory.description || ""} onChange={e => handleCategoryChange(selectedCategory.id, 'description', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/20 text-xs font-medium shadow-sm leading-relaxed transition-all" placeholder={t('cms.categories.desc_placeholder')} />
             </div>
          </div>
       )}
@@ -125,7 +201,7 @@ const CategoriesTab = memo(({
                 key={cat.id} 
                 value={cat}
                 onDragEnd={() => setCategories(localItems)} // Sincronizar con preview SOLO al soltar
-                className={`p-4 rounded-2xl border flex items-center justify-between cursor-grab active:cursor-grabbing ${selectedCategoryId === cat.id ? 'border-[#d4af37] bg-white shadow-md' : 'border-stone-100 bg-stone-50/30 hover:bg-white hover:border-stone-200'}`}
+                className={`p-4 rounded-2xl border flex items-center justify-between cursor-grab active:cursor-grabbing ${selectedCategoryId === cat.id ? 'border-[#FF6B00] bg-white shadow-md' : 'border-stone-100 bg-stone-50/30 hover:bg-white hover:border-stone-200'}`}
                 onClick={() => setSelectedCategoryId(cat.id)}
               >
                 <div className="flex items-center gap-6">
@@ -135,7 +211,7 @@ const CategoriesTab = memo(({
 
                 <div className="flex items-center gap-6">
                   {selectedCategoryId === cat.id && (
-                    <span className="text-[9px] font-black uppercase tracking-widest text-[#d4af37] bg-[#d4af37]/5 px-3 py-1 rounded-full">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-[#FF6B00] bg-[#FF6B00]/10 px-3 py-1 rounded-full">
                       {t('cms.categories.editing')}
                     </span>
                   )}
