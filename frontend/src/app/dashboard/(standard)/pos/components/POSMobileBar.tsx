@@ -66,7 +66,7 @@ export function POSMobileBar({
       {/* Cajón superpuesto a pantalla completa para móvil (Portal a document.body) */}
       {isCartDrawerOpen && mounted && typeof document !== 'undefined' &&
         createPortal(
-          <div className="fixed inset-0 z-[99999] bg-stone-950/98 backdrop-blur-2xl text-white lg:hidden overflow-y-auto p-5 sm:p-6 space-y-6 animate-in slide-in-from-bottom duration-300">
+          <div className="fixed inset-0 z-[99999] bg-[#F7F7F5] dark:bg-stone-950 text-stone-900 dark:text-white lg:hidden overflow-y-auto p-5 sm:p-6 space-y-6 animate-in slide-in-from-bottom duration-300">
             <div className="max-w-md mx-auto pt-2 pb-12">{children}</div>
           </div>,
           document.body

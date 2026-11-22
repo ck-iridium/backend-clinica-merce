@@ -15,8 +15,8 @@ export default function ChromaticOrb({
   isSpeaking = false,
   theme = 'dark',
 }: ChromaticOrbProps) {
-  // Dimensiones según variante
-  const dimensions = {
+  // Dimensiones según variante (si className ya define w- o h-, respetar la clase externa)
+  const dimensions = className?.includes('w-') ? '' : {
     sm: 'w-10 h-10',      // Avatar en mensajes (40px)
     md: 'w-9 h-9',        // Cabecera (36px)
     lg: 'w-14 h-14',      // Lanzador flotante WOW (56px)
@@ -38,12 +38,12 @@ export default function ChromaticOrb({
     <div
       className={`relative rounded-full overflow-hidden shrink-0 select-none flex items-center justify-center ${
         isLight
-          ? 'border border-stone-200/90 shadow-[inset_0_2px_4px_rgba(255,255,255,1),inset_0_-2px_4px_rgba(0,0,0,0.06),0_4px_16px_rgba(212,175,55,0.18)]'
+          ? 'border border-stone-200/90 shadow-[inset_0_2px_4px_rgba(255,255,255,1),inset_0_-2px_4px_rgba(0,0,0,0.06),0_4px_16px_rgba(255,107,0,0.12)]'
           : 'border border-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.3),inset_0_-2px_6px_rgba(0,0,0,0.9),0_4px_20px_rgba(0,0,0,0.6)]'
       } ${dimensions} ${className}`}
       style={{
         background: isLight
-          ? 'radial-gradient(circle at 35% 30%, #ffffff 0%, #f6f5f0 50%, #eae9e2 100%)'
+          ? 'radial-gradient(circle at 35% 30%, #ffffff 0%, #f7f6f2 50%, #e8e6dd 100%)'
           : 'radial-gradient(circle at 35% 30%, #1e1e24 0%, #0c0c0f 55%, #030304 100%)',
       }}
     >

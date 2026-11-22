@@ -368,20 +368,20 @@ export default function POSPage() {
               serviceDropdownRef={serviceDropdownRef}
             />
 
-            {/* Columna Derecha: Ticket de Escritorio */}
-            <div className="hidden lg:block lg:col-span-5 bg-[#141416] text-white rounded-[2rem] p-7 sm:p-8 border border-stone-800/80 shadow-md space-y-6 relative overflow-hidden backdrop-blur-2xl">
-              <div className="absolute top-[-60px] right-[-60px] w-72 h-72 bg-[#FF6B00]/10 rounded-full blur-3xl pointer-events-none" />
+            {/* Columna Derecha: Ticket de Escritorio (Refactorizado a Gris/Stone Sofisticado) */}
+            <div className="hidden lg:block lg:col-span-5 bg-[#F7F7F5] dark:bg-stone-900 text-stone-900 dark:text-white rounded-[2rem] p-7 sm:p-8 border border-stone-200/90 dark:border-stone-800 shadow-sm space-y-6 relative overflow-hidden">
+              <div className="absolute top-[-60px] right-[-60px] w-72 h-72 bg-[#FF6B00]/5 rounded-full blur-3xl pointer-events-none" />
 
-              <div className="flex justify-between items-center border-b border-white/10 pb-4">
+              <div className="flex justify-between items-center border-b border-stone-200 dark:border-white/10 pb-4">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-[#FF6B00]/20 border border-[#FF6B00]/30 flex items-center justify-center text-[#FF6B00]">
+                  <div className="w-8 h-8 rounded-xl bg-[#FF6B00]/10 border border-[#FF6B00]/20 flex items-center justify-center text-[#FF6B00]">
                     <ShoppingCart size={16} />
                   </div>
-                  <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-[#FF6B00]">
+                  <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-stone-800 dark:text-stone-100">
                     {t('dashboard.pos.ticket_summary') || '2. Resumen & Ticket'}
                   </h3>
                 </div>
-                <span className="text-[11px] font-bold px-3 py-1 bg-white/10 text-white/90 rounded-full font-mono uppercase tracking-wider border border-white/10">
+                <span className="text-[11px] font-bold px-3 py-1 bg-stone-200/70 dark:bg-white/10 text-stone-700 dark:text-white/90 rounded-full font-mono uppercase tracking-wider border border-stone-300/60 dark:border-white/10">
                   {cartHook.cart.length === 1
                     ? t('dashboard.pos.items_count_one')?.replace('{count}', String(cartHook.cart.length)) || '1 ítem'
                     : t('dashboard.pos.items_count')?.replace('{count}', String(cartHook.cart.length)) ||

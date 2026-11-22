@@ -39,32 +39,32 @@ export function POSClientSelector({
   const { t } = useLanguage();
 
   return (
-    <div className="space-y-3.5 pt-4 border-t border-white/10">
+    <div className="space-y-3.5 pt-4 border-t border-stone-200 dark:border-white/10">
       {/* Casilla de control visual de Próxima Factura */}
       {nextInvoiceNumber && (
-        <div className="flex items-center justify-between px-3.5 py-2.5 bg-gradient-to-r from-orange-500/15 via-white/5 to-transparent border border-orange-500/30 rounded-2xl shadow-2xs">
+        <div className="flex items-center justify-between px-3.5 py-2.5 bg-orange-50/80 dark:bg-gradient-to-r dark:from-orange-500/15 dark:via-white/5 dark:to-transparent border border-orange-200/80 dark:border-orange-500/30 rounded-2xl shadow-2xs">
           <div className="flex items-center gap-2">
-            <span className="w-6 h-6 rounded-lg bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-[#FF6B00]">
+            <span className="w-6 h-6 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-[#FF6B00]">
               <Receipt size={13} strokeWidth={2.2} />
             </span>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-orange-200/90 font-sans">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-orange-950 dark:text-orange-200/90 font-sans">
               Próxima Factura:
             </span>
           </div>
-          <span className="font-mono text-xs font-bold text-white bg-stone-900/90 px-3 py-1 rounded-xl border border-orange-400/40 shadow-xs tracking-wider">
+          <span className="font-mono text-xs font-bold text-orange-900 dark:text-white bg-white dark:bg-stone-900/90 px-3 py-1 rounded-xl border border-orange-300 dark:border-orange-400/40 shadow-xs tracking-wider">
             {nextInvoiceNumber}
           </span>
         </div>
       )}
 
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-        <label className="text-xs font-bold uppercase tracking-wider text-white/70 flex items-center gap-1.5">
+        <label className="text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-white/70 flex items-center gap-1.5">
           <FileText size={13} className="text-[#FF6B00]" />
           <span>{t('dashboard.pos.invoice_type') || 'Modalidad de Facturación'}</span>
         </label>
 
         {/* Toggle deslizante de lujo */}
-        <div className="bg-white/5 p-1 rounded-full border border-white/10 flex items-center w-full sm:w-64 backdrop-blur-md">
+        <div className="bg-stone-200/60 dark:bg-white/5 p-1 rounded-full border border-stone-300/60 dark:border-white/10 flex items-center w-full sm:w-64">
           <button
             type="button"
             onClick={() => {
@@ -73,8 +73,8 @@ export function POSClientSelector({
             }}
             className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all duration-300 ${
               isSimplified
-                ? 'bg-white text-stone-950 shadow-md font-extrabold'
-                : 'text-stone-400 hover:text-white'
+                ? 'bg-white text-stone-900 shadow-sm font-extrabold'
+                : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
             }`}
           >
             <span>{t('dashboard.pos.ticket_simplif') || 'Ticket Simplificado'}</span>
@@ -84,11 +84,11 @@ export function POSClientSelector({
             onClick={() => setIsSimplified(false)}
             className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all duration-300 ${
               !isSimplified
-                ? 'bg-[#FF6B00] text-white shadow-md font-extrabold'
-                : 'text-stone-400 hover:text-white'
+                ? 'bg-[#FF6B00] text-white shadow-sm font-extrabold'
+                : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
             }`}
           >
-            <FileCheck2 size={12} className={!isSimplified ? 'text-white' : 'text-stone-400'} />
+            <FileCheck2 size={12} className={!isSimplified ? 'text-white' : 'text-stone-500 dark:text-stone-400'} />
             <span>{t('dashboard.pos.nominal') || 'Nominal'}</span>
           </button>
         </div>
@@ -97,28 +97,28 @@ export function POSClientSelector({
       {/* Selector de Cliente para Factura Nominal */}
       {!isSimplified && (
         <div className="relative animate-in slide-in-from-top-2 duration-300 pt-1" ref={clientDropdownRef}>
-          <label className="block text-[10px] font-bold uppercase tracking-wider text-white/50 mb-2">
-            {t('dashboard.pos.search_client') || 'Vincular Cliente Titular'} <span className="text-orange-400">*</span>
+          <label className="block text-[10px] font-bold uppercase tracking-wider text-stone-600 dark:text-white/50 mb-2">
+            {t('dashboard.pos.search_client') || 'Vincular Cliente Titular'} <span className="text-orange-500">*</span>
           </label>
           
           {selectedClientId ? (
-            <div className="flex items-center justify-between p-3.5 bg-gradient-to-r from-white/10 to-white/5 border border-orange-500/40 rounded-2xl shadow-sm animate-in zoom-in-95">
+            <div className="flex items-center justify-between p-3.5 bg-white dark:bg-gradient-to-r dark:from-white/10 dark:to-white/5 border border-orange-400/60 dark:border-orange-500/40 rounded-2xl shadow-2xs animate-in zoom-in-95">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-8 h-8 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-[#FF6B00] shrink-0 font-bold text-xs">
+                <div className="w-8 h-8 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-[#FF6B00] shrink-0 font-bold text-xs">
                   {selectedClientName.charAt(0).toUpperCase()}
                 </div>
                 <div className="truncate">
                   <div className="flex items-center gap-1.5">
-                    <span className="font-semibold text-xs text-white truncate">{selectedClientName}</span>
+                    <span className="font-semibold text-xs text-stone-900 dark:text-white truncate">{selectedClientName}</span>
                     <CheckCircle2 size={13} className="text-[#FF6B00] shrink-0" />
                   </div>
-                  <span className="text-[10px] text-white/40 block">Cliente asignado a la factura</span>
+                  <span className="text-[10px] text-stone-500 dark:text-white/40 block">Cliente asignado a la factura</span>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={onClearClient}
-                className="p-1.5 text-white/40 hover:text-rose-400 hover:bg-white/10 rounded-xl transition-colors ml-2"
+                className="p-1.5 text-stone-400 hover:text-rose-500 hover:bg-stone-100 dark:hover:bg-white/10 rounded-xl transition-colors ml-2"
                 title="Cambiar cliente"
               >
                 <X size={14} />
@@ -126,7 +126,7 @@ export function POSClientSelector({
             </div>
           ) : (
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" size={16} />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 dark:text-white/40" size={16} />
               <input
                 id="pos-client-search"
                 type="text"
@@ -137,12 +137,12 @@ export function POSClientSelector({
                   setShowClientDropdown(true);
                 }}
                 onFocus={() => setShowClientDropdown(true)}
-                className="w-full pl-11 pr-5 py-3 rounded-2xl border border-white/10 focus:border-[#FF6B00] focus:ring-1 focus:ring-orange-500/30 bg-white/5 text-xs text-white placeholder-white/30 outline-none transition-all"
+                className="w-full pl-11 pr-5 py-3 rounded-2xl border border-stone-200 dark:border-white/10 focus:border-[#FF6B00] focus:ring-1 focus:ring-orange-500/30 bg-white dark:bg-white/5 text-xs text-stone-900 dark:text-white placeholder-stone-400 dark:placeholder-white/30 outline-none transition-all shadow-2xs"
               />
 
               {/* Menú de resultados de clientes */}
               {showClientDropdown && clientSearch && (
-                <div className="absolute z-30 w-full mt-2 bg-stone-900 border border-stone-800 rounded-2xl shadow-2xl max-h-52 overflow-y-auto overflow-x-hidden animate-in fade-in slide-in-from-top-1 duration-150">
+                <div className="absolute z-30 w-full mt-2 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl shadow-2xl max-h-52 overflow-y-auto overflow-x-hidden animate-in fade-in slide-in-from-top-1 duration-150">
                   {filteredClients.length > 0 ? (
                     <div className="p-1.5 space-y-1">
                       {filteredClients.map((c) => (
@@ -154,25 +154,25 @@ export function POSClientSelector({
                             onSelectClient(c.id, c.name);
                             setShowClientDropdown(false);
                           }}
-                          className="w-full text-left px-3.5 py-2.5 hover:bg-white/10 rounded-xl transition-colors flex items-center justify-between group"
+                          className="w-full text-left px-3.5 py-2.5 hover:bg-stone-50 dark:hover:bg-white/10 rounded-xl transition-colors flex items-center justify-between group"
                         >
                           <div className="flex items-center gap-2.5 min-w-0">
-                            <div className="w-6 h-6 rounded-lg bg-white/10 text-white/70 group-hover:text-[#FF6B00] group-hover:bg-orange-500/20 flex items-center justify-center text-[10px] font-bold">
+                            <div className="w-6 h-6 rounded-lg bg-orange-50 dark:bg-white/10 text-orange-600 dark:text-white/70 group-hover:text-[#FF6B00] group-hover:bg-orange-100 flex items-center justify-center text-[10px] font-bold">
                               {c.name.charAt(0).toUpperCase()}
                             </div>
                             <div className="truncate">
-                              <span className="font-semibold text-white text-xs group-hover:text-orange-200 block truncate">{c.name}</span>
-                              <span className="text-[10px] text-white/40 block truncate">{c.email || c.phone || 'Sin contacto'}</span>
+                              <span className="font-semibold text-stone-900 dark:text-white text-xs group-hover:text-[#FF6B00] block truncate">{c.name}</span>
+                              <span className="text-[10px] text-stone-400 dark:text-white/40 block truncate">{c.email || c.phone || 'Sin contacto'}</span>
                             </div>
                           </div>
-                          <span className="text-[9px] text-white/40 font-mono uppercase bg-white/5 px-2 py-0.5 rounded-md group-hover:bg-orange-500/20 group-hover:text-[#FF6B00]">
+                          <span className="text-[9px] text-stone-500 dark:text-white/40 font-mono uppercase bg-stone-100 dark:bg-white/5 px-2 py-0.5 rounded-md group-hover:bg-orange-500/20 group-hover:text-[#FF6B00]">
                             Seleccionar
                           </span>
                         </button>
                       ))}
                     </div>
                   ) : (
-                    <div className="p-4 text-center text-white/40 text-xs">
+                    <div className="p-4 text-center text-stone-400 dark:text-white/40 text-xs">
                       {t('dashboard.pos.no_clients_found') || 'No se encontraron clientes coincidentes'}
                     </div>
                   )}

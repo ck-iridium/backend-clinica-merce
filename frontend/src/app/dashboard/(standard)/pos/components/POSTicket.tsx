@@ -100,22 +100,22 @@ export function POSTicket({
     <div className="space-y-6">
       {/* Cabecera si está dentro del Drawer móvil */}
       {isInsideDrawer && (
-        <div className="flex justify-between items-center border-b border-white/10 pb-4">
+        <div className="flex justify-between items-center border-b border-stone-200 dark:border-white/10 pb-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-[#FF6B00]/20 border border-[#FF6B00]/30 flex items-center justify-center text-[#FF6B00]">
+            <div className="w-8 h-8 rounded-xl bg-[#FF6B00]/10 border border-[#FF6B00]/20 flex items-center justify-center text-[#FF6B00]">
               <ShoppingCart size={16} />
             </div>
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-[#FF6B00]">
+              <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-stone-800 dark:text-[#FF6B00]">
                 {t('dashboard.pos.ticket_summary') || 'Ticket de Venta'}
               </h3>
-              <p className="text-[11px] text-white/50">{cart.length} líneas en ticket</p>
+              <p className="text-[11px] text-stone-500 dark:text-white/50">{cart.length} líneas en ticket</p>
             </div>
           </div>
           {onCloseDrawer && (
             <button
               onClick={onCloseDrawer}
-              className="p-2 text-white/40 hover:text-white bg-white/5 rounded-xl hover:bg-white/10 transition-colors"
+              className="p-2 text-stone-400 hover:text-stone-700 bg-stone-100 hover:bg-stone-200 dark:text-white/40 dark:hover:text-white dark:bg-white/5 rounded-xl transition-colors"
             >
               <X size={16} />
             </button>
@@ -131,10 +131,10 @@ export function POSTicket({
             return (
               <div
                 key={`${item.id}-${idx}`}
-                className="flex justify-between items-center p-3 bg-white/5 hover:bg-white/8 border border-white/8 rounded-2xl transition-all group animate-in slide-in-from-right-2 duration-200 gap-2.5"
+                className="flex justify-between items-center p-3 bg-white dark:bg-white/5 hover:bg-stone-50/80 dark:hover:bg-white/8 border border-stone-200/80 dark:border-white/8 rounded-2xl transition-all group animate-in slide-in-from-right-2 duration-200 gap-2.5 shadow-2xs"
               >
                 <div className="flex flex-col min-w-0 flex-1 pr-1">
-                  <span className="font-medium text-xs text-white/95 truncate">{item.name}</span>
+                  <span className="font-semibold text-xs text-stone-900 dark:text-white/95 truncate">{item.name}</span>
 
                   {editingIndex === idx ? (
                     <div className="flex items-center gap-1.5 mt-2 animate-in fade-in">
@@ -149,7 +149,7 @@ export function POSTicket({
                           if (e.key === 'Escape') setEditingIndex(null);
                         }}
                         autoFocus
-                        className="w-20 bg-stone-900 border border-[#FF6B00] rounded-lg px-2 py-1 text-xs text-[#FF6B00] font-mono outline-none font-bold"
+                        className="w-20 bg-white dark:bg-stone-900 border border-[#FF6B00] rounded-lg px-2 py-1 text-xs text-[#FF6B00] font-mono outline-none font-bold"
                       />
                       <button
                         type="button"
@@ -162,7 +162,7 @@ export function POSTicket({
                       <button
                         type="button"
                         onClick={() => setEditingIndex(null)}
-                        className="p-1.5 bg-white/10 text-white/60 hover:text-white rounded-lg transition-colors"
+                        className="p-1.5 bg-stone-100 dark:bg-white/10 text-stone-500 dark:text-white/60 hover:text-stone-800 dark:hover:text-white rounded-lg transition-colors"
                         title="Cancelar"
                       >
                         <X size={12} />
@@ -170,11 +170,11 @@ export function POSTicket({
                     </div>
                   ) : (
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs text-white font-bold font-mono">
+                      <span className="text-xs text-stone-900 dark:text-white font-bold font-mono">
                         {Number(item.price).toFixed(2)}€
                       </span>
                       {isModified && (
-                        <span className="text-[10px] text-white/35 font-mono line-through">
+                        <span className="text-[10px] text-stone-400 dark:text-white/35 font-mono line-through">
                           {Number(item.original_price).toFixed(2)}€
                         </span>
                       )}
@@ -184,7 +184,7 @@ export function POSTicket({
                           setEditingIndex(idx);
                           setTempItemPrice(String(item.price));
                         }}
-                        className="p-1 text-white/30 hover:text-[#FF6B00] hover:bg-white/10 rounded-md transition-colors"
+                        className="p-1 text-stone-400 hover:text-[#FF6B00] hover:bg-stone-100 dark:hover:bg-white/10 rounded-md transition-colors"
                         title={t('dashboard.pos.edit_price') || 'Editar precio'}
                       >
                         <Edit2 size={11} />
@@ -196,7 +196,7 @@ export function POSTicket({
                 <button
                   type="button"
                   onClick={() => removeFromCart(idx)}
-                  className="p-2 text-white/30 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-colors shrink-0"
+                  className="p-2 text-stone-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-colors shrink-0"
                   title={t('dashboard.pos.remove_service') || 'Quitar tratamiento'}
                 >
                   <Trash2 size={14} />
@@ -205,12 +205,12 @@ export function POSTicket({
             );
           })
         ) : (
-          <div className="py-10 border-2 border-dashed border-white/10 rounded-2xl text-center space-y-2 bg-white/2">
-            <Receipt className="w-8 h-8 text-white/20 mx-auto" />
-            <p className="text-xs text-white/50 font-medium">
+          <div className="py-10 border-2 border-dashed border-stone-200 dark:border-white/10 rounded-2xl text-center space-y-2 bg-white/50 dark:bg-white/2">
+            <Receipt className="w-8 h-8 text-stone-300 dark:text-white/20 mx-auto" />
+            <p className="text-xs text-stone-600 dark:text-white/50 font-medium">
               {t('dashboard.pos.empty_ticket') || 'El ticket está vacío'}
             </p>
-            <p className="text-[10px] text-white/30">
+            <p className="text-[10px] text-stone-400 dark:text-white/30">
               {t('dashboard.pos.empty_ticket_desc') || 'Haz clic en los servicios del catálogo para agregarlos.'}
             </p>
           </div>
@@ -249,7 +249,7 @@ export function POSTicket({
           <button
             type="button"
             onClick={handleResetPrices}
-            className="flex items-center gap-1.5 px-3 py-1 bg-white/10 hover:bg-white/15 border border-white/10 text-[#FF6B00] text-[10px] font-bold rounded-full transition-all"
+            className="flex items-center gap-1.5 px-3 py-1 bg-stone-200/70 hover:bg-stone-200 dark:bg-white/10 dark:hover:bg-white/15 border border-stone-300/70 dark:border-white/10 text-[#FF6B00] text-[10px] font-bold rounded-full transition-all"
           >
             <RotateCcw size={11} />
             <span>{t('dashboard.pos.reset_catalog') || 'Restablecer precios'}</span>
@@ -258,21 +258,21 @@ export function POSTicket({
       )}
 
       {/* Línea de Puntos Estilo Ticket Físico */}
-      <div className="border-t border-dashed border-white/15 pt-4 space-y-2.5">
-        <div className="flex justify-between text-xs text-white/60 font-sans">
+      <div className="border-t border-dashed border-stone-300 dark:border-white/15 pt-4 space-y-2.5">
+        <div className="flex justify-between text-xs text-stone-600 dark:text-white/60 font-sans">
           <span>{t('dashboard.pos.subtotal') || 'Base Imponible'}</span>
-          <span className="font-mono text-white/80">{subtotal.toFixed(2)}€</span>
+          <span className="font-mono text-stone-900 dark:text-white/80 font-bold">{subtotal.toFixed(2)}€</span>
         </div>
-        <div className="flex justify-between text-xs text-white/45 font-sans">
+        <div className="flex justify-between text-xs text-stone-500 dark:text-white/45 font-sans">
           <span>{t('dashboard.pos.tax_included') || 'IVA General (21%)'}</span>
-          <span className="font-mono">{taxAmount.toFixed(2)}€</span>
+          <span className="font-mono text-stone-700 dark:text-white/60 font-semibold">{taxAmount.toFixed(2)}€</span>
         </div>
 
         {/* Total a Cobrar */}
-        <div className="pt-2 font-sans border-t border-white/10">
+        <div className="pt-2 font-sans border-t border-stone-200 dark:border-white/10">
           <div className="flex justify-between items-center mb-1">
             <div className="flex items-center gap-2">
-              <span className="text-sm sm:text-base text-white/90 font-serif font-semibold">
+              <span className="text-sm sm:text-base text-stone-900 dark:text-white/90 font-serif font-semibold">
                 {t('dashboard.pos.total_to_charge') || 'Total a Cobrar'}
               </span>
               {customTotal !== null && (
@@ -289,7 +289,7 @@ export function POSTicket({
                   setIsEditingTotal(true);
                   setCustomTotalInput(totalAmount.toFixed(2));
                 }}
-                className="flex items-center gap-1 border border-white/10 bg-white/5 hover:bg-white/10 text-[#FF6B00] text-xs font-semibold px-2.5 py-1 rounded-xl transition-all"
+                className="flex items-center gap-1 border border-stone-200 dark:border-white/10 bg-white dark:bg-white/5 hover:bg-stone-100 dark:hover:bg-white/10 text-[#FF6B00] text-xs font-semibold px-2.5 py-1 rounded-xl transition-all shadow-2xs"
                 title={t('dashboard.pos.edit_total') || 'Modificar total'}
               >
                 <Edit2 size={11} />
@@ -299,7 +299,7 @@ export function POSTicket({
           </div>
 
           {isEditingTotal ? (
-            <div className="flex items-center gap-2 mt-2 bg-stone-900 border border-[#FF6B00] p-2 rounded-2xl animate-in fade-in duration-200">
+            <div className="flex items-center gap-2 mt-2 bg-white dark:bg-stone-900 border border-[#FF6B00] p-2 rounded-2xl animate-in fade-in duration-200 shadow-sm">
               <input
                 type="number"
                 step="0.01"
@@ -324,7 +324,7 @@ export function POSTicket({
               <button
                 type="button"
                 onClick={() => setIsEditingTotal(false)}
-                className="p-2 bg-white/10 text-white/60 hover:text-white rounded-xl transition-colors shrink-0"
+                className="p-2 bg-stone-100 dark:bg-white/10 text-stone-500 dark:text-white/60 hover:text-stone-800 dark:hover:text-white rounded-xl transition-colors shrink-0"
               >
                 <X size={14} />
               </button>
@@ -336,7 +336,7 @@ export function POSTicket({
                   setIsEditingTotal(true);
                   setCustomTotalInput(totalAmount.toFixed(2));
                 }}
-                className="text-4xl font-sans font-bold text-white font-mono leading-none tracking-tight cursor-pointer hover:text-[#FF6B00] transition-colors"
+                className="text-4xl font-sans font-extrabold text-stone-900 dark:text-white font-mono leading-none tracking-tight cursor-pointer hover:text-[#FF6B00] transition-colors"
                 title="Haz clic para editar el total"
               >
                 {totalAmount.toFixed(2)}€

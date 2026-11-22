@@ -26,18 +26,18 @@ export function POSPaymentAndDate({
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2">
       {/* Selector Manual de Fecha */}
       <div className="space-y-1.5">
-        <label className="block text-xs font-bold uppercase tracking-wider text-white/70">
+        <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-white/70">
           {t('dashboard.pos.registration_date') || 'Fecha de Emisión'}
         </label>
         <div className="relative pointer-events-auto cursor-pointer group">
-          <div className="bg-white/5 border border-white/10 text-white rounded-2xl px-3.5 py-2.5 text-xs font-semibold flex items-center justify-between gap-2.5 group-hover:bg-white/10 group-hover:border-white/20 transition-all">
+          <div className="bg-white dark:bg-white/5 border border-stone-200 dark:border-white/10 text-stone-800 dark:text-white rounded-2xl px-3.5 py-2.5 text-xs font-semibold flex items-center justify-between gap-2.5 hover:border-stone-300 dark:hover:bg-white/10 transition-all shadow-2xs">
             <div className="flex items-center gap-2 truncate">
               <Calendar size={14} className="text-[#FF6B00] shrink-0" />
-              <span className="truncate font-medium text-white/90">
+              <span className="truncate font-medium text-stone-800 dark:text-white/90">
                 {getFriendlyDateStr(selectedDate)}
               </span>
             </div>
-            <ChevronDown size={13} className="text-white/40 shrink-0 group-hover:text-white/80 transition-colors" />
+            <ChevronDown size={13} className="text-stone-400 dark:text-white/40 shrink-0 group-hover:text-stone-700 dark:group-hover:text-white/80 transition-colors" />
           </div>
           {/* Input nativo oculto superpuesto a todo el botón */}
           <input
@@ -61,12 +61,18 @@ export function POSPaymentAndDate({
 
       {/* Método de Pago */}
       <div className="space-y-1.5">
-        <label className="block text-xs font-bold uppercase tracking-wider text-white/70">
+        <label className="block text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-white/70">
           {t('dashboard.pos.payment_method') || 'Método de Pago'}
         </label>
-        <div className="bg-white/5 p-1 rounded-full border border-white/10 flex items-center w-full backdrop-blur-md">
+        <div className="bg-stone-200/60 dark:bg-white/5 p-1 rounded-full border border-stone-300/60 dark:border-white/10 flex items-center w-full">
           {(['Tarjeta', 'Efectivo'] as PaymentMethod[]).map((method) => {
             const isSelected = paymentMethod === method;
+            const rawLabel = method === 'Tarjeta'
+              ? (t('dashboard.pos.pay_card') || 'Tarjeta')
+              : (t('dashboard.pos.pay_cash') || 'Efectivo');
+            // Limpieza estricta de emojis redundantes para evitar doble icono
+            const cleanLabel = rawLabel.replace(/[💳💵]/g, '').trim();
+
             return (
               <button
                 key={method}
@@ -75,20 +81,16 @@ export function POSPaymentAndDate({
                 onClick={() => setPaymentMethod(method)}
                 className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all duration-300 ${
                   isSelected
-                    ? 'bg-white text-stone-950 font-extrabold shadow-sm'
-                    : 'text-stone-400 hover:text-white'
+                    ? 'bg-white text-stone-900 font-extrabold shadow-sm'
+                    : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
                 }`}
               >
                 {method === 'Tarjeta' ? (
-                  <CreditCard size={13} className={isSelected ? 'text-stone-950' : 'text-stone-400'} />
+                  <CreditCard size={13} className={isSelected ? 'text-[#FF6B00]' : 'text-stone-500 dark:text-stone-400'} />
                 ) : (
-                  <Banknote size={13} className={isSelected ? 'text-stone-950' : 'text-stone-400'} />
+                  <Banknote size={13} className={isSelected ? 'text-[#FF6B00]' : 'text-stone-500 dark:text-stone-400'} />
                 )}
-                <span>
-                  {method === 'Tarjeta'
-                    ? t('dashboard.pos.pay_card') || 'Tarjeta'
-                    : t('dashboard.pos.pay_cash') || 'Efectivo'}
-                </span>
+                <span>{cleanLabel}</span>
               </button>
             );
           })}
