@@ -329,7 +329,7 @@ export default function SeoTab({ formData, setFormData }: SeoTabProps) {
             rows={4}
             value={currentDesc}
             onChange={(e) => updateField('seo_description', e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/30 text-sm font-medium shadow-xs leading-relaxed transition-all"
+            className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/30 text-sm font-medium shadow-xs leading-relaxed transition-colors resize-y"
             placeholder={
               selectedLang === 'es'
                 ? 'Descubre una experiencia de belleza personalizada con los tratamientos faciales y corporales más avanzados. Reserva tu consulta.'

@@ -179,14 +179,14 @@ const CategoriesTab = memo(({
                    <span>Generar con IA</span>
                  </button>
                </div>
-               <input type="text" value={selectedCategory.name || ""} onChange={e => handleCategoryChange(selectedCategory.id, 'name', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/20 text-sm font-bold shadow-sm transition-all" />
+               <input type="text" value={selectedCategory.name || ""} onChange={e => handleCategoryChange(selectedCategory.id, 'name', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/20 text-sm font-bold shadow-sm transition-colors" />
             </div>
             
             <div>
                <label className="block text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400 mb-2">
                  {t('cms.categories.short_description')}
                </label>
-               <textarea rows={3} value={selectedCategory.description || ""} onChange={e => handleCategoryChange(selectedCategory.id, 'description', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/20 text-xs font-medium shadow-sm leading-relaxed transition-all" placeholder={t('cms.categories.desc_placeholder')} />
+               <textarea rows={3} value={selectedCategory.description || ""} onChange={e => handleCategoryChange(selectedCategory.id, 'description', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/20 text-xs font-medium shadow-sm leading-relaxed transition-colors resize-y" placeholder={t('cms.categories.desc_placeholder')} />
             </div>
          </div>
       )}

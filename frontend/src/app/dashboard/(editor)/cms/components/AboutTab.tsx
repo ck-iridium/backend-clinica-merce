@@ -76,28 +76,13 @@ export default function AboutTab({
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-         <div>
-           <h2 className="text-2xl font-serif font-bold text-stone-900 mb-1">
-             {t('cms.about.title')}
-           </h2>
-           <p className="text-stone-500 text-sm">
-             {t('cms.about.subtitle')}
-           </p>
-         </div>
-         <button
-           type="button"
-           onClick={handleGenerateBio}
-           disabled={isGeneratingBio}
-           className="flex items-center gap-1.5 text-xs font-bold text-[#FF6B00] bg-orange-50 hover:bg-orange-100 border border-orange-200/80 px-3 py-1.5 rounded-xl transition-all shadow-2xs active:scale-95 disabled:opacity-50"
-         >
-           {isGeneratingBio ? (
-             <Loader2 size={13} className="animate-spin text-[#FF6B00]" />
-           ) : (
-             <Sparkles size={13} className="text-[#FF6B00]" />
-           )}
-           <span>Redactar Biografía con IA</span>
-         </button>
+      <div className="mb-6">
+        <h2 className="text-2xl font-serif font-bold text-stone-900 mb-1">
+          {t('cms.about.title')}
+        </h2>
+        <p className="text-stone-500 text-sm">
+          {t('cms.about.subtitle')}
+        </p>
       </div>
       <ImageUploadBlock 
         label={t('cms.about.image_label')}
@@ -131,20 +116,35 @@ export default function AboutTab({
                 type="text" 
                 value={formData.about_title || ""} 
                 onChange={e => setFormData((prev: any) => ({ ...prev, about_title: e.target.value }))} 
-                className="w-full px-4 py-3 rounded-xl border border-border/50 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/30 text-sm font-bold" 
+                className="w-full px-4 py-3 rounded-xl border border-border/50 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/30 text-sm font-bold transition-colors" 
               />
            </div>
         </div>
 
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">
-            {t('cms.about.bio_philosophy')}
-          </label>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-xs font-bold uppercase tracking-wider text-stone-500">
+              {t('cms.about.bio_philosophy')}
+            </label>
+            <button
+              type="button"
+              onClick={handleGenerateBio}
+              disabled={isGeneratingBio}
+              className="flex items-center gap-1.5 text-xs font-bold text-[#FF6B00] bg-orange-50 hover:bg-orange-100 border border-orange-200/80 px-2.5 py-1 rounded-xl transition-all shadow-2xs active:scale-95 disabled:opacity-50"
+            >
+              {isGeneratingBio ? (
+                <Loader2 size={13} className="animate-spin text-[#FF6B00]" />
+              ) : (
+                <Sparkles size={13} className="text-[#FF6B00]" />
+              )}
+              <span>Redactar Biografía con IA</span>
+            </button>
+          </div>
           <textarea 
             rows={8} 
             value={formData.about_text || ""} 
             onChange={e => setFormData((prev: any) => ({ ...prev, about_text: e.target.value }))} 
-            className="w-full px-4 py-3 rounded-xl border border-border/50 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/30 text-sm font-medium leading-relaxed" 
+            className="w-full px-4 py-3 rounded-xl border border-border/50 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/30 text-sm font-medium leading-relaxed resize-y transition-colors" 
           />
         </div>
 

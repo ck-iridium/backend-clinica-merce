@@ -244,7 +244,7 @@ export default function HeroTypographyCard({
           value={data.hero_subtitle || ""} 
           onChange={e => onChange('hero_subtitle', e.target.value)} 
           placeholder="Donde la belleza y el bienestar se encuentran en perfecta armonía."
-          className="w-full px-4 py-3 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/30 transition-all font-medium text-sm leading-relaxed" 
+          className="w-full px-4 py-3 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/30 transition-colors resize-y font-medium text-sm leading-relaxed" 
         />
 
         {/* SLIDER DE ESCALA / TAMAÑO DEL SUBTÍTULO */}
