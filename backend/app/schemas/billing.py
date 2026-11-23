@@ -52,6 +52,7 @@ class DirectSaleRequest(BaseModel):
     payment_method: str  # e.g. "Efectivo", "Tarjeta"
     is_simplified: bool = False
     date: Optional[str] = None
+    appointment_id: Optional[str] = None
 
 # --- BIZUM SUBSCRIPTION SCHEMAS ---
 class SubscriptionRequestBase(BaseModel):

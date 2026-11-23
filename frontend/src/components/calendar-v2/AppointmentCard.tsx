@@ -27,10 +27,11 @@ interface AppointmentCardProps {
 /**
  * Encapsulación de la lógica de colores por estado de la cita (Quiet Luxury Palette).
  */
-const getStatusColors = (status: string) => {
+const getStatusColors = (status: string, paymentStatus?: string) => {
+  if (status === 'completed' || paymentStatus === 'paid') {
+    return 'bg-emerald-50/90 border-emerald-200/80 border-l-emerald-500 text-emerald-950';
+  }
   switch (status) {
-    case 'completed': 
-      return 'bg-emerald-50/90 border-emerald-200/80 border-l-emerald-500 text-emerald-950';
     case 'cancelled': 
       return 'bg-stone-50/70 border-stone-200/50 border-l-stone-300 text-stone-400 opacity-60';
     case 'no_show': 
@@ -70,7 +71,8 @@ export function AppointmentCard({
   style
 }: AppointmentCardProps) {
   const { t } = useLanguage();
-  const colors = getStatusColors(appointment.status);
+  const isPaid = appointment.payment_status === 'paid' || appointment.status === 'completed';
+  const colors = getStatusColors(appointment.status, appointment.payment_status);
   const heightValue = style.height?.toString() || '0';
   const isPercentage = heightValue.endsWith('%');
   const heightNum = parseFloat(heightValue);
@@ -211,17 +213,17 @@ export function AppointmentCard({
         <div className="flex items-center justify-between gap-1 mt-auto pb-0.5 w-full">
           <div className="flex items-center gap-1 min-w-0">
             <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+              isPaid ? 'bg-emerald-500' :
               appointment.status === 'confirmed' ? 'bg-sky-500' : 
-              appointment.status === 'completed' ? 'bg-emerald-500' :
               appointment.status === 'web_pending' ? 'bg-[#FF6B00]' :
               'bg-orange-400'
             }`} />
             {!isNarrowCol && (
               <span className="text-[9px] font-bold uppercase tracking-wider text-stone-500 truncate">
-                {appointment.status === 'confirmed' 
-                  ? (t('dashboard.calendar.confirmed') || 'Confirmada') 
-                  : appointment.status === 'completed'
+                {isPaid
                   ? (t('dashboard.calendar.completed') || 'Completada')
+                  : appointment.status === 'confirmed' 
+                  ? (t('dashboard.calendar.confirmed') || 'Confirmada') 
                   : (appointment.status === 'pending_verification' || appointment.status === 'web_pending' 
                     ? (t('dashboard.calendar.web_pending') || 'Pendiente Web') 
                     : (t('dashboard.calendar.pending') || 'Pendiente'))}

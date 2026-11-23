@@ -202,7 +202,7 @@ export function DayColumn({
         if (activeFilter !== 'ALL') {
           if (activeFilter === 'CONFIRMADA' && appt.status !== 'confirmed') isHighlighted = false;
           if (activeFilter === 'PENDIENTE' && (appt.status !== 'web_pending' && appt.status !== 'pending' && appt.status !== 'pending_verification')) isHighlighted = false;
-          if (activeFilter === 'PAGADA' && appt.status !== 'completed') isHighlighted = false;
+          if (activeFilter === 'PAGADA' && appt.status !== 'completed' && appt.payment_status !== 'paid') isHighlighted = false;
         }
 
         // 2. Filtro por Búsqueda

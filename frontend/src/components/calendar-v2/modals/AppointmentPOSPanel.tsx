@@ -143,6 +143,7 @@ export function AppointmentPOSPanel({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           client_id: clientIdToSend,
+          appointment_id: selectedAppt?.id || null,
           final_price: Number(totalAmount.toFixed(2)),
           payment_method: paymentMethod,
           is_simplified: isSimplified,
@@ -153,7 +154,8 @@ export function AppointmentPOSPanel({
 
       if (res.ok) {
         const invoice = await res.json();
-        toast.success(`Cobro registrado (${totalAmount.toFixed(2)} €). Ticket #${invoice.invoice_number || 'OK'}`);
+        const ticketNum = invoice.number || invoice.invoice_number || 'OK';
+        toast.success(`Cobro registrado (${totalAmount.toFixed(2)} €). Ticket #${ticketNum}`);
         await onPaymentComplete();
         onClose?.();
       } else {

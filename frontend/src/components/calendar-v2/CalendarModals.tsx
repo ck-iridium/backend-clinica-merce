@@ -147,7 +147,10 @@ export function CalendarModals({
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/appointments/${selectedAppt.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
+        body: JSON.stringify({ 
+          status: newStatus,
+          payment_status: newStatus === 'completed' ? 'paid' : (selectedAppt.payment_status || 'pending')
+        })
       });
       if (res.ok) {
         await fetchData();

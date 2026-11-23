@@ -348,6 +348,38 @@ def create_direct_sale(db: Session, sale: schemas.DirectSaleRequest):
         tenant_id=tenant_id
     )
     db.add(db_invoice)
+
+    # 5. Link and update appointment if provided
+    if getattr(sale, "appointment_id", None):
+        db_appt = db.query(models.Appointment).filter(
+            models.Appointment.id == sale.appointment_id,
+            models.Appointment.tenant_id == tenant_id
+        ).first()
+        if db_appt:
+            db_appt.status = "completed"
+            db_appt.payment_status = "paid"
+            db.add(db_appt)
+
+    # 6. If not a simplified anonymous ticket, automatically register treatments into client's technical history
+    if not sale.is_simplified and effective_client_id:
+        client = db.query(models.Client).filter(
+            models.Client.id == effective_client_id,
+            models.Client.tenant_id == tenant_id
+        ).first()
+        if client and concept_str:
+            current_formulas = list(client.color_formulas or [])
+            ticket_ref = f"Ticket #{fiscal_number}"
+            already_recorded = any(ticket_ref in (entry.get("notes") or "") for entry in current_formulas)
+            if not already_recorded:
+                new_entry = {
+                    "date": sale_date.strftime("%d/%m/%Y"),
+                    "formula": concept_str,
+                    "notes": f"{ticket_ref} ({sale.payment_method} - {float(sale.final_price):.2f}€)"
+                }
+                current_formulas.insert(0, new_entry)
+                client.color_formulas = current_formulas
+                db.add(client)
+
     db.commit()
     db.refresh(db_invoice)
     

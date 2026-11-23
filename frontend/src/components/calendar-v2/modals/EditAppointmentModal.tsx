@@ -307,11 +307,20 @@ export function EditAppointmentModal({
                 {selectedAppt && (() => {
                   const currentStatus = getStatusConfig(selectedAppt.status);
                   const StIcon = currentStatus.icon;
+                  const isPaid = selectedAppt.payment_status === 'paid' || selectedAppt.status === 'completed';
                   return (
-                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border w-fit shadow-2xs flex items-center gap-1.5 ${currentStatus.badgeClasses}`}>
-                      <StIcon size={12} className={currentStatus.color} />
-                      {currentStatus.label}
-                    </span>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border w-fit shadow-2xs flex items-center gap-1.5 ${currentStatus.badgeClasses}`}>
+                        <StIcon size={12} className={currentStatus.color} />
+                        {currentStatus.label}
+                      </span>
+                      {isPaid && (
+                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border w-fit shadow-2xs flex items-center gap-1.5 bg-emerald-100/80 text-emerald-900 border-emerald-300">
+                          <Check size={12} className="text-emerald-700" />
+                          Pagado / Cobrado
+                        </span>
+                      )}
+                    </div>
                   );
                 })()}
                 <DialogTitle className="text-2xl sm:text-3xl font-serif font-bold text-stone-900 leading-tight">
@@ -355,11 +364,19 @@ export function EditAppointmentModal({
                   className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl border font-bold text-xs shadow-2xs transition-all active:scale-95 group cursor-pointer ${
                     activeSidePanel === 'pos'
                       ? 'border-emerald-600 bg-emerald-50 text-emerald-800 ring-1 ring-emerald-500/30'
+                      : (selectedAppt?.payment_status === 'paid' || selectedAppt?.status === 'completed')
+                      ? 'border-emerald-300 bg-emerald-50 text-emerald-900 hover:bg-emerald-100/90'
                       : 'border-emerald-200/90 bg-emerald-50/80 hover:bg-emerald-100/90 text-emerald-950'
                   }`}
                 >
                   <Receipt size={15} className="text-emerald-700 group-hover:scale-110 transition-transform" />
-                  <span>{activeSidePanel === 'pos' ? 'Cerrar Cobro' : 'Cobrar Cita (TPV)'}</span>
+                  <span>
+                    {activeSidePanel === 'pos' 
+                      ? 'Cerrar Cobro' 
+                      : (selectedAppt?.payment_status === 'paid' || selectedAppt?.status === 'completed')
+                      ? 'Cita Cobrada (TPV)' 
+                      : 'Cobrar Cita (TPV)'}
+                  </span>
                 </button>
               </div>
 
