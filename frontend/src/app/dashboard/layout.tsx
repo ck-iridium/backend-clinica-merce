@@ -9,6 +9,7 @@ import AIGenerationFloatingCard from '@/components/cms/AIGenerationFloatingCard'
 import AICopilotWidget from '@/components/ai/AICopilotWidget';
 import CoachTooltipManager from '@/components/ui/CoachTooltipManager';
 import GracePeriodBanner from '@/components/dashboard/GracePeriodBanner';
+import CounterModeManager from '@/components/dashboard/CounterModeManager';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   // El middleware inyecta x-tenant-id en cada request para Server Components
@@ -62,6 +63,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <AIGenerationFloatingCard />
       <AICopilotWidget />
       <CoachTooltipManager />
+      <CounterModeManager clinicName={clinicName} logoUrl={logoUrl} tenantId={tenantId} />
     </AIImageProvider>
   );
 }

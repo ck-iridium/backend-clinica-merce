@@ -12,11 +12,25 @@ import {
   UserCircle,
   Loader2,
   CalendarDays,
-  Send
+  Send,
+  KeyRound,
+  Smartphone,
+  SmartphoneNfc,
+  Mail,
+  Lock
 } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useFeedback } from "@/app/contexts/FeedbackContext"
-import { getTeamMembers, inviteTeamMember, deleteTeamMember, updateTeamMemberRole, resendTeamInvitation } from "@/app/actions/team"
+import {
+  getTeamMembers,
+  inviteTeamMember,
+  deleteTeamMember,
+  updateTeamMemberRole,
+  resendTeamInvitation,
+  createCounterOperatorAction,
+  updateOperatorPinAction,
+  unbindOperatorDeviceAction
+} from "@/app/actions/team"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import { useAuthRole } from "@/hooks/useAuthRole"
@@ -55,6 +69,15 @@ export default function TeamPage() {
     email: '',
     role: 'Recepción'
   });
+
+  const [creationMode, setCreationMode] = React.useState<'pin' | 'email'>('pin');
+  const [operatorPin, setOperatorPin] = React.useState('');
+
+  // Estados para Modal de Cambio de PIN
+  const [isPinModalOpen, setIsPinModalOpen] = React.useState(false);
+  const [memberToChangePin, setMemberToChangePin] = React.useState<any>(null);
+  const [newPinValue, setNewPinValue] = React.useState('');
+  const [isUpdatingPin, setIsUpdatingPin] = React.useState(false);
 
   // Estados para Modal de Edición
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
@@ -154,6 +177,96 @@ export default function TeamPage() {
       fetchMembers();
     } else {
       toast.error(result.error || t('dashboard.team.invite_error') || "Error al invitar al usuario");
+    }
+  };
+
+  const handleSubmitNewMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.full_name || !formData.role) {
+      toast.error(t('dashboard.team.invite_fields_required') || "Por favor completa el nombre y el rol");
+      return;
+    }
+
+    if (creationMode === 'pin') {
+      const cleanPin = operatorPin.trim();
+      if (!cleanPin || cleanPin.length !== 4 || !/^\d+$/.test(cleanPin)) {
+        toast.error("El PIN debe tener exactamente 4 dígitos numéricos.");
+        return;
+      }
+
+      setIsSubmitting(true);
+      try {
+        const result = await createCounterOperatorAction({
+          full_name: formData.full_name.trim(),
+          role: formData.role,
+          pin: cleanPin,
+          email: formData.email ? formData.email.trim() : undefined,
+        });
+
+        if (result.success) {
+          toast.success(`Operadora "${formData.full_name}" creada con éxito con acceso por PIN.`);
+          setIsInviteModalOpen(false);
+          setFormData({ full_name: '', email: '', role: 'Especialista' });
+          setOperatorPin('');
+          fetchMembers();
+        } else {
+          toast.error(result.error || "Error al crear la operadora con PIN");
+        }
+      } catch (err: any) {
+        toast.error(err.message || "Error al crear operadora");
+      } finally {
+        setIsSubmitting(false);
+      }
+    } else {
+      await handleInvite(e);
+    }
+  };
+
+  const handleUnbindDevice = (memberId: string, memberName: string) => {
+    showFeedback({
+      type: 'confirm',
+      title: 'Desvincular Teléfono Personal',
+      message: `¿Deseas desvincular el teléfono móvil vinculado a ${memberName}? En su próximo fichaje podrá vincular un nuevo dispositivo móvil.`,
+      confirmText: 'Desvincular Dispositivo',
+      cancelText: 'Cancelar',
+      onConfirm: async () => {
+        const res = await unbindOperatorDeviceAction(memberId);
+        if (res.success) {
+          toast.success(`Móvil de ${memberName} desvinculado correctamente.`);
+          fetchMembers();
+        } else {
+          toast.error(res.error || "Error al desvincular el teléfono.");
+        }
+      }
+    });
+  };
+
+  const handleSaveNewPin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanPin = newPinValue.trim();
+    if (!cleanPin || cleanPin.length !== 4 || !/^\d+$/.test(cleanPin)) {
+      toast.error("El nuevo PIN debe tener exactamente 4 dígitos.");
+      return;
+    }
+
+    if (!memberToChangePin) return;
+
+    setIsUpdatingPin(true);
+    try {
+      const res = await updateOperatorPinAction(memberToChangePin.id, cleanPin);
+      if (res.success) {
+        toast.success(`PIN actualizado correctamente para ${memberToChangePin.full_name}.`);
+        setIsPinModalOpen(false);
+        setNewPinValue('');
+        setMemberToChangePin(null);
+        fetchMembers();
+      } else {
+        toast.error(res.error || "Error al actualizar el PIN");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Error al actualizar el PIN");
+    } finally {
+      setIsUpdatingPin(false);
     }
   };
 

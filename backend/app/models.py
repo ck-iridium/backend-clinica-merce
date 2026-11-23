@@ -50,6 +50,13 @@ class Profile(Base):
     status = Column(String, nullable=True)
     receive_email_appointments = Column(Boolean, default=True)
     receive_agenda_reminders = Column(Boolean, default=True)
+    # Soporte para Modo Mostrador TPV & Fichaje
+    pin_code_hash = Column(String(128), nullable=True)
+    auth_mode = Column(String(20), default="email") # "email" | "pin_only"
+    is_counter_operator = Column(Boolean, default=True)
+    bound_device_id = Column(String(255), nullable=True) # Identificador único del móvil personal vinculado
+    pin_failed_attempts = Column(Integer, default=0)
+    pin_locked_until = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 class Client(Base):
@@ -439,6 +446,8 @@ class ClinicSettings(Base):
     mobile_logo_height = Column(Integer, default=36, nullable=True)
     logo_footer_b64 = Column(Text, nullable=True)
     footer_logo_mode = Column(String, default="white", nullable=True)
+    # Modo Mostrador TPV
+    counter_autolock_minutes = Column(Integer, default=10, nullable=True) # 0=desactivado, 5, 10, 15
 
 
 class Invoice(Base):
@@ -672,6 +681,20 @@ class SubscriptionRequest(Base):
     notes = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class TimeClockRecord(Base):
+    __tablename__ = "time_clock_records"
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=False, index=True)
+    staff_id = Column(String(36), nullable=False, index=True)
+    event_type = Column(String(20), nullable=False) # "clock_in", "break_start", "break_end", "clock_out"
+    timestamp = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    device_label = Column(String(100), default="Terminal Mostrador", nullable=True)
+    device_id = Column(String(255), nullable=True)
+    ip_address = Column(String(45), nullable=True)
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
 
 
 

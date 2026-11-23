@@ -1,4 +1,4 @@
-import { Clock, Calendar, Trash2, Hash, PhoneCall } from 'lucide-react';
+import { Clock, Calendar, Trash2, Hash, PhoneCall, Lock } from 'lucide-react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -82,6 +82,59 @@ export default function AgendaTab({
               <strong>Modo Teléfono / Presencial exclusivo activo:</strong> El motor de reserva online se encuentra pausado. Los botones de tu página web invitan a los clientes a <strong>llamar por teléfono o contactar por WhatsApp</strong>. La agenda interna de tu equipo continuará funcionando con total normalidad para anotar todas las citas manuales.
             </p>
           )}
+        </div>
+      </div>
+
+      {/* Modo Mostrador TPV & Auto-bloqueo */}
+      <div className="bg-white rounded-3xl border border-stone-200/80 p-6 md:p-8 shadow-sm">
+        <div className="flex items-center gap-3.5 mb-6 pb-4 border-b border-stone-100">
+          <span className="w-10 h-10 rounded-2xl bg-orange-50 border border-orange-200/60 flex items-center justify-center text-[#FF6B00] shadow-2xs shrink-0">
+            <Lock size={18} strokeWidth={2} />
+          </span>
+          <div>
+            <h3 className="text-xl md:text-2xl font-serif font-bold text-stone-900">Modo Mostrador TPV & Seguridad</h3>
+            <p className="text-xs text-stone-400 font-medium">Protección de datos frente a clientes en el ordenador del salón</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+          <div>
+            <label className="block text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1.5">
+              Auto-bloqueo por Inactividad
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {[
+                { value: 0, label: "Desactivado" },
+                { value: 5, label: "5 min" },
+                { value: 10, label: "10 min" },
+                { value: 15, label: "15 min" }
+              ].map(opt => {
+                const currentVal = settings.counter_autolock_minutes === undefined || settings.counter_autolock_minutes === null ? 10 : settings.counter_autolock_minutes;
+                const isSelected = currentVal === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setSettings({ ...settings, counter_autolock_minutes: opt.value })}
+                    className={cn(
+                      "py-2.5 px-3 rounded-xl text-xs font-semibold border transition-all text-center",
+                      isSelected
+                        ? "bg-[#1C1917] text-white border-[#1C1917] shadow-sm"
+                        : "bg-stone-50 hover:bg-stone-100 text-stone-700 border-stone-200/80"
+                    )}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-[11px] text-stone-500 mt-2.5 leading-relaxed">
+              Al cumplirse este tiempo sin interacción en el mostrador, la aplicación se bloquea automáticamente para que la siguiente empleada introduzca su PIN de 4 dígitos.
+            </p>
+          </div>
+          <div className="bg-stone-50 border border-stone-200/60 rounded-2xl p-4 text-xs text-stone-600 leading-relaxed">
+            <strong className="block text-stone-800 font-bold mb-1">💡 Botón de Bloqueo Inmediato</strong>
+            En la barra superior de la agenda y mostrador tienes siempre disponible el botón <strong>&quot;Bloquear Mostrador&quot;</strong> para cerrar tu sesión de operadora al instante cuando te retires del ordenador.
+          </div>
         </div>
       </div>
 

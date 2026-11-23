@@ -7,7 +7,7 @@ from slowapi.errors import RateLimitExceeded
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from .database import engine, Base, get_db
-from .routers import clients, services, appointments, vouchers, invoices, settings, users, voucher_templates, time_blocks, automation, service_categories, site_content, uploads, backups, media, ai, stripe_payments, super_admin, cms, onboarding, ai_agent, locations, staff_schedules, docs_cms, consent_templates, subscriptions_bizum, ai_concierge
+from .routers import clients, services, appointments, vouchers, invoices, settings, users, voucher_templates, time_blocks, automation, service_categories, site_content, uploads, backups, media, ai, stripe_payments, super_admin, cms, onboarding, ai_agent, locations, staff_schedules, docs_cms, consent_templates, subscriptions_bizum, ai_concierge, time_clock
 from .scheduler import scheduler
 
 # Las migraciones y creación de esquema se ejecutan de forma segura en startup_event con Advisory Lock.
@@ -379,6 +379,7 @@ app.include_router(locations.router)
 app.include_router(staff_schedules.router)
 app.include_router(docs_cms.router)
 app.include_router(consent_templates.router)
+app.include_router(time_clock.router)
 
 
 @app.on_event("startup")

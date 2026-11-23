@@ -36,7 +36,7 @@ def run_auto_migrations():
         except Exception as create_err:
             logger.warning(f"Base.metadata.create_all aviso: {create_err}")
 
-        # 0.2 Políticas RLS seguras para subscription_requests
+        # 0.2 Políticas RLS seguras para subscription_requests y time_clock_records
         if not is_sqlite:
             try:
                 db.execute(text("ALTER TABLE subscription_requests ENABLE ROW LEVEL SECURITY;"))
@@ -47,6 +47,17 @@ def run_auto_migrations():
                 """))
                 db.commit()
             except Exception as rls_err:
+                db.rollback()
+
+            try:
+                db.execute(text("ALTER TABLE time_clock_records ENABLE ROW LEVEL SECURITY;"))
+                db.execute(text("DROP POLICY IF EXISTS tenant_isolation_time_clock ON time_clock_records;"))
+                db.execute(text("""
+                    CREATE POLICY tenant_isolation_time_clock ON time_clock_records
+                    FOR ALL USING (tenant_id = current_setting('app.current_tenant_id', true));
+                """))
+                db.commit()
+            except Exception:
                 db.rollback()
 
         # Recrear la función trigger notify_appointment_changes en PostgreSQL para inyectar tenant_id
@@ -326,7 +337,16 @@ $function$;
             "ALTER TABLE services ADD COLUMN cost_price DECIMAL(10, 2) DEFAULT 0.0",
             "ALTER TABLE services ADD COLUMN sku VARCHAR",
             "ALTER TABLE services ADD COLUMN stock INTEGER DEFAULT 0",
-            "ALTER TABLE clinic_settings ADD COLUMN allow_online_booking BOOLEAN DEFAULT TRUE"
+            "ALTER TABLE clinic_settings ADD COLUMN allow_online_booking BOOLEAN DEFAULT TRUE",
+            # ── Modo Mostrador TPV & Fichaje de Jornada ─────────────────────────
+            "ALTER TABLE profiles ADD COLUMN pin_code_hash VARCHAR(128)",
+            "ALTER TABLE profiles ADD COLUMN auth_mode VARCHAR(20) DEFAULT 'email'",
+            "ALTER TABLE profiles ADD COLUMN is_counter_operator BOOLEAN DEFAULT TRUE",
+            "ALTER TABLE profiles ADD COLUMN bound_device_id VARCHAR(255)",
+            "ALTER TABLE profiles ADD COLUMN pin_failed_attempts INTEGER DEFAULT 0",
+            "ALTER TABLE profiles ADD COLUMN pin_locked_until TIMESTAMP",
+            "ALTER TABLE clinic_settings ADD COLUMN counter_autolock_minutes INTEGER DEFAULT 10",
+            "CREATE TABLE IF NOT EXISTS time_clock_records (id VARCHAR(36) PRIMARY KEY, tenant_id VARCHAR(36) NOT NULL, staff_id VARCHAR(36) NOT NULL, event_type VARCHAR(20) NOT NULL, timestamp TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()), device_label VARCHAR(100), device_id VARCHAR(255), ip_address VARCHAR(45), notes TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()))"
         ]
         
         # 0.3 Pre-consulta de columnas y constraints existentes para evitar bloqueos innecesarios (ALTER TABLE adquiere AccessExclusiveLock)

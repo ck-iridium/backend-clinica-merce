@@ -87,3 +87,76 @@ class StaffScheduleResponse(StaffScheduleBase):
 
     class Config:
         from_attributes = True
+
+
+# --- Operador Mostrador TPV con PIN ---
+class CounterOperatorCreate(BaseModel):
+    full_name: str
+    role: str = "Especialista" # "Especialista", "Recepción", "Administrador"
+    pin: str # PIN de 4 dígitos
+    avatar_url: Optional[str] = None
+    email: Optional[str] = None
+
+class CounterOperatorResponse(BaseModel):
+    id: str
+    tenant_id: str
+    full_name: str
+    role: str
+    avatar_url: Optional[str] = None
+    email: Optional[str] = None
+    auth_mode: str = "pin_only"
+    is_counter_operator: bool = True
+    bound_device_id: Optional[str] = None
+    has_bound_device: bool = False
+
+class CounterPinVerify(BaseModel):
+    staff_id: str
+    pin: str
+    device_id: Optional[str] = None # Identificador del móvil para fichajes vinculados
+
+class CounterPinUpdate(BaseModel):
+    staff_id: str
+    current_pin: Optional[str] = None
+    new_pin: str
+
+class DeviceUnbindRequest(BaseModel):
+    staff_id: str
+
+
+# --- Fichaje de Jornada Laboral (Time Clock) ---
+class TimeClockEventCreate(BaseModel):
+    staff_id: str
+    pin: Optional[str] = None
+    event_type: str # "clock_in", "break_start", "break_end", "clock_out", "auto"
+    device_label: Optional[str] = "Terminal Mostrador"
+    device_id: Optional[str] = None
+    qr_token: Optional[str] = None # Token rotativo de 20s
+    notes: Optional[str] = None
+
+class TimeClockRecordResponse(BaseModel):
+    id: str
+    tenant_id: str
+    staff_id: str
+    event_type: str
+    timestamp: datetime
+    device_label: Optional[str] = None
+    device_id: Optional[str] = None
+    notes: Optional[str] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class TimeClockStatusResponse(BaseModel):
+    staff_id: str
+    staff_name: str
+    current_status: str # "out", "in_shift", "on_break"
+    last_event_type: Optional[str] = None
+    last_event_time: Optional[datetime] = None
+    today_total_minutes: int = 0
+    has_bound_device: bool = False
+
+class QRRotateTokenResponse(BaseModel):
+    token: str
+    expires_in_seconds: int = 20
+    qr_payload: str

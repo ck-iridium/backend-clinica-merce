@@ -7,7 +7,8 @@ import {
   Ticket, Receipt, CalendarDays, Settings,
   Database, Image as ImageIcon, Globe, Tag,
   ShieldCheck, User, LogOut, Search, ChevronRight,
-  MoreHorizontal, Briefcase, FileText, CreditCard, MapPin, Clock, ShieldAlert
+  MoreHorizontal, Briefcase, FileText, CreditCard, MapPin, Clock, ShieldAlert,
+  QrCode, Lock
 } from 'lucide-react';
 
 function getCookie(name: string): string | null {
@@ -503,6 +504,32 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
               <NotificationCenter isMobile={false} />
             </div>
 
+            {/* QR Fichaje Mostrador */}
+            <div className="flex justify-center">
+              <button
+                type="button"
+                id="sidebar-counter-qr-btn"
+                onClick={() => window.dispatchEvent(new CustomEvent('open_counter_qr'))}
+                title="Fichar con Móvil (QR)"
+                className="w-10 h-10 flex items-center justify-center rounded-2xl text-stone-500 hover:text-[#FF6B00] hover:bg-stone-900 transition-all outline-none active:scale-95 cursor-pointer"
+              >
+                <QrCode size={19} strokeWidth={1.75} />
+              </button>
+            </div>
+
+            {/* Bloquear Mostrador Manualmente */}
+            <div className="flex justify-center">
+              <button
+                type="button"
+                id="sidebar-counter-lock-btn"
+                onClick={() => window.dispatchEvent(new CustomEvent('lock_counter'))}
+                title="Bloquear Mostrador (PIN)"
+                className="w-10 h-10 flex items-center justify-center rounded-2xl text-stone-500 hover:text-white hover:bg-stone-900 transition-all outline-none active:scale-95 cursor-pointer"
+              >
+                <Lock size={18} strokeWidth={1.75} />
+              </button>
+            </div>
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
@@ -567,6 +594,14 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
                   )}
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-stone-800" />
+                <DropdownMenuItem onClick={() => window.dispatchEvent(new CustomEvent('open_counter_qr'))} className="flex items-center gap-3 px-4 py-3 rounded-xl focus:bg-stone-800 focus:text-white cursor-pointer text-[#FF6B00]">
+                  <QrCode size={16} />
+                  <span className="font-bold text-sm">Fichar con Móvil (QR)</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => window.dispatchEvent(new CustomEvent('lock_counter'))} className="flex items-center gap-3 px-4 py-3 rounded-xl focus:bg-stone-800 focus:text-white cursor-pointer text-stone-300">
+                  <Lock size={16} />
+                  <span className="font-bold text-sm">Bloquear Mostrador (PIN)</span>
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => router.push('/dashboard/profile')} className="flex items-center gap-3 px-4 py-3 rounded-xl focus:bg-stone-800 focus:text-white cursor-pointer">
                   <User size={16} />
                   <span className="font-bold text-sm">{t('dashboard.menu.profile')}</span>

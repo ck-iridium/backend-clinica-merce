@@ -585,3 +585,116 @@ export async function updateTeamMemberRole(userId: string, newRole: string) {
     return { success: false, error: error.message };
   }
 }
+
+export async function createCounterOperatorAction(data: { full_name: string; role: string; pin: string; email?: string }) {
+  try {
+    const cookieStore = cookies();
+    let tenantId = cookieStore.get('tenant_id')?.value;
+    const isImpersonating = cookieStore.get('is_impersonating')?.value === 'true';
+    const impersonateTenantId = cookieStore.get('impersonate_tenant_id')?.value;
+    if (isImpersonating && impersonateTenantId) tenantId = impersonateTenantId;
+
+    if (!tenantId) {
+      return { success: false, error: "No autorizado. Inquilino no identificado." };
+    }
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+    const res = await fetch(`${apiUrl}/time-clock/counter-operators`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Tenant-ID': tenantId,
+      },
+      body: JSON.stringify({
+        full_name: data.full_name,
+        role: data.role,
+        pin: data.pin,
+        email: data.email || null,
+      }),
+      signal: AbortSignal.timeout(5000),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      return { success: false, error: err.detail || 'Error creando operadora con PIN' };
+    }
+
+    revalidatePath('/dashboard/team');
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Error de conexión con el servidor' };
+  }
+}
+
+export async function updateOperatorPinAction(staffId: string, newPin: string) {
+  try {
+    const cookieStore = cookies();
+    let tenantId = cookieStore.get('tenant_id')?.value;
+    const isImpersonating = cookieStore.get('is_impersonating')?.value === 'true';
+    const impersonateTenantId = cookieStore.get('impersonate_tenant_id')?.value;
+    if (isImpersonating && impersonateTenantId) tenantId = impersonateTenantId;
+
+    if (!tenantId) {
+      return { success: false, error: "No autorizado." };
+    }
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+    const res = await fetch(`${apiUrl}/time-clock/update-pin`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Tenant-ID': tenantId,
+      },
+      body: JSON.stringify({
+        staff_id: staffId,
+        new_pin: newPin,
+      }),
+      signal: AbortSignal.timeout(5000),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      return { success: false, error: err.detail || 'Error actualizando PIN' };
+    }
+
+    revalidatePath('/dashboard/team');
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function unbindOperatorDeviceAction(staffId: string) {
+  try {
+    const cookieStore = cookies();
+    let tenantId = cookieStore.get('tenant_id')?.value;
+    const isImpersonating = cookieStore.get('is_impersonating')?.value === 'true';
+    const impersonateTenantId = cookieStore.get('impersonate_tenant_id')?.value;
+    if (isImpersonating && impersonateTenantId) tenantId = impersonateTenantId;
+
+    if (!tenantId) {
+      return { success: false, error: "No autorizado." };
+    }
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+    const res = await fetch(`${apiUrl}/time-clock/unbind-device`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Tenant-ID': tenantId,
+      },
+      body: JSON.stringify({ staff_id: staffId }),
+      signal: AbortSignal.timeout(5000),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      return { success: false, error: err.detail || 'Error desvinculando dispositivo' };
+    }
+
+    revalidatePath('/dashboard/team');
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}

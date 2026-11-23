@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Search, Plus, Menu, ChevronRight, ChevronLeft, ChevronUp, LogOut, User, LayoutDashboard, Users, Sparkles, Ticket, Receipt, CalendarDays, Settings, Database, Image as ImageIcon, Globe, Tag, ShieldCheck, Briefcase, FileText, MoreHorizontal, CreditCard, ShieldAlert } from 'lucide-react';
+import { Home, Search, Plus, Menu, ChevronRight, ChevronLeft, ChevronUp, LogOut, User, LayoutDashboard, Users, Sparkles, Ticket, Receipt, CalendarDays, Settings, Database, Image as ImageIcon, Globe, Tag, ShieldCheck, Briefcase, FileText, MoreHorizontal, CreditCard, ShieldAlert, QrCode, Lock } from 'lucide-react';
 import { GlobalSearch } from './GlobalSearch';
 import { NotificationCenter } from './NotificationCenter';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -523,6 +523,14 @@ export default function MobileBottomBar({ clinicName = "Clínica", logoUrl = nul
                               ))}
                             </div>
                           </div>
+                          <DropdownMenuItem onClick={() => { setIsUserMenuOpen(false); window.dispatchEvent(new CustomEvent('open_counter_qr')); }} className="flex items-center gap-3 px-4 py-3.5 rounded-xl focus:bg-stone-800 focus:text-white cursor-pointer transition-colors text-[#FF6B00]">
+                            <QrCode size={18} strokeWidth={1.5} className="text-[#FF6B00]" />
+                            <span className="font-bold text-sm">Fichar con Móvil (QR)</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => { setIsUserMenuOpen(false); window.dispatchEvent(new CustomEvent('lock_counter')); }} className="flex items-center gap-3 px-4 py-3.5 rounded-xl focus:bg-stone-800 focus:text-white cursor-pointer transition-colors text-stone-300">
+                            <Lock size={18} strokeWidth={1.5} className="text-stone-400" />
+                            <span className="font-bold text-sm">Bloquear Mostrador (PIN)</span>
+                          </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => { setIsUserMenuOpen(false); router.push('/dashboard/profile'); }} className="flex items-center gap-3 px-4 py-3.5 rounded-xl focus:bg-stone-800 focus:text-white cursor-pointer transition-colors">
                             <User size={18} strokeWidth={1.5} className="text-stone-400" />
                             <span className="font-bold text-sm">{t('dashboard.menu.profile') || 'Mi Perfil'}</span>
