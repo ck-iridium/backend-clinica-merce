@@ -49,6 +49,8 @@ class ClinicSettingsBase(BaseModel):
     working_days: Optional[List[int]] = None
     booking_layout: Optional[str] = "grid"
     allow_online_booking: Optional[bool] = True
+    enable_counter_mode: Optional[bool] = False
+    enable_time_clock: Optional[bool] = True
     counter_autolock_minutes: Optional[int] = 10
     require_authorized_device: Optional[bool] = False
     cancellation_margin_hours: int = 24
@@ -135,6 +137,8 @@ class ClinicSettingsUpdate(BaseModel):
     working_days: Optional[List[int]] = None
     booking_layout: Optional[str] = None
     allow_online_booking: Optional[bool] = None
+    enable_counter_mode: Optional[bool] = None
+    enable_time_clock: Optional[bool] = None
     counter_autolock_minutes: Optional[int] = None
     require_authorized_device: Optional[bool] = None
     cancellation_margin_hours: Optional[int] = None

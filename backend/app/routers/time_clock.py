@@ -57,18 +57,18 @@ def verify_qr_totp(tenant_id: str, token: str, window_seconds: int = 20) -> bool
 
 # ── 1. Listar Operadoras de Mostrador del Salón ──────────────────────────────
 @router.get("/operators", response_model=List[schemas.CounterOperatorResponse])
-def get_counter_operators(db: Session = Depends(database.get_db)):
-    tenant_id = database.current_tenant_var.get()
-    if not tenant_id:
+def get_counter_operators(
+    request: Request,
+    tenant_id: Optional[str] = Query(None),
+    db: Session = Depends(database.get_db)
+):
+    resolved_tenant = database.current_tenant_var.get() or tenant_id or request.headers.get("X-Tenant-ID")
+    if not resolved_tenant:
         raise HTTPException(status_code=400, detail="Tenant context missing")
 
+    # Obtener perfiles del centro: si tienen PIN o son miembros del equipo
     profiles = db.query(models.Profile).filter(
-        models.Profile.tenant_id == tenant_id,
-        models.Profile.role.in_([
-            "specialist", "receptionist", "admin",
-            "especialista", "recepcionist", "recepción", "recepcion", "administrador",
-            "Especialista", "Recepción", "Recepcion", "Administrador"
-        ])
+        models.Profile.tenant_id == resolved_tenant
     ).order_by(models.Profile.full_name).all()
 
     response = []
@@ -83,7 +83,8 @@ def get_counter_operators(db: Session = Depends(database.get_db)):
             auth_mode=getattr(p, "auth_mode", "email") or "email",
             is_counter_operator=bool(getattr(p, "is_counter_operator", True)),
             bound_device_id=getattr(p, "bound_device_id", None),
-            has_bound_device=bool(getattr(p, "bound_device_id", None))
+            has_bound_device=bool(getattr(p, "bound_device_id", None)),
+            has_pin=bool(getattr(p, "pin_code_hash", None))
         ))
     return response
 
@@ -165,13 +166,17 @@ def create_counter_operator(
 @router.post("/verify-pin")
 def verify_counter_pin(
     payload: schemas.CounterPinVerify,
+    request: Request,
     db: Session = Depends(database.get_db)
 ):
-    tenant_id = database.current_tenant_var.get()
-    profile = db.query(models.Profile).filter(
-        models.Profile.id == payload.staff_id,
-        models.Profile.tenant_id == tenant_id
-    ).first()
+    resolved_tenant = database.current_tenant_var.get() or request.headers.get("X-Tenant-ID")
+    if resolved_tenant:
+        profile = db.query(models.Profile).filter(
+            models.Profile.id == payload.staff_id,
+            models.Profile.tenant_id == resolved_tenant
+        ).first()
+    else:
+        profile = db.query(models.Profile).filter(models.Profile.id == payload.staff_id).first()
 
     if not profile:
         raise HTTPException(status_code=404, detail="Operador no encontrado.")
@@ -229,13 +234,17 @@ def verify_counter_pin(
 @router.post("/update-pin")
 def update_operator_pin(
     payload: schemas.CounterPinUpdate,
+    request: Request,
     db: Session = Depends(database.get_db)
 ):
-    tenant_id = database.current_tenant_var.get()
-    profile = db.query(models.Profile).filter(
-        models.Profile.id == payload.staff_id,
-        models.Profile.tenant_id == tenant_id
-    ).first()
+    resolved_tenant = database.current_tenant_var.get() or request.headers.get("X-Tenant-ID")
+    if resolved_tenant:
+        profile = db.query(models.Profile).filter(
+            models.Profile.id == payload.staff_id,
+            models.Profile.tenant_id == resolved_tenant
+        ).first()
+    else:
+        profile = db.query(models.Profile).filter(models.Profile.id == payload.staff_id).first()
 
     if not profile:
         raise HTTPException(status_code=404, detail="Operador no encontrado.")
@@ -245,6 +254,7 @@ def update_operator_pin(
         raise HTTPException(status_code=400, detail="El nuevo PIN debe contener exactamente 4 dígitos.")
 
     profile.pin_code_hash = pwd_context.hash(new_pin)
+    profile.is_counter_operator = True
     profile.pin_failed_attempts = 0
     profile.pin_locked_until = None
     db.commit()
@@ -274,17 +284,17 @@ def unbind_operator_device(
 
 # ── 6. Generar Token QR Dinámico Rotativo (Cada 20 seg) ─────────────────────
 @router.get("/qr-token", response_model=schemas.QRRotateTokenResponse)
-def get_qr_rotate_token(request: Request):
-    tenant_id = database.current_tenant_var.get()
-    if not tenant_id:
+def get_qr_rotate_token(request: Request, tenant_id: Optional[str] = Query(None)):
+    resolved_tenant = database.current_tenant_var.get() or tenant_id or request.headers.get("X-Tenant-ID")
+    if not resolved_tenant:
         raise HTTPException(status_code=400, detail="Tenant context missing")
 
-    token, seconds_left = generate_qr_totp(tenant_id, window_seconds=20)
+    token, seconds_left = generate_qr_totp(resolved_tenant, window_seconds=20)
     
     # URL para el escaneo móvil
     host = request.headers.get("host", "probookia.com")
     protocol = "http" if "localhost" in host else "https"
-    qr_payload = f"{protocol}://{host}/fichar?t={token}&tenant={tenant_id}"
+    qr_payload = f"{protocol}://{host}/fichar?t={token}&tenant={resolved_tenant}"
 
     return schemas.QRRotateTokenResponse(
         token=token,

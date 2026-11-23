@@ -128,13 +128,10 @@ export default function SettingsPage() {
         }
       };
 
-      handleUrlChange();
       window.addEventListener('popstate', handleUrlChange);
-      const interval = setInterval(handleUrlChange, 250);
 
       return () => {
         window.removeEventListener('popstate', handleUrlChange);
-        clearInterval(interval);
       };
     }
   }, []);
@@ -142,9 +139,10 @@ export default function SettingsPage() {
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId);
     if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      params.set('tab', tabId);
-      router.replace(`/dashboard/settings?${params.toString()}`);
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', tabId);
+      url.searchParams.delete('hint');
+      window.history.replaceState(null, '', url.pathname + url.search);
     }
   };
 
@@ -404,12 +402,12 @@ export default function SettingsPage() {
                 key={tab.id}
                 id={`settings-tab-btn-${tab.id}`}
                 onClick={() => handleTabChange(tab.id)}
-                className={`flex items-center gap-3 px-4 py-2.5 md:py-3.5 rounded-full md:rounded-2xl font-bold text-sm transition-all duration-300 whitespace-nowrap md:w-full md:justify-start
+                className={`flex items-center gap-3 px-4 py-2.5 md:py-3.5 rounded-full md:rounded-2xl font-bold text-sm transition-all duration-300 whitespace-nowrap md:w-full md:justify-start cursor-pointer
                     ${activeTab === tab.id
-                    ? 'bg-stone-900 text-white shadow-md shadow-stone-200/50 font-bold'
-                    : 'bg-stone-50 md:bg-transparent text-stone-500 hover:text-stone-700 hover:bg-stone-100 border border-stone-100 md:border-transparent font-medium'}`}
+                    ? 'bg-gradient-to-r from-[#FF6B00] to-[#EA580C] text-white shadow-md shadow-orange-500/20 font-bold'
+                    : 'bg-stone-50 md:bg-transparent text-stone-500 hover:text-stone-900 hover:bg-stone-100/70 border border-stone-100 md:border-transparent font-medium'}`}
               >
-                <tab.icon size={16} strokeWidth={activeTab === tab.id ? 2 : 1.5} className={activeTab === tab.id ? 'text-[#d4af37]' : 'text-stone-400'} />
+                <tab.icon size={16} strokeWidth={activeTab === tab.id ? 2 : 1.5} className={activeTab === tab.id ? 'text-white' : 'text-stone-400'} />
                 {tab.label}
               </button>
             ))}

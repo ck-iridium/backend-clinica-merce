@@ -356,6 +356,8 @@ $function$;
             "ALTER TABLE profiles ADD COLUMN bound_device_id VARCHAR(255)",
             "ALTER TABLE profiles ADD COLUMN pin_failed_attempts INTEGER DEFAULT 0",
             "ALTER TABLE profiles ADD COLUMN pin_locked_until TIMESTAMP",
+            "ALTER TABLE clinic_settings ADD COLUMN enable_counter_mode BOOLEAN DEFAULT FALSE",
+            "ALTER TABLE clinic_settings ADD COLUMN enable_time_clock BOOLEAN DEFAULT TRUE",
             "ALTER TABLE clinic_settings ADD COLUMN counter_autolock_minutes INTEGER DEFAULT 10",
             "ALTER TABLE clinic_settings ADD COLUMN require_authorized_device BOOLEAN DEFAULT FALSE",
             "CREATE TABLE IF NOT EXISTS time_clock_records (id VARCHAR(36) PRIMARY KEY, tenant_id VARCHAR(36) NOT NULL, staff_id VARCHAR(36) NOT NULL, event_type VARCHAR(20) NOT NULL, timestamp TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()), device_label VARCHAR(100), device_id VARCHAR(255), ip_address VARCHAR(45), notes TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()))",

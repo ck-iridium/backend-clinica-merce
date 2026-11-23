@@ -108,6 +108,7 @@ class CounterOperatorResponse(BaseModel):
     is_counter_operator: bool = True
     bound_device_id: Optional[str] = None
     has_bound_device: bool = False
+    has_pin: bool = False
 
 class CounterPinVerify(BaseModel):
     staff_id: str

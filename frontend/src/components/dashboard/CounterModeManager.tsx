@@ -36,6 +36,8 @@ interface CounterModeManagerProps {
 
 export default function CounterModeManager({ tenantId: initialTenantId, clinicName = "Clínica", logoUrl }: CounterModeManagerProps) {
   const [tenantId, setTenantId] = useState<string>(initialTenantId || '');
+  const [enableCounterMode, setEnableCounterMode] = useState<boolean>(false);
+  const [enableTimeClock, setEnableTimeClock] = useState<boolean>(true);
   const [autolockMinutes, setAutolockMinutes] = useState<number>(10);
   const [isLocked, setIsLocked] = useState<boolean>(false);
   const [showQRModal, setShowQRModal] = useState<boolean>(false);
@@ -57,22 +59,102 @@ export default function CounterModeManager({ tenantId: initialTenantId, clinicNa
   const qrIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const qrCountdownRef = useRef<NodeJS.Timeout | null>(null);
 
-  // 1. Obtener tenantId de cookie si no viene en props
+  // 1. Obtención ultra-resiliente del tenant_id
+  const getResolvedTenantId = useCallback(() => {
+    if (tenantId) return tenantId;
+    if (typeof window !== 'undefined') {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        try {
+          const u = JSON.parse(userStr);
+          if (u.tenant_id) return u.tenant_id;
+        } catch (e) {}
+      }
+      const match = document.cookie.match(/(?:^|; )tenant_id=([^;]*)/);
+      if (match && match[1]) return match[1];
+    }
+    return '';
+  }, [tenantId]);
+
+  // Cargar operadoras frescas del backend
+  const fetchOperators = useCallback(async () => {
+    const tid = getResolvedTenantId();
+    if (!tid) return;
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+      let headers: Record<string, string> = { 'X-Tenant-ID': tid };
+      if (userStr) {
+        try {
+          const u = JSON.parse(userStr);
+          const token = u.access_token || u.token;
+          if (token) headers['Authorization'] = `Bearer ${token}`;
+        } catch(e) {}
+      }
+
+      const res = await fetch(`${apiUrl}/time-clock/operators?tenant_id=${tid}`, {
+        headers,
+        cache: 'no-store'
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setOperators(data);
+          if (data.length === 0) {
+            setIsLocked(false);
+            sessionStorage.removeItem('counter_is_locked');
+          }
+          return data as Operator[];
+        }
+      }
+    } catch (err) {
+      console.warn("No se pudieron cargar operadoras:", err);
+    }
+    return [] as Operator[];
+  }, [getResolvedTenantId]);
+
+  // Sincronizar tenantId y escuchar eventos globales
   useEffect(() => {
     if (typeof document === 'undefined') return;
-    if (!tenantId) {
-      const match = document.cookie.match(/(?:^|; )tenant_id=([^;]*)/);
-      if (match) setTenantId(match[1]);
-    }
+    const resolved = getResolvedTenantId();
+    if (resolved && !tenantId) setTenantId(resolved);
 
-    // Verificar si estaba bloqueado en sessionStorage (solo si hay operadoras)
-    const wasLocked = sessionStorage.getItem('counter_is_locked');
-    if (wasLocked === 'true') {
-      setIsLocked(true);
+    // Cargar ajustes de la clínica para saber si Modo Mostrador está activo
+    if (resolved) {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      fetch(`${apiUrl}/settings/?tenant_id=${resolved}`, {
+        headers: { 'X-Tenant-ID': resolved }
+      })
+        .then(res => res.json())
+        .then(settings => {
+          if (settings) {
+            const isEnabled = Boolean(settings.enable_counter_mode);
+            setEnableCounterMode(isEnabled);
+            setEnableTimeClock(settings.enable_time_clock !== false);
+            if (!isEnabled) {
+              setIsLocked(false);
+              sessionStorage.removeItem('counter_is_locked');
+            } else {
+              const wasLocked = sessionStorage.getItem('counter_is_locked');
+              if (wasLocked === 'true') {
+                setIsLocked(true);
+              }
+            }
+            if (typeof settings.counter_autolock_minutes !== 'undefined') {
+              setAutolockMinutes(Number(settings.counter_autolock_minutes) ?? 10);
+            }
+          }
+        })
+        .catch(err => console.warn("No se pudo cargar ajuste de auto-bloqueo:", err));
+
+      fetchOperators();
     }
 
     const handleOpenQR = () => setShowQRModal(true);
-    const handleLock = () => lockCounter("Bloqueo manual");
+    const handleLock = async () => {
+      const freshOps = await fetchOperators();
+      lockCounter("Bloqueo manual", freshOps);
+    };
 
     window.addEventListener('open_counter_qr', handleOpenQR);
     window.addEventListener('lock_counter', handleLock);
@@ -81,59 +163,24 @@ export default function CounterModeManager({ tenantId: initialTenantId, clinicNa
       window.removeEventListener('open_counter_qr', handleOpenQR);
       window.removeEventListener('lock_counter', handleLock);
     };
-  }, [tenantId]);
-
-  // 2. Cargar ajustes de auto-bloqueo y lista de operadoras
-  useEffect(() => {
-    if (!tenantId) return;
-
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-    
-    // Obtener ajustes de la clínica para saber minutos de auto-bloqueo
-    fetch(`${apiUrl}/settings/?tenant_id=${tenantId}`, {
-      headers: { 'X-Tenant-ID': tenantId }
-    })
-      .then(res => res.json())
-      .then(settings => {
-        if (settings && typeof settings.counter_autolock_minutes !== 'undefined') {
-          setAutolockMinutes(Number(settings.counter_autolock_minutes) ?? 10);
-        }
-      })
-      .catch(err => console.warn("No se pudo cargar ajuste de auto-bloqueo:", err));
-
-    // Cargar operadoras
-    fetch(`${apiUrl}/time-clock/operators?tenant_id=${tenantId}`, {
-      headers: { 'X-Tenant-ID': tenantId }
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          setOperators(data);
-          // Si no hay operadoras con PIN creadas, NUNCA bloquear el mostrador
-          if (data.length === 0) {
-            setIsLocked(false);
-            sessionStorage.removeItem('counter_is_locked');
-          }
-        }
-      })
-      .catch(err => console.warn("No se pudieron cargar operadoras:", err));
-  }, [tenantId]);
+  }, [tenantId, getResolvedTenantId, fetchOperators]);
 
   // 3. Sistema de Auto-bloqueo por Inactividad
   const resetAutolockTimer = useCallback(() => {
     if (autolockTimerRef.current) clearTimeout(autolockTimerRef.current);
+    if (!enableCounterMode) return; // Si está desactivado en ajustes, no bloquear
     if (isLocked) return;
-    if (autolockMinutes <= 0) return; // 0 significa desactivado
+    if (autolockMinutes <= 0) return; // 0 = desactivado
     if (operators.length === 0) return; // Si no hay operadoras con PIN, no bloquear
 
     const timeoutMs = autolockMinutes * 60 * 1000;
     autolockTimerRef.current = setTimeout(() => {
       lockCounter("Inactividad prolongada en el mostrador");
     }, timeoutMs);
-  }, [isLocked, autolockMinutes, operators.length]);
+  }, [enableCounterMode, isLocked, autolockMinutes, operators.length]);
 
   useEffect(() => {
-    if (isLocked || autolockMinutes <= 0 || operators.length === 0) return;
+    if (!enableCounterMode || isLocked || autolockMinutes <= 0 || operators.length === 0) return;
 
     const events = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'];
     const handleActivity = () => resetAutolockTimer();
@@ -145,10 +192,11 @@ export default function CounterModeManager({ tenantId: initialTenantId, clinicNa
       events.forEach(ev => window.removeEventListener(ev, handleActivity));
       if (autolockTimerRef.current) clearTimeout(autolockTimerRef.current);
     };
-  }, [isLocked, autolockMinutes, operators.length, resetAutolockTimer]);
+  }, [enableCounterMode, isLocked, autolockMinutes, operators.length, resetAutolockTimer]);
 
-  const lockCounter = (reason?: string) => {
-    if (operators.length === 0) {
+  const lockCounter = (reason?: string, opsList?: Operator[]) => {
+    const list = opsList || operators;
+    if (list.length === 0) {
       toast.info("Para usar el Modo Mostrador, crea al menos una operadora con PIN en Equipo.");
       setIsLocked(false);
       sessionStorage.removeItem('counter_is_locked');
@@ -174,16 +222,30 @@ export default function CounterModeManager({ tenantId: initialTenantId, clinicNa
 
   // 4. Obtención y rotación del Token QR cada 20 segundos
   const fetchQRToken = useCallback(async () => {
-    if (!tenantId) return;
+    const tid = getResolvedTenantId();
+    if (!tid) return;
     setIsFetchingToken(true);
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      const res = await fetch(`${apiUrl}/time-clock/qr-token?tenant_id=${tenantId}`, {
-        headers: { 'X-Tenant-ID': tenantId }
+      const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+      let headers: Record<string, string> = { 'X-Tenant-ID': tid };
+      if (userStr) {
+        try {
+          const u = JSON.parse(userStr);
+          const token = u.access_token || u.token;
+          if (token) headers['Authorization'] = `Bearer ${token}`;
+        } catch(e) {}
+      }
+
+      const res = await fetch(`${apiUrl}/time-clock/qr-token?tenant_id=${tid}`, {
+        headers,
+        cache: 'no-store'
       });
       if (res.ok) {
         const data = await res.json();
-        setQrToken(data.qr_token);
+        // Acepta qr_payload completo o token
+        const rawToken = data.qr_payload || data.token || data.qr_token || '';
+        setQrToken(rawToken);
         setQrSecondsLeft(data.expires_in_seconds || 20);
       }
     } catch (err) {
@@ -191,7 +253,7 @@ export default function CounterModeManager({ tenantId: initialTenantId, clinicNa
     } finally {
       setIsFetchingToken(false);
     }
-  }, [tenantId]);
+  }, [getResolvedTenantId]);
 
   // Al abrir el modal o cada 20s
   useEffect(() => {
@@ -269,9 +331,14 @@ export default function CounterModeManager({ tenantId: initialTenantId, clinicNa
     }
   };
 
-  const qrUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/fichar?t=${qrToken}&tenant=${tenantId}`
-    : `https://probookia.com/fichar?t=${qrToken}&tenant=${tenantId}`;
+  const qrUrl = qrToken?.startsWith('http')
+    ? qrToken
+    : (typeof window !== 'undefined'
+        ? `${window.location.origin}/fichar?t=${qrToken}&tenant=${getResolvedTenantId()}`
+        : `https://probookia.com/fichar?t=${qrToken}&tenant=${getResolvedTenantId()}`);
+
+  // Si Modo Mostrador está desactivado en ajustes y no está bloqueado ni abierto el QR, no renderizar nada
+  if (!enableCounterMode && !isLocked && !showQRModal) return null;
 
   return (
     <>
@@ -337,7 +404,7 @@ export default function CounterModeManager({ tenantId: initialTenantId, clinicNa
 
       {/* PANTALLA COMPLETA 2: PROTECTOR DE PANTALLA / MODO MOSTRADOR BLOQUEADO */}
       {isLocked && (
-        <div className="fixed inset-0 z-[80] bg-stone-950/95 backdrop-blur-2xl flex flex-col justify-between p-6 sm:p-10 text-white animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[150] bg-stone-950/95 backdrop-blur-2xl flex flex-col justify-between p-6 sm:p-10 text-white animate-in fade-in duration-300">
           {/* Header Superior */}
           <div className="flex items-center justify-between max-w-4xl w-full mx-auto">
             <div className="flex items-center gap-3">
@@ -354,14 +421,16 @@ export default function CounterModeManager({ tenantId: initialTenantId, clinicNa
 
             <div className="flex items-center gap-2">
               {/* Acceso a QR de fichaje directamente desde la pantalla bloqueada */}
-              <button
-                type="button"
-                onClick={() => setShowQRModal(true)}
-                className="flex items-center gap-2 py-2.5 px-4 rounded-2xl bg-white/10 hover:bg-white/15 active:scale-95 text-white font-bold text-xs border border-white/15 transition-all shadow-sm cursor-pointer"
-              >
-                <QrCode size={15} className="text-[#FF6B00]" />
-                <span>Fichar con Móvil</span>
-              </button>
+              {enableTimeClock && (
+                <button
+                  type="button"
+                  onClick={() => setShowQRModal(true)}
+                  className="flex items-center gap-2 py-2.5 px-4 rounded-2xl bg-white/10 hover:bg-white/15 active:scale-95 text-white font-bold text-xs border border-white/15 transition-all shadow-sm cursor-pointer"
+                >
+                  <QrCode size={15} className="text-[#FF6B00]" />
+                  <span>Fichar con Móvil</span>
+                </button>
+              )}
 
               {/* Botón de escape / desbloqueo directo para la Administradora */}
               <button

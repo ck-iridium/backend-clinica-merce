@@ -447,6 +447,8 @@ class ClinicSettings(Base):
     logo_footer_b64 = Column(Text, nullable=True)
     footer_logo_mode = Column(String, default="white", nullable=True)
     # Modo Mostrador TPV & Terminales
+    enable_counter_mode = Column(Boolean, default=False, nullable=True) # Activar Modo Mostrador TPV con PIN
+    enable_time_clock = Column(Boolean, default=True, nullable=True) # Activar Fichaje Legal de Jornada
     counter_autolock_minutes = Column(Integer, default=10, nullable=True) # 0=desactivado, 5, 10, 15
     require_authorized_device = Column(Boolean, default=False, nullable=True) # Si es True, restringe acceso al panel a terminales homologados
 
