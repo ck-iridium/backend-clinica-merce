@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { getCounterOperatorsAction } from '@/app/actions/team';
 
 interface Operator {
   id: string;
@@ -26,18 +27,27 @@ interface Operator {
   role: string;
   auth_mode?: string;
   bound_device_id?: string | null;
+  has_pin?: boolean;
 }
 
 interface CounterModeManagerProps {
   tenantId?: string;
   clinicName?: string;
   logoUrl?: string | null;
+  initialEnableCounterMode?: boolean;
+  initialEnableTimeClock?: boolean;
 }
 
-export default function CounterModeManager({ tenantId: initialTenantId, clinicName = "Clínica", logoUrl }: CounterModeManagerProps) {
+export default function CounterModeManager({ 
+  tenantId: initialTenantId, 
+  clinicName = "Clínica", 
+  logoUrl,
+  initialEnableCounterMode = false,
+  initialEnableTimeClock = true
+}: CounterModeManagerProps) {
   const [tenantId, setTenantId] = useState<string>(initialTenantId || '');
-  const [enableCounterMode, setEnableCounterMode] = useState<boolean>(false);
-  const [enableTimeClock, setEnableTimeClock] = useState<boolean>(true);
+  const [enableCounterMode, setEnableCounterMode] = useState<boolean>(initialEnableCounterMode);
+  const [enableTimeClock, setEnableTimeClock] = useState<boolean>(initialEnableTimeClock);
   const [autolockMinutes, setAutolockMinutes] = useState<number>(10);
   const [isLocked, setIsLocked] = useState<boolean>(false);
   const [showQRModal, setShowQRModal] = useState<boolean>(false);
@@ -76,10 +86,20 @@ export default function CounterModeManager({ tenantId: initialTenantId, clinicNa
     return '';
   }, [tenantId]);
 
-  // Cargar operadoras frescas del backend
+  // Cargar operadoras frescas del backend (vía Server Action directo a Supabase con fallback a API)
   const fetchOperators = useCallback(async () => {
+    try {
+      const actionRes = await getCounterOperatorsAction();
+      if (actionRes.success && Array.isArray(actionRes.data) && actionRes.data.length > 0) {
+        setOperators(actionRes.data);
+        return actionRes.data as Operator[];
+      }
+    } catch (e) {
+      console.warn("Fallo Server Action getCounterOperatorsAction, probando fallback API:", e);
+    }
+
     const tid = getResolvedTenantId();
-    if (!tid) return;
+    if (!tid) return [] as Operator[];
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
       const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
@@ -152,18 +172,40 @@ export default function CounterModeManager({ tenantId: initialTenantId, clinicNa
 
     const handleOpenQR = () => setShowQRModal(true);
     const handleLock = async () => {
+      if (!enableCounterMode) {
+        toast.info("El Modo Mostrador está desactivado en Ajustes > Agenda.");
+        return;
+      }
       const freshOps = await fetchOperators();
       lockCounter("Bloqueo manual", freshOps);
     };
 
+    const handleSettingsUpdated = (e: any) => {
+      if (e?.detail) {
+        if (typeof e.detail.enable_counter_mode !== 'undefined') {
+          const isEnabled = Boolean(e.detail.enable_counter_mode);
+          setEnableCounterMode(isEnabled);
+          if (!isEnabled) {
+            setIsLocked(false);
+            sessionStorage.removeItem('counter_is_locked');
+          }
+        }
+        if (typeof e.detail.enable_time_clock !== 'undefined') {
+          setEnableTimeClock(e.detail.enable_time_clock !== false);
+        }
+      }
+    };
+
     window.addEventListener('open_counter_qr', handleOpenQR);
     window.addEventListener('lock_counter', handleLock);
+    window.addEventListener('settings_updated', handleSettingsUpdated);
 
     return () => {
       window.removeEventListener('open_counter_qr', handleOpenQR);
       window.removeEventListener('lock_counter', handleLock);
+      window.removeEventListener('settings_updated', handleSettingsUpdated);
     };
-  }, [tenantId, getResolvedTenantId, fetchOperators]);
+  }, [tenantId, getResolvedTenantId, fetchOperators, enableCounterMode]);
 
   // 3. Sistema de Auto-bloqueo por Inactividad
   const resetAutolockTimer = useCallback(() => {
@@ -195,6 +237,10 @@ export default function CounterModeManager({ tenantId: initialTenantId, clinicNa
   }, [enableCounterMode, isLocked, autolockMinutes, operators.length, resetAutolockTimer]);
 
   const lockCounter = (reason?: string, opsList?: Operator[]) => {
+    if (!enableCounterMode) {
+      toast.info("El Modo Mostrador está desactivado en Ajustes > Agenda.");
+      return;
+    }
     const list = opsList || operators;
     if (list.length === 0) {
       toast.info("Para usar el Modo Mostrador, crea al menos una operadora con PIN en Equipo.");
@@ -344,47 +390,47 @@ export default function CounterModeManager({ tenantId: initialTenantId, clinicNa
     <>
       {/* MODAL 1: CÓDIGO QR DINÁMICO DE 20 SEGUNDOS */}
       <Dialog open={showQRModal} onOpenChange={setShowQRModal}>
-        <DialogContent className="sm:max-w-[420px] rounded-[2.5rem] p-6 bg-white border-stone-100 shadow-2xl text-center space-y-4">
-          <DialogHeader className="items-center">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 border border-orange-200/60 text-[#FF6B00] text-xs font-bold mb-1 shadow-2xs">
+        <DialogContent className="sm:max-w-sm rounded-[2rem] p-6 sm:p-7 bg-white border-stone-100 shadow-2xl text-center">
+          <DialogHeader className="items-center space-y-1.5">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-50 border border-orange-200/60 text-[#FF6B00] text-[11px] font-bold shadow-2xs">
               <Clock size={12} />
               <span>Código Dinámico Anti-Fraude</span>
             </div>
-            <DialogTitle className="font-serif text-2xl font-bold text-stone-900">
+            <DialogTitle className="font-serif text-xl sm:text-2xl font-bold text-stone-900 pt-1">
               Fichar con tu Móvil
             </DialogTitle>
-            <DialogDescription className="text-xs text-stone-500 max-w-xs mx-auto">
-              Abre la cámara de tu teléfono móvil y enfoca este código QR para registrar tu entrada, pausa o salida.
+            <DialogDescription className="text-xs text-stone-500 max-w-[260px] mx-auto mt-1 leading-relaxed">
+              Abre la cámara de tu teléfono móvil y enfoca este código QR para registrar tu turno.
             </DialogDescription>
           </DialogHeader>
 
-          {/* Contenedor del Código QR */}
-          <div className="relative p-6 bg-white rounded-3xl border-2 border-stone-100 shadow-inner flex flex-col items-center justify-center mx-auto w-fit">
+          {/* Contenedor del Código QR con espaciado generoso */}
+          <div className="my-4 p-4 bg-stone-50/80 rounded-2xl border border-stone-200/70 shadow-2xs flex flex-col items-center justify-center mx-auto w-fit">
             {qrToken ? (
-              <div className="p-2 bg-white rounded-2xl shadow-sm border border-stone-200/50">
+              <div className="p-2.5 bg-white rounded-xl shadow-xs border border-stone-200/60">
                 <QRCodeSVG
                   value={qrUrl}
-                  size={200}
+                  size={175}
                   level="M"
-                  includeMargin={true}
+                  includeMargin={false}
                 />
               </div>
             ) : (
-              <div className="w-[200px] h-[200px] flex items-center justify-center">
+              <div className="w-[175px] h-[175px] flex items-center justify-center">
                 <Loader2 size={32} className="animate-spin text-[#FF6B00]" />
               </div>
             )}
 
             {/* Barra de progreso de rotación de 20s */}
-            <div className="w-full mt-4 space-y-1.5">
-              <div className="flex items-center justify-between text-[11px] font-bold text-stone-500 px-1">
+            <div className="w-full mt-3.5 space-y-1.5 px-1">
+              <div className="flex items-center justify-between text-[11px] font-bold text-stone-500">
                 <span className="flex items-center gap-1">
                   <RefreshCw size={11} className={`text-[#FF6B00] ${isFetchingToken ? 'animate-spin' : ''}`} />
                   Se renueva en:
                 </span>
                 <span className="font-mono text-[#FF6B00] font-black">{qrSecondsLeft}s</span>
               </div>
-              <div className="w-full h-1.5 bg-stone-100 rounded-full overflow-hidden">
+              <div className="w-full h-1.5 bg-stone-200/70 rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-gradient-to-r from-orange-400 to-[#FF6B00] transition-all duration-1000 ease-linear rounded-full"
                   style={{ width: `${(qrSecondsLeft / 20) * 100}%` }}
@@ -393,10 +439,10 @@ export default function CounterModeManager({ tenantId: initialTenantId, clinicNa
             </div>
           </div>
 
-          <div className="p-3 bg-stone-50 rounded-2xl border border-stone-200/60 text-[11px] text-stone-500 flex items-start gap-2.5 text-left">
-            <ShieldCheck size={16} className="text-emerald-600 shrink-0 mt-0.5" />
-            <p className="leading-relaxed">
-              <strong>Vinculación de terminal</strong>: Cada empleada ficha exclusivamente desde su teléfono vinculado para garantizar presencia física en el centro.
+          <div className="p-3 bg-stone-50/70 rounded-xl border border-stone-200/60 text-[11px] text-stone-500 flex items-start gap-2.5 text-left">
+            <ShieldCheck size={15} className="text-emerald-600 shrink-0 mt-0.5" />
+            <p className="leading-relaxed text-[11px]">
+              <strong>Vinculación de terminal</strong>: Ficha exclusivamente desde tu teléfono vinculado para garantizar presencia física en el centro.
             </p>
           </div>
         </DialogContent>

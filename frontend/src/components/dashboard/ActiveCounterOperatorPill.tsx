@@ -69,9 +69,17 @@ export default function ActiveCounterOperatorPill({ className = "" }: { classNam
       }
     };
 
+    const handleSettingsUpdated = (e: any) => {
+      if (e?.detail && typeof e.detail.enable_counter_mode !== 'undefined') {
+        setIsEnabled(Boolean(e.detail.enable_counter_mode));
+      }
+    };
+
     window.addEventListener('counter_operator_changed', handleOperatorChange);
+    window.addEventListener('settings_updated', handleSettingsUpdated);
     return () => {
       window.removeEventListener('counter_operator_changed', handleOperatorChange);
+      window.removeEventListener('settings_updated', handleSettingsUpdated);
     };
   }, []);
 

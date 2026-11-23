@@ -54,7 +54,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <TerminalGuard />
 
         {/* Sidebar: Siempre visible para todas las rutas del dashboard */}
-        <DashboardSidebar clinicName={clinicName} logoUrl={logoUrl} />
+        <DashboardSidebar 
+          clinicName={clinicName} 
+          logoUrl={logoUrl} 
+          enableCounterMode={Boolean(settings?.enable_counter_mode)}
+          enableTimeClock={settings?.enable_time_clock !== false}
+        />
 
         {/* Área de Contenido Principal: El comportamiento (header, padding, scroll) se define en los layouts de grupo */}
         <main className="flex-1 flex flex-col relative text-foreground w-full h-full overflow-hidden">
@@ -65,7 +70,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <AIGenerationFloatingCard />
       <AICopilotWidget />
       <CoachTooltipManager />
-      <CounterModeManager clinicName={clinicName} logoUrl={logoUrl} tenantId={tenantId} />
+      <CounterModeManager 
+        clinicName={clinicName} 
+        logoUrl={logoUrl} 
+        tenantId={tenantId} 
+        initialEnableCounterMode={Boolean(settings?.enable_counter_mode)}
+        initialEnableTimeClock={settings?.enable_time_clock !== false}
+      />
     </AIImageProvider>
   );
 }

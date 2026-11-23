@@ -736,3 +736,46 @@ export async function getTimeClockDailySummaryAction(month?: number, year?: numb
     return { success: false, error: error.message };
   }
 }
+
+export async function getCounterOperatorsAction() {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+    const cookieStore = cookies();
+    let tenantId = cookieStore.get('tenant_id')?.value;
+    const isImpersonating = cookieStore.get('is_impersonating')?.value === 'true';
+    const impersonateTenantId = cookieStore.get('impersonate_tenant_id')?.value;
+    if (isImpersonating && impersonateTenantId) tenantId = impersonateTenantId;
+
+    if (!tenantId || tenantId === 'undefined') {
+      return { success: false, data: [] };
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from('profiles')
+      .select('id, tenant_id, full_name, role, avatar_url, email, auth_mode, is_counter_operator, pin_code_hash')
+      .eq('tenant_id', tenantId)
+      .order('full_name', { ascending: true });
+
+    if (error || !data) {
+      console.error("Error obteniendo operadoras desde Supabase:", error);
+      return { success: false, data: [] };
+    }
+
+    const mapped = data.map(p => ({
+      id: p.id,
+      tenant_id: p.tenant_id,
+      full_name: p.full_name || p.email || 'Operador',
+      role: p.role || 'Especialista',
+      avatar_url: p.avatar_url,
+      email: p.email,
+      auth_mode: p.auth_mode || 'email',
+      is_counter_operator: Boolean(p.is_counter_operator ?? true),
+      has_pin: Boolean(p.pin_code_hash),
+    }));
+
+    return { success: true, data: mapped };
+  } catch (error: any) {
+    console.error("Excepción en getCounterOperatorsAction:", error);
+    return { success: false, data: [] };
+  }
+}

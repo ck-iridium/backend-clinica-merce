@@ -47,6 +47,8 @@ import { useIsMac } from '@/hooks/useIsMac';
 interface DashboardSidebarProps {
   clinicName: string;
   logoUrl: string | null;
+  enableCounterMode?: boolean;
+  enableTimeClock?: boolean;
 }
 
 export const navLinks = [
@@ -65,9 +67,41 @@ export const navLinks = [
   { href: '/dashboard/cms', label: 'Editor Web (CMS)', icon: Globe, style: 'highlight' },
 ];
 
-export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSidebarProps) {
+export default function DashboardSidebar({ 
+  clinicName, 
+  logoUrl,
+  enableCounterMode: initialCounterMode = false,
+  enableTimeClock: initialTimeClock = true
+}: DashboardSidebarProps) {
   const { t, language, setLanguage } = useLanguage();
   const isMac = useIsMac();
+  const [counterModeActive, setCounterModeActive] = useState<boolean>(initialCounterMode);
+  const [timeClockActive, setTimeClockActive] = useState<boolean>(initialTimeClock);
+
+  useEffect(() => {
+    setCounterModeActive(initialCounterMode);
+  }, [initialCounterMode]);
+
+  useEffect(() => {
+    setTimeClockActive(initialTimeClock);
+  }, [initialTimeClock]);
+
+  useEffect(() => {
+    const handleSettingsUpdated = (e: any) => {
+      if (e?.detail) {
+        if (typeof e.detail.enable_counter_mode !== 'undefined') {
+          setCounterModeActive(Boolean(e.detail.enable_counter_mode));
+        }
+        if (typeof e.detail.enable_time_clock !== 'undefined') {
+          setTimeClockActive(e.detail.enable_time_clock !== false);
+        }
+      }
+    };
+    window.addEventListener('settings_updated', handleSettingsUpdated);
+    return () => {
+      window.removeEventListener('settings_updated', handleSettingsUpdated);
+    };
+  }, []);
 
   const getTranslatedLabel = (href: string, fallback: string) => {
     switch (href) {
@@ -505,30 +539,34 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
             </div>
 
             {/* QR Fichaje Mostrador */}
-            <div className="flex justify-center">
-              <button
-                type="button"
-                id="sidebar-counter-qr-btn"
-                onClick={() => window.dispatchEvent(new CustomEvent('open_counter_qr'))}
-                title="Fichar con Móvil (QR)"
-                className="w-10 h-10 flex items-center justify-center rounded-2xl text-stone-500 hover:text-[#FF6B00] hover:bg-stone-900 transition-all outline-none active:scale-95 cursor-pointer"
-              >
-                <QrCode size={19} strokeWidth={1.75} />
-              </button>
-            </div>
+            {timeClockActive && (
+              <div className="flex justify-center">
+                <button
+                  type="button"
+                  id="sidebar-counter-qr-btn"
+                  onClick={() => window.dispatchEvent(new CustomEvent('open_counter_qr'))}
+                  title="Fichar con Móvil (QR)"
+                  className="w-10 h-10 flex items-center justify-center rounded-2xl text-stone-500 hover:text-[#FF6B00] hover:bg-stone-900 transition-all outline-none active:scale-95 cursor-pointer"
+                >
+                  <QrCode size={19} strokeWidth={1.75} />
+                </button>
+              </div>
+            )}
 
             {/* Bloquear Mostrador Manualmente */}
-            <div className="flex justify-center">
-              <button
-                type="button"
-                id="sidebar-counter-lock-btn"
-                onClick={() => window.dispatchEvent(new CustomEvent('lock_counter'))}
-                title="Bloquear Mostrador (PIN)"
-                className="w-10 h-10 flex items-center justify-center rounded-2xl text-stone-500 hover:text-white hover:bg-stone-900 transition-all outline-none active:scale-95 cursor-pointer"
-              >
-                <Lock size={18} strokeWidth={1.75} />
-              </button>
-            </div>
+            {counterModeActive && (
+              <div className="flex justify-center">
+                <button
+                  type="button"
+                  id="sidebar-counter-lock-btn"
+                  onClick={() => window.dispatchEvent(new CustomEvent('lock_counter'))}
+                  title="Bloquear Mostrador (PIN)"
+                  className="w-10 h-10 flex items-center justify-center rounded-2xl text-stone-500 hover:text-white hover:bg-stone-900 transition-all outline-none active:scale-95 cursor-pointer"
+                >
+                  <Lock size={18} strokeWidth={1.75} />
+                </button>
+              </div>
+            )}
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -594,14 +632,18 @@ export default function DashboardSidebar({ clinicName, logoUrl }: DashboardSideb
                   )}
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-stone-800" />
-                <DropdownMenuItem onClick={() => window.dispatchEvent(new CustomEvent('open_counter_qr'))} className="flex items-center gap-3 px-4 py-3 rounded-xl focus:bg-stone-800 focus:text-white cursor-pointer text-[#FF6B00]">
-                  <QrCode size={16} />
-                  <span className="font-bold text-sm">Fichar con Móvil (QR)</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => window.dispatchEvent(new CustomEvent('lock_counter'))} className="flex items-center gap-3 px-4 py-3 rounded-xl focus:bg-stone-800 focus:text-white cursor-pointer text-stone-300">
-                  <Lock size={16} />
-                  <span className="font-bold text-sm">Bloquear Mostrador (PIN)</span>
-                </DropdownMenuItem>
+                {timeClockActive && (
+                  <DropdownMenuItem onClick={() => window.dispatchEvent(new CustomEvent('open_counter_qr'))} className="flex items-center gap-3 px-4 py-3 rounded-xl focus:bg-stone-800 focus:text-white cursor-pointer text-[#FF6B00]">
+                    <QrCode size={16} />
+                    <span className="font-bold text-sm">Fichar con Móvil (QR)</span>
+                  </DropdownMenuItem>
+                )}
+                {counterModeActive && (
+                  <DropdownMenuItem onClick={() => window.dispatchEvent(new CustomEvent('lock_counter'))} className="flex items-center gap-3 px-4 py-3 rounded-xl focus:bg-stone-800 focus:text-white cursor-pointer text-stone-300">
+                    <Lock size={16} />
+                    <span className="font-bold text-sm">Bloquear Mostrador (PIN)</span>
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem onClick={() => router.push('/dashboard/profile')} className="flex items-center gap-3 px-4 py-3 rounded-xl focus:bg-stone-800 focus:text-white cursor-pointer">
                   <User size={16} />
                   <span className="font-bold text-sm">{t('dashboard.menu.profile')}</span>

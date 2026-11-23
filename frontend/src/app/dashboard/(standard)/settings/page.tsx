@@ -269,6 +269,7 @@ export default function SettingsPage() {
       setSettings({ ...settings, ...payload });
       setOriginalSettings(JSON.parse(JSON.stringify({ ...settings, ...payload })));
       setHasChanges(false);
+      window.dispatchEvent(new CustomEvent('settings_updated', { detail: { ...settings, ...payload } }));
       toast.success('Ajustes actualizados correctamente');
     } catch (e) {
       console.error(e);
@@ -402,13 +403,13 @@ export default function SettingsPage() {
                 key={tab.id}
                 id={`settings-tab-btn-${tab.id}`}
                 onClick={() => handleTabChange(tab.id)}
-                className={`flex items-center gap-3 px-4 py-2.5 md:py-3.5 rounded-full md:rounded-2xl font-bold text-sm transition-all duration-300 whitespace-nowrap md:w-full md:justify-start cursor-pointer
+                className={`flex items-center gap-3 px-4 py-2.5 md:py-3.5 rounded-full md:rounded-2xl font-bold text-sm transition-[background-color,box-shadow,transform] duration-150 whitespace-nowrap md:w-full md:justify-start cursor-pointer
                     ${activeTab === tab.id
-                    ? 'bg-gradient-to-r from-[#FF6B00] to-[#EA580C] text-white shadow-md shadow-orange-500/20 font-bold'
+                    ? 'bg-gradient-to-r from-[#FF6B00] to-[#EA580C] !text-white shadow-md shadow-orange-500/20 font-bold'
                     : 'bg-stone-50 md:bg-transparent text-stone-500 hover:text-stone-900 hover:bg-stone-100/70 border border-stone-100 md:border-transparent font-medium'}`}
               >
                 <tab.icon size={16} strokeWidth={activeTab === tab.id ? 2 : 1.5} className={activeTab === tab.id ? 'text-white' : 'text-stone-400'} />
-                {tab.label}
+                <span className={activeTab === tab.id ? '!text-white' : ''}>{tab.label}</span>
               </button>
             ))}
           </nav>
