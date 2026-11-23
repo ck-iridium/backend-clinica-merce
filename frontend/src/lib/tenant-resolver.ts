@@ -54,6 +54,7 @@ export async function resolveTenantContext(): Promise<ResolvedTenantContext> {
             apikey: serviceKey,
             Authorization: `Bearer ${serviceKey}`,
           },
+          signal: AbortSignal.timeout(2500),
           next: { revalidate: 3600, tags: [`tenant-${tenantSlug || cleanHost}`, 'tenant-resolver'] }
         });
         if (supaRes.ok) {
@@ -75,6 +76,7 @@ export async function resolveTenantContext(): Promise<ResolvedTenantContext> {
   if (!isMarketing && tenantSlug && !tenantId) {
     try {
       const res = await fetch(`${apiUrl}/stripe/resolve-tenant/${tenantSlug}`, {
+        signal: AbortSignal.timeout(2500),
         next: { revalidate: 3600, tags: [`tenant-${tenantSlug}`, 'tenant-resolver'] }
       });
       if (res.ok) {

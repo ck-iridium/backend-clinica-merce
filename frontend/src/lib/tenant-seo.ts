@@ -98,12 +98,14 @@ export async function getTenantSeoData(): Promise<TenantSeoData> {
         !settings
           ? fetch(`${apiUrl}/settings/`, {
               headers: { 'X-Tenant-ID': tenantId },
+              signal: AbortSignal.timeout(3000),
               next: { revalidate: 3600, tags: [`tenant-${tenantId}`, `tenant-settings-${tenantId}`] },
             }).then((r) => (r.ok ? r.json() : null)).catch(() => null)
           : null,
         !siteContent
           ? fetch(`${apiUrl}/site-content/`, {
               headers: { 'X-Tenant-ID': tenantId },
+              signal: AbortSignal.timeout(3000),
               next: { revalidate: 3600, tags: [`tenant-${tenantId}`, `tenant-content-${tenantId}`] },
             }).then((r) => (r.ok ? r.json() : null)).catch(() => null)
           : null,

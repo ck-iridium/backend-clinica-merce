@@ -10,24 +10,7 @@ from .database import engine, Base, get_db
 from .routers import clients, services, appointments, vouchers, invoices, settings, users, voucher_templates, time_blocks, automation, service_categories, site_content, uploads, backups, media, ai, stripe_payments, super_admin, cms, onboarding, ai_agent, locations, staff_schedules, docs_cms, consent_templates, subscriptions_bizum, ai_concierge
 from .scheduler import scheduler
 
-# Crear las tablas en la base de datos (Nota: en producción mejor usar Alembic)
-Base.metadata.create_all(bind=engine)
-
-# Aplicar migración de Bizum RLS de forma automática en Postgres
-try:
-    from sqlalchemy import text
-    is_postgres = not engine.url.drivername.startswith("sqlite")
-    if is_postgres:
-        with engine.begin() as connection:
-            connection.execute(text("ALTER TABLE subscription_requests ENABLE ROW LEVEL SECURITY;"))
-            connection.execute(text("DROP POLICY IF EXISTS tenant_isolation_subscription_requests ON subscription_requests;"))
-            connection.execute(text("""
-                CREATE POLICY tenant_isolation_subscription_requests ON subscription_requests
-                FOR ALL USING (tenant_id = current_setting('app.current_tenant_id', true));
-            """))
-            print("[AUTO-MIGRATION] RLS y políticas aplicadas para subscription_requests.")
-except Exception as e:
-    print(f"[AUTO-MIGRATION] Error al aplicar políticas RLS (puede ignorarse en local): {e}")
+# Las migraciones y creación de esquema se ejecutan de forma segura en startup_event con Advisory Lock.
 
 def seed_admin_user():
     from .database import SessionLocal
@@ -401,8 +384,8 @@ app.include_router(consent_templates.router)
 @app.on_event("startup")
 async def startup_event():
     # La semilla y migraciones se ejecutarán para asegurar la integridad de la DB
-    seed_admin_user()
     run_auto_migrations_wrapper()
+    seed_admin_user()
     
     # Precomputar el caché de bloqueos de tiempo para todos los tenants activos
     try:

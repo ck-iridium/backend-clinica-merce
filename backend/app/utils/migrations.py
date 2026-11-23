@@ -12,10 +12,43 @@ def run_auto_migrations():
     """
     from ..database import SessionLocal
     db = SessionLocal()
+    acquired_lock = False
     try:
         is_sqlite = db.bind.dialect.name == "sqlite"
         json_type = "JSON" if is_sqlite else "JSONB"
-        
+
+        # 0. Advisory Lock exclusivo para evitar carreras entre múltiples workers
+        if not is_sqlite:
+            try:
+                lock_res = db.execute(text("SELECT pg_try_advisory_lock(987654321);")).scalar()
+                if not lock_res:
+                    logger.info("⚡ [AUTO-MIGRATION] Otra instancia o worker ya está ejecutando las migraciones. Omitiendo.")
+                    return
+                acquired_lock = True
+                db.execute(text("SET lock_timeout = '2s';"))
+            except Exception as lock_err:
+                logger.warning(f"No se pudo verificar advisory lock: {lock_err}")
+
+        # 0.1 Crear tablas si no existen de forma segura
+        try:
+            from ..database import Base
+            Base.metadata.create_all(bind=db.bind)
+        except Exception as create_err:
+            logger.warning(f"Base.metadata.create_all aviso: {create_err}")
+
+        # 0.2 Políticas RLS seguras para subscription_requests
+        if not is_sqlite:
+            try:
+                db.execute(text("ALTER TABLE subscription_requests ENABLE ROW LEVEL SECURITY;"))
+                db.execute(text("DROP POLICY IF EXISTS tenant_isolation_subscription_requests ON subscription_requests;"))
+                db.execute(text("""
+                    CREATE POLICY tenant_isolation_subscription_requests ON subscription_requests
+                    FOR ALL USING (tenant_id = current_setting('app.current_tenant_id', true));
+                """))
+                db.commit()
+            except Exception as rls_err:
+                db.rollback()
+
         # Recrear la función trigger notify_appointment_changes en PostgreSQL para inyectar tenant_id
         if not is_sqlite:
             trigger_sql = """
@@ -280,16 +313,71 @@ $function$;
             f"ALTER TABLE landing_marketing_settings ADD COLUMN hero_tabs {json_type} DEFAULT '[]'",
             "ALTER TABLE landing_marketing_settings ADD COLUMN font_family_body VARCHAR(50) DEFAULT 'inter'",
             f"ALTER TABLE landing_marketing_settings ADD COLUMN pain_comparison {json_type} DEFAULT '{{}}'",
-            f"ALTER TABLE landing_marketing_settings ADD COLUMN pillars {json_type} DEFAULT '{{}}'"
+            f"ALTER TABLE landing_marketing_settings ADD COLUMN pillars {json_type} DEFAULT '{{}}'",
+            # ── Catálogo Dual & Histórico Técnico ──────────────────────────────────
+            "ALTER TABLE clients ADD COLUMN phone2 VARCHAR",
+            "ALTER TABLE clients ADD COLUMN gender VARCHAR",
+            "ALTER TABLE clients ADD COLUMN birth_date DATE",
+            "ALTER TABLE clients ADD COLUMN technical_notes TEXT",
+            "ALTER TABLE clients ADD COLUMN raw_history TEXT",
+            f"ALTER TABLE clients ADD COLUMN color_formulas {json_type} DEFAULT '[]'",
+            "ALTER TABLE services ADD COLUMN is_product BOOLEAN DEFAULT FALSE",
+            "ALTER TABLE services ADD COLUMN is_visible_on_web BOOLEAN DEFAULT TRUE",
+            "ALTER TABLE services ADD COLUMN cost_price DECIMAL(10, 2) DEFAULT 0.0",
+            "ALTER TABLE services ADD COLUMN sku VARCHAR",
+            "ALTER TABLE services ADD COLUMN stock INTEGER DEFAULT 0",
+            "ALTER TABLE clinic_settings ADD COLUMN allow_online_booking BOOLEAN DEFAULT TRUE"
         ]
         
+        # 0.3 Pre-consulta de columnas y constraints existentes para evitar bloqueos innecesarios (ALTER TABLE adquiere AccessExclusiveLock)
+        existing_columns = set()
+        existing_constraints = set()
+        if not is_sqlite:
+            try:
+                cols_res = db.execute(text("""
+                    SELECT LOWER(table_name), LOWER(column_name)
+                    FROM information_schema.columns
+                    WHERE table_schema = 'public';
+                """)).fetchall()
+                for r in cols_res:
+                    existing_columns.add((r[0], r[1]))
+
+                cons_res = db.execute(text("""
+                    SELECT LOWER(constraint_name)
+                    FROM information_schema.table_constraints
+                    WHERE table_schema = 'public';
+                """)).fetchall()
+                for r in cons_res:
+                    existing_constraints.add(r[0])
+            except Exception as cols_err:
+                logger.warning(f"Error consultando information_schema: {cols_err}")
+
         if not is_sqlite:
             migrations = [
                 m.replace("ADD COLUMN ", "ADD COLUMN IF NOT EXISTS ") if "ADD COLUMN " in m and "IF NOT EXISTS" not in m else m
                 for m in migrations
             ]
 
+        import re
+        add_col_regex = re.compile(r'ALTER\s+TABLE\s+([a-zA-Z0-9_]+)\s+ADD\s+COLUMN(?:\s+IF\s+NOT\s+EXISTS)?\s+([a-zA-Z0-9_]+)', re.IGNORECASE)
+
         for m in migrations:
+            # Si es una adición de columna y la columna ya existe, SALTAR INMEDIATAMENTE
+            match = add_col_regex.search(m)
+            if match and not is_sqlite and existing_columns:
+                tbl = match.group(1).lower()
+                col = match.group(2).lower()
+                if (tbl, col) in existing_columns:
+                    continue
+
+            # Evitar re-ejecutar drop/add de constraints ya resueltos
+            if "uq_clients_tenant_email" in m and "uq_clients_tenant_email" in existing_constraints:
+                continue
+            if "clients_email_key" in m and "clients_email_key" not in existing_constraints:
+                continue
+            if "uq_clients_email" in m and "uq_clients_email" not in existing_constraints:
+                continue
+
             try:
                 db.execute(text(m))
                 db.commit()
@@ -423,4 +511,10 @@ $function$;
     except Exception as e:
         logger.error(f"❌ Error crítico en auto-migración: {e}")
     finally:
+        if not is_sqlite and acquired_lock:
+            try:
+                db.execute(text("SELECT pg_advisory_unlock(987654321);"))
+                db.commit()
+            except Exception:
+                pass
         db.close()

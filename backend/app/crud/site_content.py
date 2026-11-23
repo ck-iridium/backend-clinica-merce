@@ -8,13 +8,7 @@ def get_site_content(db: Session):
     if not tenant_id:
         raise ValueError("Tenant ID is required but missing.")
 
-    try:
-        content = db.query(models.SiteContent).filter(models.SiteContent.tenant_id == tenant_id).first()
-    except Exception:
-        db.rollback()
-        from ..utils.migrations import run_auto_migrations
-        run_auto_migrations()
-        content = db.query(models.SiteContent).filter(models.SiteContent.tenant_id == tenant_id).first()
+    content = db.query(models.SiteContent).filter(models.SiteContent.tenant_id == tenant_id).first()
 
     if not content:
         import uuid

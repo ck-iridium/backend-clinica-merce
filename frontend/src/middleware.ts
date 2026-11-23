@@ -112,6 +112,7 @@ export async function middleware(request: NextRequest) {
               apikey: serviceKey,
               Authorization: `Bearer ${serviceKey}`,
             },
+            signal: AbortSignal.timeout(2500),
           });
           if (supaRes.ok) {
             const data = await supaRes.json();
@@ -125,12 +126,14 @@ export async function middleware(request: NextRequest) {
       }
     }
 
-    // 4. Prioridad: Consultar a la API del backend en Render
+    // 4. Prioridad: Consultar a la API del backend en Render (con timeout estricto para evitar Cloudflare 524)
     if (!tenantId) {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       if (apiUrl) {
         try {
-          const res = await fetch(`${apiUrl}/stripe/resolve-tenant/${subdomain}`);
+          const res = await fetch(`${apiUrl}/stripe/resolve-tenant/${subdomain}`, {
+            signal: AbortSignal.timeout(2500),
+          });
           if (res.ok) {
             const data = await res.json();
             if (data.tenant_id) {

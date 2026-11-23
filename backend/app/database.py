@@ -9,18 +9,23 @@ load_dotenv(override=True)
 # Usar SQLite por defecto para desarrollo local si no se define DATABASE_URL
 SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./clinica_v2.db")
 
-# Ajuste necesario para SQLite en SQLAlchemy (check_same_thread)
-connect_args = {"check_same_thread": False} if SQLALCHEMY_DATABASE_URL.startswith("sqlite") else {}
-
-# Configuración del pool de conexiones para evitar agotamiento en alta concurrencia
-engine_args = {"connect_args": connect_args}
-if not SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
-    engine_args.update({
-        "pool_size": 5,
-        "max_overflow": 5,
+# Ajuste necesario para SQLite en SQLAlchemy (check_same_thread) vs PostgreSQL
+if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
+    connect_args = {"check_same_thread": False}
+    engine_args = {"connect_args": connect_args}
+else:
+    connect_args = {
+        "connect_timeout": 5,
+        "options": "-c statement_timeout=20000 -c lock_timeout=5000"
+    }
+    engine_args = {
+        "connect_args": connect_args,
+        "pool_size": 15,
+        "max_overflow": 10,
+        "pool_timeout": 10,
         "pool_recycle": 1800,
         "pool_pre_ping": True
-    })
+    }
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL, **engine_args)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

@@ -90,10 +90,12 @@ export async function generateMetadata(): Promise<Metadata> {
         const [resSettings, resMarketing] = await Promise.all([
           systemTenantId ? fetch(`${baseUrl}/settings/`, {
             next: { revalidate: 60 },
-            headers: { "X-Tenant-ID": systemTenantId }
+            headers: { "X-Tenant-ID": systemTenantId },
+            signal: AbortSignal.timeout(3000),
           }) : null,
           fetch(`${baseUrl}/super-admin/marketing/public`, {
-            next: { revalidate: 60, tags: ['marketing-public'] }
+            next: { revalidate: 60, tags: ['marketing-public'] },
+            signal: AbortSignal.timeout(3000),
           })
         ]);
 
@@ -189,7 +191,8 @@ export default async function RootLayout({
       try {
         const resSettings = await fetch(`${baseUrl}/settings/`, {
           cache: isMarketing ? 'no-cache' : 'no-store',
-          headers: { "X-Tenant-ID": effectiveTenantId }
+          headers: { "X-Tenant-ID": effectiveTenantId },
+          signal: AbortSignal.timeout(3000),
         });
         if (!isMarketing && resSettings.status === 402) {
           isSuspended = true;
@@ -204,7 +207,8 @@ export default async function RootLayout({
   if (isMarketing && baseUrl) {
     try {
       const resPub = await fetch(`${baseUrl}/super-admin/marketing/public`, {
-        next: { revalidate: 3600, tags: ['marketing-public'] }
+        next: { revalidate: 3600, tags: ['marketing-public'] },
+        signal: AbortSignal.timeout(3000),
       });
       if (resPub.ok) {
         const data = await resPub.json();
