@@ -416,13 +416,8 @@ export default async function RootLayout({
 
   return (
     <html lang="es" suppressHydrationWarning className={`${fontClasses} ${isDark && !isDashboardRoute ? 'dark' : ''}`}>
-      <head>
+      <body suppressHydrationWarning className="antialiased bg-background text-foreground flex flex-col min-h-screen">
         {!isDashboardRoute && <GoogleTagManager gtmId={gtmId} />}
-        <link rel="icon" href="/api/favicon" sizes="any" />
-        <link rel="shortcut icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/api/favicon" />
-        <link rel="preconnect" href="https://ypimdbkiuguiszaddzaj.supabase.co" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://ypimdbkiuguiszaddzaj.supabase.co" />
         {localBusinessSchema && <JsonLd id="tenant-business-jsonld" data={localBusinessSchema} />}
         <style dangerouslySetInnerHTML={{
           __html: `
@@ -455,8 +450,6 @@ export default async function RootLayout({
             `}
           }
         ` }} />
-      </head>
-      <body suppressHydrationWarning className="antialiased bg-background text-foreground flex flex-col min-h-screen">
         <Providers>
           <TenantInitializer />
           <InviteHandler />

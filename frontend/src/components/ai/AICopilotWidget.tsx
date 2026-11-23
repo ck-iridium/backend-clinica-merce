@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { toast } from 'sonner';
 import { useLanguage } from '@/app/contexts/LanguageContext';
@@ -21,12 +22,17 @@ import { useCopilotMediaPicker } from './useCopilotMediaPicker';
 import { useCopilotChat } from './useCopilotChat';
 
 export default function AICopilotWidget() {
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const { language } = useLanguage();
   const { role, userName: authUserName, userAvatar, loading: loadingRole } = useAuthRole();
   const firstName = authUserName ? authUserName.trim().split(' ')[0] : '';
   const audioLanguage = language === 'fr' ? 'fr-FR' : language === 'en' ? 'en-US' : 'es-ES';
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // 1. Redimensionamiento y Límites de Suscripción
   const { chatWidth, chatHeight, isResizingActive, startResize, handleResize, stopResize } =
@@ -115,8 +121,9 @@ export default function AICopilotWidget() {
       )
     : false;
 
-  // Ocultar si no está autorizado
+  // Ocultar si no está montado o no está autorizado
   if (
+    !mounted ||
     (loadingRole && !role && !localFallbackRole) ||
     !isAuthorized
   ) {

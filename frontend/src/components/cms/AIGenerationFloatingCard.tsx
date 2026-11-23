@@ -6,9 +6,14 @@ import { Sparkles, Loader2, CheckCircle2, AlertCircle, X } from 'lucide-react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 
 export default function AIGenerationFloatingCard() {
+  const [mounted, setMounted] = React.useState(false);
   const { isGenerating, generationTime, resultUrl, error, resetGeneration, retry, cancelGeneration } = useAIImage();
   const { language } = useLanguage();
   const [isClosing, setIsClosing] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleClose = React.useCallback(() => {
     setIsClosing(true);
@@ -28,7 +33,7 @@ export default function AIGenerationFloatingCard() {
     }
   }, [resultUrl, handleClose, isClosing]);
 
-  if (!isGenerating && !resultUrl && !error) return null;
+  if (!mounted || (!isGenerating && !resultUrl && !error)) return null;
 
   return (
     <div className={`fixed bottom-6 right-6 z-[200] transition-all duration-500 ${isClosing ? 'animate-out fade-out slide-out-to-bottom-10 fill-mode-forwards' : 'animate-in slide-in-from-right-10'}`}>
