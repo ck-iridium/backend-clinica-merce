@@ -55,6 +55,22 @@ def verify_qr_totp(tenant_id: str, token: str, window_seconds: int = 20) -> bool
         return False
 
 
+def get_resolved_tenant(request: Optional[Request] = None, tenant_id: Optional[str] = None) -> Optional[str]:
+    tenant = database.current_tenant_var.get()
+    if tenant:
+        return tenant
+    if tenant_id:
+        return tenant_id
+    if request:
+        header_tid = request.headers.get("X-Tenant-ID") or request.headers.get("x-tenant-id")
+        if header_tid:
+            return header_tid
+        query_tid = request.query_params.get("tenant_id") or request.query_params.get("tenant")
+        if query_tid:
+            return query_tid
+    return None
+
+
 # ── 1. Listar Operadoras de Mostrador del Salón ──────────────────────────────
 @router.get("/operators", response_model=List[schemas.CounterOperatorResponse])
 def get_counter_operators(
@@ -62,7 +78,7 @@ def get_counter_operators(
     tenant_id: Optional[str] = Query(None),
     db: Session = Depends(database.get_db)
 ):
-    resolved_tenant = database.current_tenant_var.get() or tenant_id or request.headers.get("X-Tenant-ID")
+    resolved_tenant = get_resolved_tenant(request, tenant_id)
     if not resolved_tenant:
         raise HTTPException(status_code=400, detail="Tenant context missing")
 
@@ -93,10 +109,12 @@ def get_counter_operators(
 @router.post("/counter-operators", response_model=schemas.CounterOperatorResponse)
 def create_counter_operator(
     payload: schemas.CounterOperatorCreate,
+    request: Request,
+    tenant_id: Optional[str] = Query(None),
     db: Session = Depends(database.get_db)
 ):
-    tenant_id = database.current_tenant_var.get()
-    if not tenant_id:
+    resolved_tenant = get_resolved_tenant(request, tenant_id)
+    if not resolved_tenant:
         raise HTTPException(status_code=400, detail="Tenant context missing")
 
     pin_clean = payload.pin.strip()
@@ -121,7 +139,7 @@ def create_counter_operator(
 
     user = models.User(
         id=operator_id,
-        tenant_id=tenant_id,
+        tenant_id=resolved_tenant,
         email=tech_email,
         hashed_password=hashed_pw,
         role=payload.role.lower(),
@@ -132,7 +150,7 @@ def create_counter_operator(
     # 2. Crear Profile asociado con modo PIN
     profile = models.Profile(
         id=operator_id,
-        tenant_id=tenant_id,
+        tenant_id=resolved_tenant,
         full_name=clean_name,
         role=payload.role,
         email=tech_email,
@@ -167,9 +185,10 @@ def create_counter_operator(
 def verify_counter_pin(
     payload: schemas.CounterPinVerify,
     request: Request,
+    tenant_id: Optional[str] = Query(None),
     db: Session = Depends(database.get_db)
 ):
-    resolved_tenant = database.current_tenant_var.get() or request.headers.get("X-Tenant-ID")
+    resolved_tenant = get_resolved_tenant(request, tenant_id)
     if resolved_tenant:
         profile = db.query(models.Profile).filter(
             models.Profile.id == payload.staff_id,
@@ -235,9 +254,10 @@ def verify_counter_pin(
 def update_operator_pin(
     payload: schemas.CounterPinUpdate,
     request: Request,
+    tenant_id: Optional[str] = Query(None),
     db: Session = Depends(database.get_db)
 ):
-    resolved_tenant = database.current_tenant_var.get() or request.headers.get("X-Tenant-ID")
+    resolved_tenant = get_resolved_tenant(request, tenant_id)
     if resolved_tenant:
         profile = db.query(models.Profile).filter(
             models.Profile.id == payload.staff_id,
@@ -266,13 +286,18 @@ def update_operator_pin(
 @router.post("/unbind-device")
 def unbind_operator_device(
     payload: schemas.DeviceUnbindRequest,
+    request: Request,
+    tenant_id: Optional[str] = Query(None),
     db: Session = Depends(database.get_db)
 ):
-    tenant_id = database.current_tenant_var.get()
-    profile = db.query(models.Profile).filter(
-        models.Profile.id == payload.staff_id,
-        models.Profile.tenant_id == tenant_id
-    ).first()
+    resolved_tenant = get_resolved_tenant(request, tenant_id)
+    if resolved_tenant:
+        profile = db.query(models.Profile).filter(
+            models.Profile.id == payload.staff_id,
+            models.Profile.tenant_id == resolved_tenant
+        ).first()
+    else:
+        profile = db.query(models.Profile).filter(models.Profile.id == payload.staff_id).first()
 
     if not profile:
         raise HTTPException(status_code=404, detail="Operador no encontrado.")
@@ -285,7 +310,7 @@ def unbind_operator_device(
 # ── 6. Generar Token QR Dinámico Rotativo (Cada 20 seg) ─────────────────────
 @router.get("/qr-token", response_model=schemas.QRRotateTokenResponse)
 def get_qr_rotate_token(request: Request, tenant_id: Optional[str] = Query(None)):
-    resolved_tenant = database.current_tenant_var.get() or tenant_id or request.headers.get("X-Tenant-ID")
+    resolved_tenant = get_resolved_tenant(request, tenant_id)
     if not resolved_tenant:
         raise HTTPException(status_code=400, detail="Tenant context missing")
 
@@ -308,12 +333,20 @@ def get_qr_rotate_token(request: Request, tenant_id: Optional[str] = Query(None)
 def register_clock_event(
     payload: schemas.TimeClockEventCreate,
     request: Request,
+    tenant_id: Optional[str] = Query(None),
     db: Session = Depends(database.get_db)
 ):
-    tenant_id = database.current_tenant_var.get()
+    resolved_tenant = get_resolved_tenant(request, tenant_id)
+    if not resolved_tenant:
+        profile_candidate = db.query(models.Profile).filter(models.Profile.id == payload.staff_id).first()
+        if profile_candidate:
+            resolved_tenant = profile_candidate.tenant_id
+        else:
+            raise HTTPException(status_code=400, detail="Tenant context missing")
+
     profile = db.query(models.Profile).filter(
         models.Profile.id == payload.staff_id,
-        models.Profile.tenant_id == tenant_id
+        models.Profile.tenant_id == resolved_tenant
     ).first()
 
     if not profile:
@@ -321,7 +354,7 @@ def register_clock_event(
 
     # 1. Validación de Token QR (si el fichaje viene desde teléfono móvil)
     if payload.qr_token:
-        is_qr_valid = verify_qr_totp(tenant_id, payload.qr_token, window_seconds=20)
+        is_qr_valid = verify_qr_totp(resolved_tenant, payload.qr_token, window_seconds=20)
         if not is_qr_valid:
             raise HTTPException(
                 status_code=400,
@@ -356,7 +389,7 @@ def register_clock_event(
     
     # Obtener el último evento de hoy de esta empleada
     last_event = db.query(models.TimeClockRecord).filter(
-        models.TimeClockRecord.tenant_id == tenant_id,
+        models.TimeClockRecord.tenant_id == resolved_tenant,
         models.TimeClockRecord.staff_id == payload.staff_id,
         models.TimeClockRecord.timestamp >= today_start
     ).order_by(desc(models.TimeClockRecord.timestamp)).first()
@@ -380,7 +413,7 @@ def register_clock_event(
     # 5. Insertar registro inmutable de fichaje
     record = models.TimeClockRecord(
         id=str(uuid.uuid4()),
-        tenant_id=tenant_id,
+        tenant_id=resolved_tenant,
         staff_id=payload.staff_id,
         event_type=event_type,
         timestamp=datetime.utcnow(),
@@ -398,11 +431,21 @@ def register_clock_event(
 
 # ── 8. Estado en Vivo del Personal (Dashboard de Mostrador) ─────────────────
 @router.get("/status/{staff_id}", response_model=schemas.TimeClockStatusResponse)
-def get_staff_time_clock_status(staff_id: str, db: Session = Depends(database.get_db)):
-    tenant_id = database.current_tenant_var.get()
+def get_staff_time_clock_status(
+    staff_id: str,
+    request: Request,
+    tenant_id: Optional[str] = Query(None),
+    db: Session = Depends(database.get_db)
+):
+    resolved_tenant = get_resolved_tenant(request, tenant_id)
+    if not resolved_tenant:
+        profile_candidate = db.query(models.Profile).filter(models.Profile.id == staff_id).first()
+        if profile_candidate:
+            resolved_tenant = profile_candidate.tenant_id
+
     profile = db.query(models.Profile).filter(
         models.Profile.id == staff_id,
-        models.Profile.tenant_id == tenant_id
+        models.Profile.tenant_id == resolved_tenant
     ).first()
 
     if not profile:
@@ -410,7 +453,7 @@ def get_staff_time_clock_status(staff_id: str, db: Session = Depends(database.ge
 
     today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
     records = db.query(models.TimeClockRecord).filter(
-        models.TimeClockRecord.tenant_id == tenant_id,
+        models.TimeClockRecord.tenant_id == resolved_tenant,
         models.TimeClockRecord.staff_id == staff_id,
         models.TimeClockRecord.timestamp >= today_start
     ).order_by(models.TimeClockRecord.timestamp).all()
@@ -456,10 +499,14 @@ def get_staff_time_clock_status(staff_id: str, db: Session = Depends(database.ge
 
 # ── 9. Resumen Diario de Todo el Equipo ─────────────────────────────────────
 @router.get("/summary", response_model=List[schemas.TimeClockStatusResponse])
-def get_team_time_clock_summary(db: Session = Depends(database.get_db)):
-    tenant_id = database.current_tenant_var.get()
+def get_team_time_clock_summary(
+    request: Request,
+    tenant_id: Optional[str] = Query(None),
+    db: Session = Depends(database.get_db)
+):
+    resolved_tenant = get_resolved_tenant(request, tenant_id)
     profiles = db.query(models.Profile).filter(
-        models.Profile.tenant_id == tenant_id,
+        models.Profile.tenant_id == resolved_tenant,
         models.Profile.role.in_([
             "specialist", "receptionist", "admin",
             "especialista", "recepcionist", "recepción", "recepcion", "administrador",
@@ -469,7 +516,7 @@ def get_team_time_clock_summary(db: Session = Depends(database.get_db)):
 
     summary = []
     for p in profiles:
-        status_data = get_staff_time_clock_status(p.id, db)
+        status_data = get_staff_time_clock_status(p.id, request, resolved_tenant, db)
         summary.append(status_data)
 
     return summary
@@ -478,12 +525,14 @@ def get_team_time_clock_summary(db: Session = Depends(database.get_db)):
 # ── 10. Informe de Jornada Laboral (Para Gestoría e Inspección) ──────────────
 @router.get("/report")
 def get_time_clock_report(
+    request: Request,
+    tenant_id: Optional[str] = Query(None),
     month: Optional[int] = Query(None),
     year: Optional[int] = Query(None),
     staff_id: Optional[str] = Query(None),
     db: Session = Depends(database.get_db)
 ):
-    tenant_id = database.current_tenant_var.get()
+    resolved_tenant = get_resolved_tenant(request, tenant_id)
     now = datetime.utcnow()
     target_year = year or now.year
     target_month = month or now.month
@@ -496,7 +545,7 @@ def get_time_clock_report(
         end_date = datetime(target_year, target_month + 1, 1, 0, 0, 0)
 
     query = db.query(models.TimeClockRecord).filter(
-        models.TimeClockRecord.tenant_id == tenant_id,
+        models.TimeClockRecord.tenant_id == resolved_tenant,
         models.TimeClockRecord.timestamp >= start_date,
         models.TimeClockRecord.timestamp < end_date
     )

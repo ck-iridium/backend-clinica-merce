@@ -11,8 +11,9 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
 
   const isDashboard = pathname?.startsWith('/dashboard') || pathname?.startsWith('/super-admin') || pathname === '/login';
   const isMarketing = pathname?.startsWith('/marketing') || pathname?.startsWith('/onboarding') || pathname?.startsWith('/docs');
+  const isFichar = pathname === '/fichar' || pathname?.startsWith('/fichar');
 
-  if (isDashboard || isMarketing) return (
+  if (isDashboard || isMarketing || isFichar) return (
     <>
       {children}
     </>

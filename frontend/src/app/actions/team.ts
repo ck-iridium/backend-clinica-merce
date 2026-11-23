@@ -737,23 +737,36 @@ export async function getTimeClockDailySummaryAction(month?: number, year?: numb
   }
 }
 
-export async function getCounterOperatorsAction() {
+export async function getCounterOperatorsAction(explicitTenantId?: string) {
   try {
     const supabaseAdmin = getSupabaseAdmin();
     const cookieStore = cookies();
-    let tenantId = cookieStore.get('tenant_id')?.value;
+    let tenantId = explicitTenantId || cookieStore.get('tenant_id')?.value;
     const isImpersonating = cookieStore.get('is_impersonating')?.value === 'true';
     const impersonateTenantId = cookieStore.get('impersonate_tenant_id')?.value;
-    if (isImpersonating && impersonateTenantId) tenantId = impersonateTenantId;
+    if (isImpersonating && impersonateTenantId && !explicitTenantId) tenantId = impersonateTenantId;
 
     if (!tenantId || tenantId === 'undefined') {
       return { success: false, data: [] };
     }
 
+    // Si tenantId es un slug de subdominio (no un UUID de 36 caracteres), resolver a UUID
+    let resolvedId = tenantId;
+    if (!/^[0-9a-fA-F-]{36}$/.test(tenantId)) {
+      const { data: tenantRow } = await supabaseAdmin
+        .from('tenants')
+        .select('id')
+        .eq('slug', tenantId)
+        .maybeSingle();
+      if (tenantRow?.id) {
+        resolvedId = tenantRow.id;
+      }
+    }
+
     const { data, error } = await supabaseAdmin
       .from('profiles')
-      .select('id, tenant_id, full_name, role, avatar_url, email, auth_mode, is_counter_operator, pin_code_hash')
-      .eq('tenant_id', tenantId)
+      .select('id, tenant_id, full_name, role, avatar_url, email, auth_mode, is_counter_operator, pin_code_hash, bound_device_id')
+      .eq('tenant_id', resolvedId)
       .order('full_name', { ascending: true });
 
     if (error || !data) {
@@ -770,6 +783,8 @@ export async function getCounterOperatorsAction() {
       email: p.email,
       auth_mode: p.auth_mode || 'email',
       is_counter_operator: Boolean(p.is_counter_operator ?? true),
+      bound_device_id: p.bound_device_id || null,
+      has_bound_device: Boolean(p.bound_device_id),
       has_pin: Boolean(p.pin_code_hash),
     }));
 

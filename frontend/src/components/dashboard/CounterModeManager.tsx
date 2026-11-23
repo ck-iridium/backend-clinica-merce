@@ -88,9 +88,16 @@ export default function CounterModeManager({
   useEffect(() => { isVerifyingPinRef.current = isVerifyingPin; }, [isVerifyingPin]);
   useEffect(() => { availableOperatorsRef.current = availableOperators; }, [availableOperators]);
 
+  useEffect(() => {
+    if (initialTenantId && initialTenantId !== tenantId) {
+      setTenantId(initialTenantId);
+    }
+  }, [initialTenantId, tenantId]);
+
   // 1. Obtención ultra-resiliente del tenant_id
   const getResolvedTenantId = useCallback(() => {
     if (tenantId) return tenantId;
+    if (initialTenantId) return initialTenantId;
     if (typeof window !== 'undefined') {
       const userStr = localStorage.getItem('user');
       if (userStr) {
@@ -101,9 +108,15 @@ export default function CounterModeManager({
       }
       const match = document.cookie.match(/(?:^|; )tenant_id=([^;]*)/);
       if (match && match[1]) return match[1];
+
+      // Fallback a subdominio si estamos en *.probookia.com
+      const host = window.location.hostname.toLowerCase();
+      if (host.endsWith('.probookia.com') && host !== 'probookia.com' && host !== 'www.probookia.com') {
+        return host.replace('.probookia.com', '');
+      }
     }
     return '';
-  }, [tenantId]);
+  }, [tenantId, initialTenantId]);
 
   // Cargar operadoras frescas del backend (vía Server Action directo a Supabase con fallback a API)
   const fetchOperators = useCallback(async () => {
