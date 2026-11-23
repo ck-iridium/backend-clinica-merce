@@ -7,7 +7,7 @@ import time
 from datetime import datetime, date, timedelta
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, Response
 from sqlalchemy.orm import Session
 from sqlalchemy import func, desc
 
@@ -745,15 +745,13 @@ def export_time_clock_excel(
     staff_id: Optional[str] = Query(None),
     db: Session = Depends(database.get_db)
 ):
+    has_openpyxl = True
     try:
         import openpyxl
         from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
         from openpyxl.utils import get_column_letter
     except ImportError:
-        raise HTTPException(
-            status_code=500,
-            detail="Módulo openpyxl no disponible para exportación Excel."
-        )
+        has_openpyxl = False
 
     resolved_tenant = get_resolved_tenant(request, tenant_id)
     if not resolved_tenant:
@@ -789,6 +787,43 @@ def export_time_clock_excel(
     profile_map = {p.id: p.full_name or p.email for p in profiles}
 
     shifts = compute_daily_shifts(records, profile_map)
+    total_hours = sum(s.get("worked_hours_decimal", 0.0) for s in shifts)
+
+    if not has_openpyxl:
+        import csv
+        csv_buffer = io.StringIO()
+        csv_buffer.write("\ufeff")
+        writer = csv.writer(csv_buffer, delimiter=";")
+        writer.writerow(["REGISTRO DIARIO DE JORNADA LABORAL"])
+        writer.writerow(["Conforme al Real Decreto-ley 8/2019, de 8 de marzo (art. 34.9 Estatuto de los Trabajadores)"])
+        writer.writerow([])
+        writer.writerow(["EMPRESA:", clinic_name, "CIF / NIF:", clinic_cif])
+        writer.writerow(["PERÍODO:", f"{target_year}-{target_month:02d}", "FECHA EMISIÓN:", now.strftime("%Y-%m-%d")])
+        writer.writerow([])
+        writer.writerow(["FECHA", "TRABAJADOR / OPERADOR", "HORA ENTRADA", "PAUSA / DESCANSO", "HORA SALIDA", "HORAS NETAS", "TERMINAL", "ESTADO", "FIRMA TRABAJADOR/A", "FIRMA EMPRESA"])
+        for s in shifts:
+            writer.writerow([
+                s["date"],
+                s["staff_name"],
+                s["first_in"],
+                f"{s['break_minutes']} min" if s["break_minutes"] > 0 else "0 min",
+                s["last_out"],
+                s["worked_hours_formatted"],
+                s["device_label"],
+                s["status"],
+                "Conforme",
+                "Conforme"
+            ])
+        writer.writerow([])
+        writer.writerow(["TOTAL HORAS NETAS:", f"{total_hours:.2f} h", "DÍAS REGISTRADOS:", len(set(s['date'] for s in shifts)), "TRABAJADORES:", len(set(s['staff_id'] for s in shifts))])
+        
+        csv_content = csv_buffer.getvalue().encode("utf-8-sig")
+        csv_filename = f"registro_jornada_{clinic_name.lower().replace(' ', '_')}_{target_year}_{target_month:02d}.csv"
+        return Response(
+            content=csv_content,
+            media_type="text/csv; charset=utf-8",
+            headers={"Content-Disposition": f'attachment; filename="{csv_filename}"'}
+        )
 
     # Crear Libro Excel
     wb = openpyxl.Workbook()

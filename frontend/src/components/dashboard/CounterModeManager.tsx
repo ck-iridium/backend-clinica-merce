@@ -56,9 +56,11 @@ export default function CounterModeManager({
   const [autolockMinutes, setAutolockMinutes] = useState<number>(10);
   const [isLocked, setIsLocked] = useState<boolean>(false);
   const [showQRModal, setShowQRModal] = useState<boolean>(false);
+  const [mounted, setMounted] = useState<boolean>(false);
 
   // Estados de Operadoras
   const [operators, setOperators] = useState<Operator[]>([]);
+  const [isLoadingOperators, setIsLoadingOperators] = useState<boolean>(true);
   const [selectedOperator, setSelectedOperator] = useState<Operator | null>(null);
   const [pinValue, setPinValue] = useState<string>('');
   const [isVerifyingPin, setIsVerifyingPin] = useState<boolean>(false);
@@ -104,6 +106,7 @@ export default function CounterModeManager({
   }, [initialDarkMode]);
 
   useEffect(() => {
+    setMounted(true);
     if (typeof document !== 'undefined') {
       const hasDark = document.documentElement.classList.contains('dark') || document.body.classList.contains('dark');
       if (hasDark) {
@@ -138,18 +141,23 @@ export default function CounterModeManager({
 
   // Cargar operadoras frescas del backend (vía Server Action directo a Supabase con fallback a API)
   const fetchOperators = useCallback(async () => {
+    setIsLoadingOperators(true);
+    const tid = getResolvedTenantId();
     try {
-      const actionRes = await getCounterOperatorsAction();
+      const actionRes = await getCounterOperatorsAction(tid || undefined);
       if (actionRes.success && Array.isArray(actionRes.data) && actionRes.data.length > 0) {
         setOperators(actionRes.data);
+        setIsLoadingOperators(false);
         return actionRes.data as Operator[];
       }
     } catch (e) {
       console.warn("Fallo Server Action getCounterOperatorsAction, probando fallback API:", e);
     }
 
-    const tid = getResolvedTenantId();
-    if (!tid) return [] as Operator[];
+    if (!tid) {
+      setIsLoadingOperators(false);
+      return [] as Operator[];
+    }
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
       const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
@@ -174,11 +182,14 @@ export default function CounterModeManager({
             setIsLocked(false);
             sessionStorage.removeItem('counter_is_locked');
           }
+          setIsLoadingOperators(false);
           return data as Operator[];
         }
       }
     } catch (err) {
       console.warn("No se pudieron cargar operadoras:", err);
+    } finally {
+      setIsLoadingOperators(false);
     }
     return [] as Operator[];
   }, [getResolvedTenantId]);
@@ -531,6 +542,9 @@ export default function CounterModeManager({
     ? `${window.location.origin}/fichar?t=${encodeURIComponent(cleanToken || '')}&tenant=${encodeURIComponent(resolvedTid || '')}`
     : `https://probookia.com/fichar?t=${encodeURIComponent(cleanToken || '')}&tenant=${encodeURIComponent(resolvedTid || '')}`;
 
+  // Evitar desajustes de hidratación (React #418): en SSR o antes de montar, no renderizar elementos dependientes del navegador
+  if (!mounted) return null;
+
   // Si Modo Mostrador está desactivado en ajustes y no está bloqueado ni abierto el QR, no renderizar nada
   if (!enableCounterMode && !isLocked && !showQRModal) return null;
 
@@ -659,7 +673,25 @@ export default function CounterModeManager({
 
           {/* Centro: Selección de Empleada y Numpad */}
           <div className="max-w-md w-full mx-auto my-auto space-y-6">
-            {availableOperators.length === 0 ? (
+            {isLoadingOperators ? (
+              <div className="space-y-5 text-center max-w-md w-full mx-auto animate-in fade-in duration-200">
+                <div className="space-y-2">
+                  <div className={`h-8 w-60 rounded-2xl mx-auto animate-pulse ${isDarkMode ? 'bg-white/10' : 'bg-stone-200/70'}`} />
+                  <div className={`h-4 w-44 rounded-xl mx-auto animate-pulse ${isDarkMode ? 'bg-white/5' : 'bg-stone-100'}`} />
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className={`p-4 rounded-3xl flex flex-col items-center gap-2.5 animate-pulse ${
+                      isDarkMode ? 'bg-white/5 border border-white/10' : 'bg-white border border-stone-200/70 shadow-xs'
+                    }`}>
+                      <div className={`w-14 h-14 rounded-2xl ${isDarkMode ? 'bg-stone-800' : 'bg-stone-100'}`} />
+                      <div className={`h-3 w-16 rounded mt-1 ${isDarkMode ? 'bg-stone-800' : 'bg-stone-200'}`} />
+                      <div className={`h-2.5 w-12 rounded ${isDarkMode ? 'bg-stone-850' : 'bg-stone-100'}`} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : availableOperators.length === 0 ? (
               <div className={`p-8 rounded-3xl text-center space-y-4 max-w-md mx-auto animate-in zoom-in-95 duration-200 ${
                 isDarkMode ? 'bg-white/5 border border-white/10' : 'bg-white border border-stone-200/80 shadow-xl'
               }`}>
