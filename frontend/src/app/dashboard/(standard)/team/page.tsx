@@ -8,7 +8,7 @@ import {
   Edit2,
   Trash2,
   ShieldCheck,
-  Stethoscope,
+  Sparkles,
   UserCircle,
   Loader2,
   CalendarDays,
@@ -595,10 +595,14 @@ export default function TeamPage() {
                     <tr key={member.id} className="group hover:bg-stone-50/50 transition-colors">
                       <td className="py-5 px-4">
                         <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center text-stone-400 border border-white shadow-sm shrink-0">
-                            {member.role === 'Administrador' || member.role === 'admin' ? <ShieldCheck size={20} /> :
-                              member.role === 'Especialista' || member.role === 'specialist' ? <Stethoscope size={20} /> :
-                                <UserCircle size={20} />}
+                          <div className="w-10 h-10 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-700 font-bold text-sm border border-stone-200/60 shadow-xs shrink-0">
+                            {member.role === 'Administrador' || member.role === 'admin' ? (
+                              <ShieldCheck size={18} className="text-stone-600" />
+                            ) : member.full_name ? (
+                              <span className="font-bold text-stone-700 text-sm">{member.full_name.charAt(0).toUpperCase()}</span>
+                            ) : (
+                              <Sparkles size={18} className="text-[#FF6B00]" />
+                            )}
                           </div>
                           <div className="flex flex-col gap-1">
                             <span className="font-bold text-stone-800">{member.full_name}</span>

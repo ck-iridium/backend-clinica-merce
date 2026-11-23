@@ -324,8 +324,8 @@ export default function CounterModeManager({
       });
       if (res.ok) {
         const data = await res.json();
-        // Acepta qr_payload completo o token
-        const rawToken = data.qr_payload || data.token || data.qr_token || '';
+        // Extrae el token TOTP puro de 6 dígitos
+        const rawToken = data.token || data.qr_token || '';
         setQrToken(rawToken);
         setQrSecondsLeft(data.expires_in_seconds || 20);
       }
@@ -484,11 +484,14 @@ export default function CounterModeManager({
     };
   }, [isLocked, showQRModal]);
 
-  const qrUrl = qrToken?.startsWith('http')
-    ? qrToken
-    : (typeof window !== 'undefined'
-        ? `${window.location.origin}/fichar?t=${qrToken}&tenant=${getResolvedTenantId()}`
-        : `https://probookia.com/fichar?t=${qrToken}&tenant=${getResolvedTenantId()}`);
+  const resolvedTid = getResolvedTenantId();
+  const cleanToken = qrToken?.includes('t=')
+    ? (new URL(qrToken.startsWith('http') ? qrToken : `http://dummy.com/?${qrToken}`).searchParams.get('t') || qrToken)
+    : qrToken;
+
+  const qrUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}/fichar?t=${encodeURIComponent(cleanToken || '')}&tenant=${encodeURIComponent(resolvedTid || '')}`
+    : `https://probookia.com/fichar?t=${encodeURIComponent(cleanToken || '')}&tenant=${encodeURIComponent(resolvedTid || '')}`;
 
   // Si Modo Mostrador está desactivado en ajustes y no está bloqueado ni abierto el QR, no renderizar nada
   if (!enableCounterMode && !isLocked && !showQRModal) return null;
@@ -749,8 +752,6 @@ export default function CounterModeManager({
                     className="h-13 rounded-2xl bg-white/5 hover:bg-white/10 text-stone-300 transition-all active:scale-95 flex items-center justify-center border border-white/5 disabled:opacity-30"
                   >
                     ⌫
-                  </button>
-                </div>
                   </button>
                 </div>
 
