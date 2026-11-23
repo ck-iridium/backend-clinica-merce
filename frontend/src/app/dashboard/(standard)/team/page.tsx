@@ -18,7 +18,8 @@ import {
   SmartphoneNfc,
   Mail,
   Lock,
-  Clock
+  Clock,
+  CheckCircle2
 } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useFeedback } from "@/app/contexts/FeedbackContext"
