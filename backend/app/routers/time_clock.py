@@ -1,3 +1,4 @@
+import io
 import os
 import uuid
 import hmac
@@ -6,6 +7,7 @@ import time
 from datetime import datetime, date, timedelta
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import func, desc
 
@@ -520,3 +522,354 @@ def get_time_clock_report(
         "total_records": len(serialized),
         "records": serialized
     }
+
+
+def compute_daily_shifts(records, profile_map):
+    """Agrupa registros por empleado y día, calculando pausas y horas netas trabajadas"""
+    grouped = {}
+    for r in records:
+        date_str = r.timestamp.strftime("%Y-%m-%d")
+        key = (date_str, r.staff_id)
+        if key not in grouped:
+            grouped[key] = []
+        grouped[key].append(r)
+
+    shifts = []
+    now = datetime.utcnow()
+    today_str = now.strftime("%Y-%m-%d")
+
+    for (date_str, s_id), day_records in grouped.items():
+        day_records.sort(key=lambda x: x.timestamp)
+        staff_name = profile_map.get(s_id, "Desconocido")
+
+        first_in = None
+        last_out = None
+        break_start = None
+        break_end = None
+        break_seconds = 0
+
+        current_in = None
+        current_break = None
+        total_worked_seconds = 0
+
+        for rec in day_records:
+            ev = rec.event_type
+            ts = rec.timestamp
+            if ev == "clock_in":
+                if not first_in:
+                    first_in = ts
+                current_in = ts
+            elif ev == "break_start":
+                if not break_start:
+                    break_start = ts
+                current_break = ts
+                if current_in:
+                    total_worked_seconds += (ts - current_in).total_seconds()
+                    current_in = None
+            elif ev == "break_end":
+                if not break_end:
+                    break_end = ts
+                if current_break:
+                    break_seconds += (ts - current_break).total_seconds()
+                    current_break = None
+                current_in = ts
+            elif ev == "clock_out":
+                last_out = ts
+                if current_in:
+                    total_worked_seconds += (ts - current_in).total_seconds()
+                    current_in = None
+                if current_break:
+                    break_seconds += (ts - current_break).total_seconds()
+                    current_break = None
+
+        if current_in and date_str == today_str:
+            total_worked_seconds += (now - current_in).total_seconds()
+
+        last_ev = day_records[-1].event_type if day_records else "out"
+        if last_out:
+            status = "completed"
+        elif last_ev == "break_start":
+            status = "break"
+        elif date_str == today_str:
+            status = "in_progress"
+        else:
+            status = "incomplete"
+
+        worked_mins = int(total_worked_seconds // 60)
+        break_mins = int(break_seconds // 60)
+        hours = worked_mins // 60
+        mins = worked_mins % 60
+
+        shifts.append({
+            "date": date_str,
+            "staff_id": s_id,
+            "staff_name": staff_name,
+            "first_in": first_in.strftime("%H:%M:%S") if first_in else "-",
+            "break_start": break_start.strftime("%H:%M:%S") if break_start else "-",
+            "break_end": break_end.strftime("%H:%M:%S") if break_end else "-",
+            "last_out": last_out.strftime("%H:%M:%S") if last_out else "-",
+            "break_minutes": break_mins,
+            "worked_minutes": worked_mins,
+            "worked_hours_formatted": f"{hours}h {mins:02d}m",
+            "worked_hours_decimal": round(worked_mins / 60.0, 2),
+            "device_label": day_records[0].device_label if day_records else "Móvil",
+            "status": status,
+            "records_count": len(day_records)
+        })
+
+    shifts.sort(key=lambda x: (x["date"], x["staff_name"]), reverse=True)
+    return shifts
+
+
+# ── 11. Resumen Agrupado Mensual de Jornadas ────────────────────────────────
+@router.get("/daily-summary")
+def get_daily_shifts_summary(
+    month: Optional[int] = Query(None),
+    year: Optional[int] = Query(None),
+    staff_id: Optional[str] = Query(None),
+    db: Session = Depends(database.get_db)
+):
+    tenant_id = database.current_tenant_var.get()
+    now = datetime.utcnow()
+    target_year = year or now.year
+    target_month = month or now.month
+
+    start_date = datetime(target_year, target_month, 1, 0, 0, 0)
+    if target_month == 12:
+        end_date = datetime(target_year + 1, 1, 1, 0, 0, 0)
+    else:
+        end_date = datetime(target_year, target_month + 1, 1, 0, 0, 0)
+
+    query = db.query(models.TimeClockRecord).filter(
+        models.TimeClockRecord.tenant_id == tenant_id,
+        models.TimeClockRecord.timestamp >= start_date,
+        models.TimeClockRecord.timestamp < end_date
+    )
+
+    if staff_id and staff_id != "all":
+        query = query.filter(models.TimeClockRecord.staff_id == staff_id)
+
+    records = query.order_by(models.TimeClockRecord.timestamp).all()
+
+    profiles = db.query(models.Profile).filter(models.Profile.tenant_id == tenant_id).all()
+    profile_map = {p.id: p.full_name or p.email for p in profiles}
+
+    shifts = compute_daily_shifts(records, profile_map)
+
+    total_mins = sum(s["worked_minutes"] for s in shifts)
+    total_hours_dec = round(total_mins / 60.0, 2)
+    unique_days = len(set(s["date"] for s in shifts))
+    active_staff_count = len(set(s["staff_id"] for s in shifts))
+
+    return {
+        "year": target_year,
+        "month": target_month,
+        "total_worked_hours": total_hours_dec,
+        "total_days_worked": unique_days,
+        "active_staff_count": active_staff_count,
+        "shifts": shifts
+    }
+
+
+# ── 12. Exportar Registro Oficial en Excel (RDL 8/2019) ─────────────────────
+@router.get("/export-excel")
+def export_time_clock_excel(
+    month: Optional[int] = Query(None),
+    year: Optional[int] = Query(None),
+    staff_id: Optional[str] = Query(None),
+    db: Session = Depends(database.get_db)
+):
+    try:
+        import openpyxl
+        from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+        from openpyxl.utils import get_column_letter
+    except ImportError:
+        raise HTTPException(
+            status_code=500,
+            detail="Módulo openpyxl no disponible para exportación Excel."
+        )
+
+    tenant_id = database.current_tenant_var.get()
+    now = datetime.utcnow()
+    target_year = year or now.year
+    target_month = month or now.month
+
+    # Nombre de la clínica
+    settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == tenant_id).first()
+    clinic_name = settings.clinic_name if settings and settings.clinic_name else "Salón / Clínica"
+    clinic_cif = getattr(settings, "cif_nif", "") or ""
+
+    start_date = datetime(target_year, target_month, 1, 0, 0, 0)
+    if target_month == 12:
+        end_date = datetime(target_year + 1, 1, 1, 0, 0, 0)
+    else:
+        end_date = datetime(target_year, target_month + 1, 1, 0, 0, 0)
+
+    query = db.query(models.TimeClockRecord).filter(
+        models.TimeClockRecord.tenant_id == tenant_id,
+        models.TimeClockRecord.timestamp >= start_date,
+        models.TimeClockRecord.timestamp < end_date
+    )
+
+    if staff_id and staff_id != "all":
+        query = query.filter(models.TimeClockRecord.staff_id == staff_id)
+
+    records = query.order_by(models.TimeClockRecord.timestamp).all()
+
+    profiles = db.query(models.Profile).filter(models.Profile.tenant_id == tenant_id).all()
+    profile_map = {p.id: p.full_name or p.email for p in profiles}
+
+    shifts = compute_daily_shifts(records, profile_map)
+
+    # Crear Libro Excel
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = f"Jornada {target_year}-{target_month:02d}"
+
+    # Estilos
+    header_fill = PatternFill(start_color="1C1917", end_color="1C1917", fill_type="solid")
+    header_font = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
+    accent_fill = PatternFill(start_color="FFF3EA", end_color="FFF3EA", fill_type="solid")
+    total_fill = PatternFill(start_color="F5F5F4", end_color="F5F5F4", fill_type="solid")
+    bold_font = Font(name="Calibri", size=11, bold=True)
+    regular_font = Font(name="Calibri", size=10)
+    center_align = Alignment(horizontal="center", vertical="center")
+    left_align = Alignment(horizontal="left", vertical="center")
+    right_align = Alignment(horizontal="right", vertical="center")
+
+    thin_border = Border(
+        left=Side(style="thin", color="E5E5E5"),
+        right=Side(style="thin", color="E5E5E5"),
+        top=Side(style="thin", color="E5E5E5"),
+        bottom=Side(style="thin", color="E5E5E5")
+    )
+
+    # Bloque de Título
+    ws.merge_cells("A1:J1")
+    title_cell = ws["A1"]
+    title_cell.value = f"REGISTRO DIARIO DE JORNADA LABORAL — {clinic_name.upper()}"
+    title_cell.font = Font(name="Calibri", size=14, bold=True, color="1C1917")
+    title_cell.alignment = center_align
+
+    meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+    nombre_mes = meses[target_month - 1] if 1 <= target_month <= 12 else str(target_month)
+
+    ws.merge_cells("A2:J2")
+    sub_cell = ws["A2"]
+    sub_cell.value = f"Período: {nombre_mes} de {target_year} | CIF/NIF: {clinic_cif or 'N/D'} | Cumplimiento RDL 8/2019 (art. 34.9 ET)"
+    sub_cell.font = Font(name="Calibri", size=10, italic=True, color="78716C")
+    sub_cell.alignment = center_align
+
+    # Fila vacía
+    ws.row_dimensions[1].height = 28
+    ws.row_dimensions[2].height = 20
+    ws.row_dimensions[3].height = 10
+
+    # Cabeceras de Tabla
+    headers = [
+        "Fecha", "Trabajador/a", "Entrada", "Salida Pausa", 
+        "Entrada Pausa", "Salida", "Horas Ordinarias", "Horas Extra", 
+        "Terminal de Registro", "Firma del Trabajador/a"
+    ]
+
+    row_num = 4
+    ws.row_dimensions[row_num].height = 24
+    for col_idx, h in enumerate(headers, 1):
+        cell = ws.cell(row=row_num, column=col_idx, value=h)
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = center_align
+        cell.border = thin_border
+
+    # Filas de Datos
+    total_hours = 0.0
+    for shift in shifts:
+        row_num += 1
+        ws.row_dimensions[row_num].height = 20
+
+        hours_val = shift["worked_hours_decimal"]
+        total_hours += hours_val
+
+        ws.cell(row=row_num, column=1, value=shift["date"]).alignment = center_align
+        ws.cell(row=row_num, column=2, value=shift["staff_name"]).alignment = left_align
+        ws.cell(row=row_num, column=3, value=shift["first_in"]).alignment = center_align
+        ws.cell(row=row_num, column=4, value=shift["break_start"]).alignment = center_align
+        ws.cell(row=row_num, column=5, value=shift["break_end"]).alignment = center_align
+        ws.cell(row=row_num, column=6, value=shift["last_out"]).alignment = center_align
+        
+        hours_cell = ws.cell(row=row_num, column=7, value=hours_val)
+        hours_cell.alignment = right_align
+        hours_cell.number_format = "#,##0.00"
+
+        extra_cell = ws.cell(row=row_num, column=8, value=0.0)
+        extra_cell.alignment = right_align
+        extra_cell.number_format = "#,##0.00"
+
+        ws.cell(row=row_num, column=9, value=shift["device_label"]).alignment = left_align
+        ws.cell(row=row_num, column=10, value="").alignment = center_align
+
+        for col_idx in range(1, 11):
+            cell = ws.cell(row=row_num, column=col_idx)
+            cell.font = regular_font
+            cell.border = thin_border
+            if shift["status"] == "in_progress":
+                cell.fill = accent_fill
+
+    # Fila de Totales
+    row_num += 1
+    ws.row_dimensions[row_num].height = 24
+    ws.cell(row=row_num, column=1, value="TOTALES").font = bold_font
+    ws.cell(row=row_num, column=1).alignment = center_align
+    ws.cell(row=row_num, column=1).fill = total_fill
+
+    for c in range(2, 7):
+        cell = ws.cell(row=row_num, column=c, value="")
+        cell.fill = total_fill
+        cell.border = thin_border
+
+    tot_cell = ws.cell(row=row_num, column=7, value=round(total_hours, 2))
+    tot_cell.font = bold_font
+    tot_cell.alignment = right_align
+    tot_cell.fill = total_fill
+    tot_cell.number_format = "#,##0.00"
+    tot_cell.border = thin_border
+
+    tot_ext = ws.cell(row=row_num, column=8, value=0.0)
+    tot_ext.font = bold_font
+    tot_ext.alignment = right_align
+    tot_ext.fill = total_fill
+    tot_ext.number_format = "#,##0.00"
+    tot_ext.border = thin_border
+
+    for c in range(9, 11):
+        cell = ws.cell(row=row_num, column=c, value="")
+        cell.fill = total_fill
+        cell.border = thin_border
+
+    # Pie Legal Obligatorio
+    row_num += 2
+    ws.merge_cells(f"A{row_num}:J{row_num + 1}")
+    footer_cell = ws[f"A{row_num}"]
+    footer_cell.value = (
+        "El presente documento recoge el registro diario de jornada exigido por el art. 34.9 del Estatuto de los Trabajadores "
+        "(Real Decreto-ley 8/2019, de 8 de marzo). Los datos se conservan durante un plazo legal mínimo de cuatro años a disposición "
+        "de los trabajadores, sus representantes legales y de la Inspección de Trabajo y Seguridad Social."
+    )
+    footer_cell.font = Font(name="Calibri", size=9, italic=True, color="78716C")
+    footer_cell.alignment = Alignment(horizontal="left", vertical="top", wrap_text=True)
+
+    # Ajuste automático del ancho de columnas
+    col_widths = {1: 14, 2: 24, 3: 12, 4: 14, 5: 14, 6: 12, 7: 18, 8: 14, 9: 24, 10: 22}
+    for col_idx, width in col_widths.items():
+        ws.column_dimensions[get_column_letter(col_idx)].width = width
+
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+
+    filename = f"registro_jornada_{clinic_name.lower().replace(' ', '_')}_{target_year}_{target_month:02d}.xlsx"
+    return StreamingResponse(
+        output,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )

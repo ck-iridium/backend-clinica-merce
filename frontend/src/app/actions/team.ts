@@ -698,3 +698,41 @@ export async function unbindOperatorDeviceAction(staffId: string) {
     return { success: false, error: error.message };
   }
 }
+
+export async function getTimeClockDailySummaryAction(month?: number, year?: number, staffId?: string) {
+  try {
+    const cookieStore = cookies();
+    let tenantId = cookieStore.get('tenant_id')?.value;
+    const isImpersonating = cookieStore.get('is_impersonating')?.value === 'true';
+    const impersonateTenantId = cookieStore.get('impersonate_tenant_id')?.value;
+    if (isImpersonating && impersonateTenantId) tenantId = impersonateTenantId;
+
+    if (!tenantId) {
+      return { success: false, error: "No autorizado." };
+    }
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+    const query = new URLSearchParams();
+    if (month) query.set('month', month.toString());
+    if (year) query.set('year', year.toString());
+    if (staffId && staffId !== 'all') query.set('staff_id', staffId);
+
+    const res = await fetch(`${apiUrl}/time-clock/daily-summary?${query.toString()}`, {
+      headers: {
+        'X-Tenant-ID': tenantId,
+      },
+      cache: 'no-store',
+      signal: AbortSignal.timeout(8000),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      return { success: false, error: err.detail || 'Error cargando resumen de jornada' };
+    }
+
+    const data = await res.json();
+    return { success: true, data };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}

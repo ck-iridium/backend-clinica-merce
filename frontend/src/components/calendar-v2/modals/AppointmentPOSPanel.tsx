@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import ActiveCounterOperatorPill from '@/components/dashboard/ActiveCounterOperatorPill';
 
 interface CartItem {
   id: string;
@@ -173,10 +174,13 @@ export function AppointmentPOSPanel({
       <div className="shrink-0 p-5 border-b border-stone-100 bg-stone-50/80">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-900 border border-emerald-200/60 mb-1">
-              <Receipt size={12} className="text-emerald-700" />
-              Cobro en Mostrador (TPV)
-            </span>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-900 border border-emerald-200/60">
+                <Receipt size={12} className="text-emerald-700" />
+                Cobro en Mostrador (TPV)
+              </span>
+              <ActiveCounterOperatorPill />
+            </div>
             <h3 className="text-lg sm:text-xl font-serif font-bold text-stone-900">
               Cobrar Cita: {client?.name || 'Cliente'}
             </h3>

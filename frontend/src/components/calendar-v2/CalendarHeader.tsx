@@ -2,6 +2,7 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { Calendar, ChevronDown, ChevronLeft, ChevronRight, CalendarDays, Columns3, MapPin, Building } from 'lucide-react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
+import ActiveCounterOperatorPill from '@/components/dashboard/ActiveCounterOperatorPill';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -218,6 +219,10 @@ export function CalendarHeader({
               <Columns3 size={14} className={viewMode === 'day' ? 'text-[#FF6B00]' : ''} />
               <span>{t('dashboard.calendar.day_specialists') || 'Día (Especialistas)'}</span>
             </button>
+          </div>
+
+          <div className="hidden lg:block ml-1">
+            <ActiveCounterOperatorPill />
           </div>
         </div>
       </div>
