@@ -344,32 +344,45 @@ function FicharContent() {
 
         {/* Pantalla de Éxito Inmediato */}
         {lastActionResult ? (
-          <div className="p-5 rounded-2xl bg-white border border-emerald-200 shadow-xl text-center space-y-3 animate-in zoom-in-95 duration-300 my-auto">
-            <div className="w-12 h-12 mx-auto rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100 shadow-sm">
-              <CheckCircle2 size={28} />
+          <div className="p-5 sm:p-6 rounded-2xl bg-white border border-emerald-200/80 shadow-xl text-center space-y-3.5 animate-in zoom-in-95 duration-300 my-auto">
+            <div className="w-14 h-14 mx-auto rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100 shadow-sm">
+              <CheckCircle2 size={32} />
             </div>
-            <div>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">
+            <div className="space-y-1">
+              <span className="inline-block px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200/60 text-emerald-700 text-[10px] font-bold uppercase tracking-wider">
                 {getEventLabel(lastActionResult.eventType)}
               </span>
-              <h2 className="text-lg font-serif font-bold text-stone-900 mt-0.5">
+              <h2 className="text-xl font-serif font-bold text-stone-900">
                 ¡Fichaje Confirmado!
               </h2>
-              <p className="text-xs text-stone-500 font-medium mt-0.5">
+              <p className="text-xs text-stone-500 font-medium">
                 {lastActionResult.message}
               </p>
-              <p className="text-[11px] font-mono font-bold text-stone-400 mt-1.5">
-                Hora oficial: {lastActionResult.timestamp}
-              </p>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-stone-50 border border-stone-200/60 text-stone-700 text-xs font-mono font-bold mt-1">
+                <span>Hora oficial:</span>
+                <span className="text-stone-900">{lastActionResult.timestamp}</span>
+              </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => setLastActionResult(null)}
-              className="w-full py-2.5 px-4 rounded-xl bg-stone-900 hover:bg-stone-800 text-white text-xs font-bold transition-all"
-            >
-              Registrar otro movimiento
-            </button>
+            <div className="pt-2 border-t border-stone-100 space-y-2">
+              <p className="text-[11px] text-stone-400 leading-relaxed">
+                Tu registro ha quedado firmado con sello de tiempo. Ya puedes cerrar esta ventana en tu teléfono.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  if (typeof window !== 'undefined') {
+                    window.close();
+                  }
+                }}
+                className="w-full py-2.5 px-4 rounded-xl bg-stone-900 hover:bg-stone-800 active:bg-stone-950 text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
+              >
+                Cerrar Ventana
+              </button>
+              <p className="text-[10px] text-stone-400 pt-0.5">
+                Para tu próxima pausa o salida, enfoca de nuevo el código QR en la pantalla del mostrador.
+              </p>
+            </div>
           </div>
         ) : (
           /* Tarjeta de Fichaje Compacta */
