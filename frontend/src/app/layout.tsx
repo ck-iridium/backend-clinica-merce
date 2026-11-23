@@ -416,8 +416,8 @@ export default async function RootLayout({
 
   return (
     <html lang="es" suppressHydrationWarning className={`${fontClasses} ${isDark && !isDashboardRoute ? 'dark' : ''}`}>
-      <GoogleTagManager gtmId={gtmId} />
       <head>
+        {!isDashboardRoute && <GoogleTagManager gtmId={gtmId} />}
         <link rel="icon" href="/api/favicon" sizes="any" />
         <link rel="shortcut icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/api/favicon" />
@@ -456,7 +456,7 @@ export default async function RootLayout({
           }
         ` }} />
       </head>
-      <body className="antialiased bg-background text-foreground flex flex-col min-h-screen">
+      <body suppressHydrationWarning className="antialiased bg-background text-foreground flex flex-col min-h-screen">
         <Providers>
           <TenantInitializer />
           <InviteHandler />

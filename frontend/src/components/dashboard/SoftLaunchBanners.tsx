@@ -10,10 +10,12 @@ export default function SoftLaunchBanners() {
   const [trialTimeLeft, setTrialTimeLeft] = useState<string>('');
   const [emailTimeLeft, setEmailTimeLeft] = useState<string>('');
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
   const [demoBannerDismissed, setDemoBannerDismissed] = useState(true); // default true until checked
   const [trialBannerDismissed, setTrialBannerDismissed] = useState(true);
 
   useEffect(() => {
+    setMounted(true);
     if (typeof window !== 'undefined') {
       const dismissed = localStorage.getItem('probookia_demo_banner_dismissed') === 'true';
       setDemoBannerDismissed(dismissed);
@@ -119,7 +121,7 @@ export default function SoftLaunchBanners() {
     return () => clearInterval(timer);
   }, [limitsData]);
 
-  if (loading || !limitsData) return null;
+  if (!mounted || loading || !limitsData) return null;
 
   const showTrialBanner = limitsData.subscription_status === 'trial' && trialTimeLeft;
   const showEmailBanner = !limitsData.email_verified && emailTimeLeft && limitsData.subscription_status !== 'suspended';

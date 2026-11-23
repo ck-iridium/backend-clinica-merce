@@ -59,6 +59,7 @@ import RosteringManager from "@/components/RosteringManager"
 import TimeClockManager from "@/components/team/TimeClockManager"
 
 export default function TeamPage() {
+  const [mounted, setMounted] = React.useState(false);
   const { t, language } = useLanguage();
   const router = useRouter();
   const { role, loading: loadingRole } = useAuthRole();
@@ -67,6 +68,10 @@ export default function TeamPage() {
   const [enableTimeClock, setEnableTimeClock] = React.useState<boolean>(true);
   const [members, setMembers] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
   const [isInviteModalOpen, setIsInviteModalOpen] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [formData, setFormData] = React.useState({
@@ -318,7 +323,7 @@ export default function TeamPage() {
     }
   };
 
-  if (loadingRole || (role?.toLowerCase() !== 'administrador' && role?.toLowerCase() !== 'admin')) {
+  if (!mounted || loadingRole || (role?.toLowerCase() !== 'administrador' && role?.toLowerCase() !== 'admin')) {
     return (
       <div className="flex flex-col gap-4 justify-center items-center h-[60vh] animate-in fade-in duration-500">
         <Skeleton className="w-16 h-16 rounded-2xl" />

@@ -11,6 +11,7 @@ interface ActiveOperator {
 }
 
 export default function ActiveCounterOperatorPill({ className = "" }: { className?: string }) {
+  const [mounted, setMounted] = useState<boolean>(false);
   const [operator, setOperator] = useState<ActiveOperator | null>(null);
   const [isEnabled, setIsEnabled] = useState<boolean>(false);
 
@@ -40,6 +41,7 @@ export default function ActiveCounterOperatorPill({ className = "" }: { classNam
   };
 
   useEffect(() => {
+    setMounted(true);
     loadOperator();
 
     // Comprobar si Modo Mostrador está habilitado en ajustes
@@ -99,7 +101,7 @@ export default function ActiveCounterOperatorPill({ className = "" }: { classNam
     window.dispatchEvent(new CustomEvent('lock_counter'));
   };
 
-  if (!isEnabled) {
+  if (!mounted || !isEnabled) {
     return null;
   }
 
