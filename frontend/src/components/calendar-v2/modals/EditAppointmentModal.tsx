@@ -25,6 +25,7 @@ import { Button } from '@/components/ui/button';
 import { ClientQuickFormulasModal } from './ClientQuickFormulasModal';
 import { ClientTechnicalHistoryPanel } from './ClientTechnicalHistoryPanel';
 import { AppointmentPOSModal } from './AppointmentPOSModal';
+import { AppointmentPOSPanel } from './AppointmentPOSPanel';
 import {
   Dialog,
   DialogContent,
@@ -144,8 +145,24 @@ export function EditAppointmentModal({
   }, [selectedAppt]);
 
   const [duration, setDuration] = useState<number>(30);
-  const [showFormulasModal, setShowFormulasModal] = useState(false);
-  const [showPOSModal, setShowPOSModal] = useState(false);
+  const [activeSidePanel, setActiveSidePanel] = useState<'none' | 'history' | 'pos'>('none');
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(typeof window !== 'undefined' && window.innerWidth < 1024);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Reset side panel when modal closes or appointment changes
+  useEffect(() => {
+    if (!showEditModal) {
+      setActiveSidePanel('none');
+    }
+  }, [showEditModal, selectedAppt?.id]);
 
   useEffect(() => {
     setDuration(currentApptDuration);
@@ -278,13 +295,13 @@ export function EditAppointmentModal({
   return (
     <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
       <DialogContent className={`p-0 border border-stone-200/80 w-[95vw] h-fit max-h-[94vh] rounded-3xl shadow-2xl bg-white overflow-hidden transition-all duration-300 ${
-        showFormulasModal 
+        activeSidePanel !== 'none' 
           ? 'sm:max-w-md lg:max-w-6xl' 
           : 'sm:max-w-md lg:max-w-[36rem]'
       }`}>
         <div className="flex flex-col lg:flex-row w-full h-full max-h-[94vh] overflow-hidden">
           {/* Columna Izquierda: Datos y Acciones de la Cita */}
-          <div className={`flex flex-col h-full overflow-hidden ${showFormulasModal ? 'w-full lg:w-[480px] shrink-0 lg:border-r border-stone-200/80' : 'w-full'}`}>
+          <div className={`flex flex-col h-full overflow-hidden ${activeSidePanel !== 'none' ? 'w-full lg:w-[480px] shrink-0 lg:border-r border-stone-200/80' : 'w-full'}`}>
             <DialogHeader className="sticky top-0 z-30 shrink-0 p-6 sm:p-8 border-b border-stone-100 bg-white/95 backdrop-blur-md">
               <div className="flex flex-col gap-2">
                 {selectedAppt && (() => {
@@ -320,25 +337,29 @@ export function EditAppointmentModal({
                 <button
                   type="button"
                   id="edit-appt-open-formulas-btn"
-                  onClick={() => setShowFormulasModal(!showFormulasModal)}
+                  onClick={() => setActiveSidePanel(prev => prev === 'history' ? 'none' : 'history')}
                   className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl border font-bold text-xs shadow-2xs transition-all active:scale-95 group cursor-pointer ${
-                    showFormulasModal 
+                    activeSidePanel === 'history' 
                       ? 'border-[#FF6B00] bg-orange-50 text-[#FF6B00] ring-1 ring-[#FF6B00]/30' 
                       : 'border-orange-200/90 bg-orange-50/70 hover:bg-orange-100/80 text-orange-950'
                   }`}
                 >
                   <Sparkles size={15} className="text-[#FF6B00] group-hover:scale-110 transition-transform" />
-                  <span>{showFormulasModal ? 'Ocultar Historial' : 'Ficha & Historial'}</span>
+                  <span>{activeSidePanel === 'history' ? 'Cerrar Historial' : 'Ficha & Historial'}</span>
                 </button>
 
                 <button
                   type="button"
                   id="edit-appt-open-pos-btn"
-                  onClick={() => setShowPOSModal(true)}
-                  className="flex items-center justify-center gap-2 py-3 px-4 rounded-2xl border border-emerald-200/90 bg-emerald-50/80 hover:bg-emerald-100/90 text-emerald-950 font-bold text-xs shadow-2xs transition-all active:scale-95 group cursor-pointer"
+                  onClick={() => setActiveSidePanel(prev => prev === 'pos' ? 'none' : 'pos')}
+                  className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl border font-bold text-xs shadow-2xs transition-all active:scale-95 group cursor-pointer ${
+                    activeSidePanel === 'pos'
+                      ? 'border-emerald-600 bg-emerald-50 text-emerald-800 ring-1 ring-emerald-500/30'
+                      : 'border-emerald-200/90 bg-emerald-50/80 hover:bg-emerald-100/90 text-emerald-950'
+                  }`}
                 >
                   <Receipt size={15} className="text-emerald-700 group-hover:scale-110 transition-transform" />
-                  <span>Cobrar Cita (TPV)</span>
+                  <span>{activeSidePanel === 'pos' ? 'Cerrar Cobro' : 'Cobrar Cita (TPV)'}</span>
                 </button>
               </div>
 
@@ -748,42 +769,60 @@ export function EditAppointmentModal({
       </div>
 
         {/* Columna Derecha (Desktop Side-by-Side): Ficha e Historial Técnico */}
-        {showFormulasModal && (
+        {activeSidePanel === 'history' && (
           <div className="hidden lg:flex flex-1 flex-col h-full overflow-hidden bg-white animate-in fade-in slide-in-from-left-4 duration-300">
             <ClientTechnicalHistoryPanel
               clientId={selectedAppt?.client_id || null}
               clientFallbackName={clientMap.get(selectedAppt?.client_id)?.name}
-              onClose={() => setShowFormulasModal(false)}
+              onClose={() => setActiveSidePanel('none')}
               availableServices={Array.from(serviceMap.values())}
               isEmbedded={true}
             />
           </div>
         )}
+
+        {/* Columna Derecha (Desktop Side-by-Side): Cobro Directo en TPV */}
+        {activeSidePanel === 'pos' && (
+          <div className="hidden lg:flex flex-1 flex-col h-full overflow-hidden bg-white animate-in fade-in slide-in-from-left-4 duration-300">
+            <AppointmentPOSPanel
+              selectedAppt={selectedAppt}
+              client={clientMap.get(selectedAppt?.client_id)}
+              initialService={serviceMap.get(selectedAppt?.service_id)}
+              allServices={Array.from(serviceMap.values())}
+              onClose={() => setActiveSidePanel('none')}
+              isEmbedded={true}
+              onPaymentComplete={async () => {
+                await handleStatusChange('completed');
+              }}
+            />
+          </div>
+        )}
       </div>
 
-        {/* Modal de Ficha Técnica & Historial (Solo Móvil / Tablet) */}
-        <div className="lg:hidden">
+        {/* Modales Flotantes (SOLO en vista Móvil/Tablet para evitar modales superpuestos en Escritorio) */}
+        {isMobile && activeSidePanel === 'history' && (
           <ClientQuickFormulasModal
-            isOpen={showFormulasModal}
-            onClose={() => setShowFormulasModal(false)}
+            isOpen={true}
+            onClose={() => setActiveSidePanel('none')}
             clientId={selectedAppt?.client_id || null}
             clientFallbackName={clientMap.get(selectedAppt?.client_id)?.name}
             availableServices={Array.from(serviceMap.values())}
           />
-        </div>
+        )}
 
-        {/* Modal de Cobro Rápido en TPV */}
-        <AppointmentPOSModal
-          isOpen={showPOSModal}
-          onClose={() => setShowPOSModal(false)}
-          selectedAppt={selectedAppt}
-          client={clientMap.get(selectedAppt?.client_id)}
-          initialService={serviceMap.get(selectedAppt?.service_id)}
-          allServices={Array.from(serviceMap.values())}
-          onPaymentComplete={async () => {
-            await handleStatusChange('completed');
-          }}
-        />
+        {isMobile && activeSidePanel === 'pos' && (
+          <AppointmentPOSModal
+            isOpen={true}
+            onClose={() => setActiveSidePanel('none')}
+            selectedAppt={selectedAppt}
+            client={clientMap.get(selectedAppt?.client_id)}
+            initialService={serviceMap.get(selectedAppt?.service_id)}
+            allServices={Array.from(serviceMap.values())}
+            onPaymentComplete={async () => {
+              await handleStatusChange('completed');
+            }}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );

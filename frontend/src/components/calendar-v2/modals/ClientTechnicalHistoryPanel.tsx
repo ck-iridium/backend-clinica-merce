@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Sparkles, 
   Calendar, 
@@ -40,19 +40,25 @@ export function ClientTechnicalHistoryPanel({
   const [client, setClient] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   
-  // New entry form state
-  const [newFormula, setNewFormula] = useState('');
-  const [newDate, setNewDate] = useState(() => {
+  const getTodayFormatted = () => {
     const today = new Date();
     const dd = String(today.getDate()).padStart(2, '0');
     const mm = String(today.getMonth() + 1).padStart(2, '0');
     const yyyy = today.getFullYear();
     return `${dd}/${mm}/${yyyy}`;
-  });
+  };
+
+  // New entry form state
+  const [newFormula, setNewFormula] = useState('');
+  const [newDate, setNewDate] = useState(getTodayFormatted);
   const [newNotes, setNewNotes] = useState('');
   const [savingFormula, setSavingFormula] = useState(false);
   const [showRawHistory, setShowRawHistory] = useState(false);
   const [isReparsing, setIsReparsing] = useState(false);
+
+  // Hidden date picker refs
+  const newDatePickerRef = useRef<HTMLInputElement>(null);
+  const editDatePickerRef = useRef<HTMLInputElement>(null);
 
   // Inline editing state for past entries
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -60,6 +66,18 @@ export function ClientTechnicalHistoryPanel({
   const [editFormula, setEditFormula] = useState('');
   const [editNotes, setEditNotes] = useState('');
   const [savingEdit, setSavingEdit] = useState(false);
+
+  const handleDateChangeFromCalendar = (e: React.ChangeEvent<HTMLInputElement>, isEditing = false) => {
+    const val = e.target.value; // YYYY-MM-DD
+    if (!val) return;
+    const [y, m, d] = val.split('-');
+    const formatted = `${d}/${m}/${y}`;
+    if (isEditing) {
+      setEditDate(formatted);
+    } else {
+      setNewDate(formatted);
+    }
+  };
 
   // Fetch client data
   useEffect(() => {
@@ -364,14 +382,37 @@ export function ClientTechnicalHistoryPanel({
 
                 {editingIndex === 0 ? (
                   <div className="space-y-2 mt-2 pt-1 border-t border-orange-100">
-                    <div className="flex gap-2">
+                    <div className="flex items-center gap-1.5">
                       <input
                         type="text"
                         value={editDate}
                         onChange={(e) => setEditDate(e.target.value)}
                         placeholder="DD/MM/YYYY"
-                        className="text-xs border border-stone-300 rounded-lg px-2 py-1 w-28 font-medium"
+                        className="text-xs border border-stone-300 rounded-lg px-2.5 py-1 w-28 font-bold text-stone-800 bg-white"
                       />
+                      <button
+                        type="button"
+                        onClick={() => editDatePickerRef.current?.showPicker?.()}
+                        className="p-1.5 text-stone-500 hover:text-[#FF6B00] bg-white border border-stone-200 rounded-lg transition-colors cursor-pointer shadow-2xs"
+                        title="Abrir calendario"
+                      >
+                        <Calendar size={13} />
+                      </button>
+                      <input
+                        ref={editDatePickerRef}
+                        type="date"
+                        onChange={(e) => handleDateChangeFromCalendar(e, true)}
+                        className="sr-only"
+                        tabIndex={-1}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setEditDate(getTodayFormatted())}
+                        className="px-2 py-1 text-[10px] font-bold text-[#FF6B00] bg-white border border-orange-200 rounded-lg transition-all cursor-pointer shadow-2xs"
+                        title="Poner fecha de hoy"
+                      >
+                        HOY
+                      </button>
                     </div>
                     <textarea
                       value={editFormula}
@@ -445,13 +486,38 @@ export function ClientTechnicalHistoryPanel({
                   <Plus size={13} className="text-[#FF6B00]" />
                   Registrar Visita / Trabajo Realizado
                 </span>
-                <input
-                  type="text"
-                  value={newDate}
-                  onChange={(e) => setNewDate(e.target.value)}
-                  placeholder="DD/MM/YYYY"
-                  className="w-28 text-xs font-bold text-stone-700 bg-white border border-stone-200 rounded-lg px-2 py-1 text-center focus:outline-none focus:border-[#FF6B00]"
-                />
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="text"
+                    value={newDate}
+                    onChange={(e) => setNewDate(e.target.value)}
+                    placeholder="DD/MM/YYYY"
+                    className="w-28 text-xs font-bold text-stone-800 bg-white border border-stone-200 rounded-lg px-2 py-1 text-center focus:outline-none focus:border-[#FF6B00]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => newDatePickerRef.current?.showPicker?.()}
+                    className="p-1.5 text-stone-500 hover:text-[#FF6B00] bg-white border border-stone-200 rounded-lg transition-colors cursor-pointer shadow-2xs"
+                    title="Abrir calendario"
+                  >
+                    <Calendar size={13} />
+                  </button>
+                  <input
+                    ref={newDatePickerRef}
+                    type="date"
+                    onChange={(e) => handleDateChangeFromCalendar(e, false)}
+                    className="sr-only"
+                    tabIndex={-1}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setNewDate(getTodayFormatted())}
+                    className="px-2 py-1 text-[10px] font-bold text-[#FF6B00] bg-white border border-orange-200 rounded-lg transition-all cursor-pointer shadow-2xs"
+                    title="Poner fecha de hoy"
+                  >
+                    HOY
+                  </button>
+                </div>
               </div>
 
               <div>
@@ -545,13 +611,31 @@ export function ClientTechnicalHistoryPanel({
 
                         {isEditingThis ? (
                           <div className="space-y-2 pt-2 border-t border-stone-100">
-                            <input
-                              type="text"
-                              value={editDate}
-                              onChange={(e) => setEditDate(e.target.value)}
-                              placeholder="DD/MM/YYYY"
-                              className="text-xs border border-stone-300 rounded-lg px-2 py-1 w-28 font-medium"
-                            />
+                            <div className="flex items-center gap-1.5">
+                              <input
+                                type="text"
+                                value={editDate}
+                                onChange={(e) => setEditDate(e.target.value)}
+                                placeholder="DD/MM/YYYY"
+                                className="text-xs border border-stone-300 rounded-lg px-2.5 py-1 w-28 font-bold text-stone-800 bg-white"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => editDatePickerRef.current?.showPicker?.()}
+                                className="p-1.5 text-stone-500 hover:text-[#FF6B00] bg-white border border-stone-200 rounded-lg transition-colors cursor-pointer shadow-2xs"
+                                title="Abrir calendario"
+                              >
+                                <Calendar size={13} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setEditDate(getTodayFormatted())}
+                                className="px-2 py-1 text-[10px] font-bold text-[#FF6B00] bg-white border border-orange-200 rounded-lg transition-all cursor-pointer shadow-2xs"
+                                title="Poner fecha de hoy"
+                              >
+                                HOY
+                              </button>
+                            </div>
                             <textarea
                               value={editFormula}
                               onChange={(e) => setEditFormula(e.target.value)}
