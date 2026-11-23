@@ -50,6 +50,7 @@ class ClinicSettingsBase(BaseModel):
     booking_layout: Optional[str] = "grid"
     allow_online_booking: Optional[bool] = True
     counter_autolock_minutes: Optional[int] = 10
+    require_authorized_device: Optional[bool] = False
     cancellation_margin_hours: int = 24
     global_deposit_required: Optional[bool] = False
     global_deposit_amount: Optional[float] = None
@@ -135,6 +136,7 @@ class ClinicSettingsUpdate(BaseModel):
     booking_layout: Optional[str] = None
     allow_online_booking: Optional[bool] = None
     counter_autolock_minutes: Optional[int] = None
+    require_authorized_device: Optional[bool] = None
     cancellation_margin_hours: Optional[int] = None
     global_deposit_required: Optional[bool] = None
     global_deposit_amount: Optional[float] = None

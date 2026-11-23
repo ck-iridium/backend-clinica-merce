@@ -60,6 +60,17 @@ def run_auto_migrations():
             except Exception:
                 db.rollback()
 
+            try:
+                db.execute(text("ALTER TABLE authorized_terminals ENABLE ROW LEVEL SECURITY;"))
+                db.execute(text("DROP POLICY IF EXISTS tenant_isolation_authorized_terminals ON authorized_terminals;"))
+                db.execute(text("""
+                    CREATE POLICY tenant_isolation_authorized_terminals ON authorized_terminals
+                    FOR ALL USING (tenant_id = current_setting('app.current_tenant_id', true));
+                """))
+                db.commit()
+            except Exception:
+                db.rollback()
+
         # Recrear la función trigger notify_appointment_changes en PostgreSQL para inyectar tenant_id
         if not is_sqlite:
             trigger_sql = """
@@ -346,7 +357,9 @@ $function$;
             "ALTER TABLE profiles ADD COLUMN pin_failed_attempts INTEGER DEFAULT 0",
             "ALTER TABLE profiles ADD COLUMN pin_locked_until TIMESTAMP",
             "ALTER TABLE clinic_settings ADD COLUMN counter_autolock_minutes INTEGER DEFAULT 10",
-            "CREATE TABLE IF NOT EXISTS time_clock_records (id VARCHAR(36) PRIMARY KEY, tenant_id VARCHAR(36) NOT NULL, staff_id VARCHAR(36) NOT NULL, event_type VARCHAR(20) NOT NULL, timestamp TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()), device_label VARCHAR(100), device_id VARCHAR(255), ip_address VARCHAR(45), notes TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()))"
+            "ALTER TABLE clinic_settings ADD COLUMN require_authorized_device BOOLEAN DEFAULT FALSE",
+            "CREATE TABLE IF NOT EXISTS time_clock_records (id VARCHAR(36) PRIMARY KEY, tenant_id VARCHAR(36) NOT NULL, staff_id VARCHAR(36) NOT NULL, event_type VARCHAR(20) NOT NULL, timestamp TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()), device_label VARCHAR(100), device_id VARCHAR(255), ip_address VARCHAR(45), notes TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()))",
+            "CREATE TABLE IF NOT EXISTS authorized_terminals (id VARCHAR(36) PRIMARY KEY, tenant_id VARCHAR(36) NOT NULL, device_name VARCHAR(100) NOT NULL, token_hash VARCHAR(128) NOT NULL, ip_address VARCHAR(45), browser_info VARCHAR(255), is_active BOOLEAN DEFAULT TRUE, created_by_user_id VARCHAR(36), last_seen_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()), created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()))"
         ]
         
         # 0.3 Pre-consulta de columnas y constraints existentes para evitar bloqueos innecesarios (ALTER TABLE adquiere AccessExclusiveLock)

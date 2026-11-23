@@ -10,6 +10,7 @@ import AICopilotWidget from '@/components/ai/AICopilotWidget';
 import CoachTooltipManager from '@/components/ui/CoachTooltipManager';
 import GracePeriodBanner from '@/components/dashboard/GracePeriodBanner';
 import CounterModeManager from '@/components/dashboard/CounterModeManager';
+import { TerminalGuard } from '@/components/dashboard/TerminalGuard';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   // El middleware inyecta x-tenant-id en cada request para Server Components
@@ -50,6 +51,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       >
         <RouteGuard />
         <OnboardingGuard />
+        <TerminalGuard />
 
         {/* Sidebar: Siempre visible para todas las rutas del dashboard */}
         <DashboardSidebar clinicName={clinicName} logoUrl={logoUrl} />

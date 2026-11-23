@@ -2,6 +2,7 @@ import { Clock, Calendar, Trash2, Hash, PhoneCall, Lock } from 'lucide-react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { TerminalSecurityManager } from '@/components/settings/TerminalSecurityManager';
 
 interface AgendaTabProps {
   settings: any;
@@ -137,6 +138,9 @@ export default function AgendaTab({
           </div>
         </div>
       </div>
+
+      {/* Fase 4 & 5: Hardware Guard de Terminales Autorizados y App de Escritorio */}
+      <TerminalSecurityManager initialRequireRestriction={settings.require_authorized_device} />
 
       {/* Horario Hábil */}
       <div className="bg-white rounded-3xl border border-stone-200/80 p-6 md:p-8 shadow-sm">

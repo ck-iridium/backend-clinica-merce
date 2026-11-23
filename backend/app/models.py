@@ -446,8 +446,9 @@ class ClinicSettings(Base):
     mobile_logo_height = Column(Integer, default=36, nullable=True)
     logo_footer_b64 = Column(Text, nullable=True)
     footer_logo_mode = Column(String, default="white", nullable=True)
-    # Modo Mostrador TPV
+    # Modo Mostrador TPV & Terminales
     counter_autolock_minutes = Column(Integer, default=10, nullable=True) # 0=desactivado, 5, 10, 15
+    require_authorized_device = Column(Boolean, default=False, nullable=True) # Si es True, restringe acceso al panel a terminales homologados
 
 
 class Invoice(Base):
@@ -695,6 +696,21 @@ class TimeClockRecord(Base):
     ip_address = Column(String(45), nullable=True)
     notes = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class AuthorizedTerminal(Base):
+    __tablename__ = "authorized_terminals"
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    tenant_id = Column(String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, index=True)
+    device_name = Column(String(100), nullable=False) # e.g. "PC Mostrador Principal - Chrome"
+    token_hash = Column(String(128), nullable=False, index=True) # SHA-256 hash
+    ip_address = Column(String(45), nullable=True)
+    browser_info = Column(String(255), nullable=True)
+    is_active = Column(Boolean, default=True, nullable=False)
+    created_by_user_id = Column(String(36), nullable=True)
+    last_seen_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
 
 
 
