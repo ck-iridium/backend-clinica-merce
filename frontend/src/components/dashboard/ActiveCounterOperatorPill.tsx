@@ -109,13 +109,13 @@ export default function ActiveCounterOperatorPill({ className = "" }: { classNam
         type="button"
         id="counter-active-operator-pill"
         onClick={handleSwitchOperator}
-        className={`inline-flex items-center gap-2 py-2 px-3.5 rounded-2xl bg-white hover:bg-orange-50 border border-stone-200/90 hover:border-orange-200 text-stone-700 hover:text-[#FF6B00] text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer ${className}`}
+        className={`inline-flex items-center gap-2.5 py-2.5 px-4 rounded-2xl bg-white hover:bg-orange-50/70 border border-stone-200/90 hover:border-orange-200 text-stone-700 hover:text-[#FF6B00] text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer ${className}`}
         title="Pulsar para identificarse como operadora de mostrador"
       >
         <span className="w-2.5 h-2.5 rounded-full bg-[#FF6B00] animate-pulse" />
         <span className="text-xs font-bold text-stone-800">Mostrador Libre</span>
-        <div className="w-5 h-5 rounded-lg bg-stone-100 flex items-center justify-center text-stone-500">
-          <Lock size={12} />
+        <div className="w-6 h-6 rounded-lg bg-stone-100 flex items-center justify-center text-stone-500">
+          <Lock size={13} />
         </div>
       </button>
     );
@@ -124,20 +124,24 @@ export default function ActiveCounterOperatorPill({ className = "" }: { classNam
   return (
     <div
       id="counter-active-operator-pill"
-      className={`inline-flex items-center gap-2.5 py-1.5 px-3 rounded-2xl bg-white border border-stone-200/90 shadow-sm text-stone-800 transition-all ${className}`}
+      className={`inline-flex items-center gap-3 py-2 px-3.5 sm:px-4 rounded-2xl bg-white border border-stone-200/90 shadow-sm text-stone-800 transition-all ${className}`}
     >
-      <div className="relative flex items-center justify-center">
-        <div className="w-7 h-7 rounded-xl bg-[#FF6B00] text-white flex items-center justify-center text-xs font-bold shadow-xs">
-          {operator.full_name ? operator.full_name.charAt(0).toUpperCase() : 'O'}
+      <div className="relative flex items-center justify-center shrink-0">
+        <div className="w-9 h-9 rounded-xl bg-[#FF6B00] text-white flex items-center justify-center text-sm font-bold shadow-xs overflow-hidden">
+          {operator.avatar_url ? (
+            <img src={operator.avatar_url} alt={operator.full_name || "Operadora"} className="w-full h-full object-cover" />
+          ) : (
+            <span>{operator.full_name ? operator.full_name.charAt(0).toUpperCase() : 'O'}</span>
+          )}
         </div>
-        <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 border border-white" />
+        <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white" />
       </div>
 
-      <div className="flex flex-col text-left leading-tight max-w-[130px]">
-        <span className="text-xs font-bold text-stone-900 truncate">
+      <div className="flex flex-col text-left leading-tight max-w-[150px]">
+        <span className="text-xs sm:text-sm font-bold text-stone-900 truncate">
           {operator.full_name}
         </span>
-        <span className="text-[10px] font-medium text-stone-400 capitalize truncate">
+        <span className="text-[11px] font-medium text-stone-500 capitalize truncate">
           {formatRole(operator.role)}
         </span>
       </div>
@@ -145,10 +149,10 @@ export default function ActiveCounterOperatorPill({ className = "" }: { classNam
       <button
         type="button"
         onClick={handleSwitchOperator}
-        className="ml-1 p-1.5 rounded-xl hover:bg-stone-100 text-stone-400 hover:text-[#FF6B00] transition-colors active:scale-95 cursor-pointer"
+        className="ml-0.5 p-1.5 rounded-xl hover:bg-stone-100 text-stone-400 hover:text-[#FF6B00] transition-colors active:scale-95 cursor-pointer"
         title="Cambiar operadora / Bloquear mostrador"
       >
-        <Lock size={14} />
+        <Lock size={15} />
       </button>
     </div>
   );

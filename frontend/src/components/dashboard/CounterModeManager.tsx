@@ -26,6 +26,7 @@ interface Operator {
   id: string;
   full_name: string;
   role: string;
+  avatar_url?: string | null;
   auth_mode?: string;
   bound_device_id?: string | null;
   has_pin?: boolean;
@@ -650,8 +651,12 @@ export default function CounterModeManager({
                       }}
                       className="p-4 rounded-3xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-orange-500/50 flex flex-col items-center gap-2.5 text-center transition-all group active:scale-95 cursor-pointer"
                     >
-                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-stone-800 to-stone-700 group-hover:from-orange-600 group-hover:to-orange-500 border border-white/10 flex items-center justify-center text-lg font-bold text-white shadow-md transition-all">
-                        {op.full_name.charAt(0).toUpperCase()}
+                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-stone-800 to-stone-700 group-hover:from-orange-600 group-hover:to-orange-500 border border-white/10 flex items-center justify-center text-lg font-bold text-white shadow-md transition-all overflow-hidden">
+                        {op.avatar_url ? (
+                          <img src={op.avatar_url} alt={op.full_name || "Operadora"} className="w-full h-full object-cover" />
+                        ) : (
+                          op.full_name.charAt(0).toUpperCase()
+                        )}
                       </div>
                       <div className="w-full truncate">
                         <p className="text-xs font-bold text-white truncate">{op.full_name}</p>
@@ -665,8 +670,12 @@ export default function CounterModeManager({
               /* Numpad de Desbloqueo por PIN */
               <div className="space-y-5 text-center animate-in zoom-in-95 duration-200">
                 <div className="flex flex-col items-center gap-2">
-                  <div className="w-14 h-14 rounded-2xl bg-[#FF6B00] text-white flex items-center justify-center text-xl font-bold shadow-lg">
-                    {selectedOperator.full_name.charAt(0).toUpperCase()}
+                  <div className="w-14 h-14 rounded-2xl bg-[#FF6B00] text-white flex items-center justify-center text-xl font-bold shadow-lg overflow-hidden">
+                    {selectedOperator.avatar_url ? (
+                      <img src={selectedOperator.avatar_url} alt={selectedOperator.full_name || "Operadora"} className="w-full h-full object-cover" />
+                    ) : (
+                      selectedOperator.full_name.charAt(0).toUpperCase()
+                    )}
                   </div>
                   <div>
                     <h3 className="font-serif text-xl sm:text-2xl font-bold text-white">

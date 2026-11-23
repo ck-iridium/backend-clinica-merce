@@ -32,11 +32,11 @@ export default function ProfilePreferencesForm({
 
       <div className="space-y-4">
         <div 
-          className="group flex items-center justify-between p-4 sm:p-6 rounded-3xl border border-stone-50 hover:bg-stone-50/50 hover:border-stone-100 transition-all cursor-pointer gap-4" 
+          className="group flex items-center justify-between p-4 sm:p-6 rounded-3xl border border-stone-100 hover:bg-stone-50/50 hover:border-stone-200/70 transition-all cursor-pointer gap-4" 
           onClick={() => setReceiveEmailAppointments(!receiveEmailAppointments)}
         >
           <div className="flex items-center gap-4 sm:gap-5">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white flex items-center justify-center text-stone-400 group-hover:text-[#D4AF37] shadow-sm transition-all shrink-0">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white flex items-center justify-center text-stone-400 group-hover:text-[#FF6B00] shadow-sm transition-all shrink-0">
               <Mail size={20} />
             </div>
             <div>
@@ -44,24 +44,32 @@ export default function ProfilePreferencesForm({
               <p className="text-[10px] sm:text-xs text-stone-400 mt-0.5 leading-tight">Recibir avisos de reservas y cancelaciones en tiempo real.</p>
             </div>
           </div>
-          <label className="relative inline-flex items-center cursor-pointer shrink-0" onClick={e => e.stopPropagation()}>
-            <input
-              id="profile-email-appointments-check"
-              type="checkbox"
-              className="sr-only peer"
-              checked={receiveEmailAppointments}
-              onChange={(e) => setReceiveEmailAppointments(e.target.checked)}
+          <button
+            type="button"
+            role="switch"
+            aria-checked={receiveEmailAppointments}
+            onClick={(e) => {
+              e.stopPropagation();
+              setReceiveEmailAppointments(!receiveEmailAppointments);
+            }}
+            className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none shadow-inner ${
+              receiveEmailAppointments ? 'bg-[#FF6B00]' : 'bg-stone-300'
+            }`}
+          >
+            <span
+              className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                receiveEmailAppointments ? 'translate-x-5' : 'translate-x-0'
+              }`}
             />
-            <div className="w-13 h-7 bg-stone-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:border-gray-200 after:border after:rounded-full after:h-5.5 after:w-5.5 after:transition-all peer-checked:bg-[#D4AF37] shadow-inner"></div>
-          </label>
+          </button>
         </div>
 
         <div 
-          className="group flex items-center justify-between p-4 sm:p-6 rounded-3xl border border-stone-100 hover:bg-stone-50/50 hover:border-stone-200/60 transition-all cursor-pointer gap-4" 
+          className="group flex items-center justify-between p-4 sm:p-6 rounded-3xl border border-stone-100 hover:bg-stone-50/50 hover:border-stone-200/70 transition-all cursor-pointer gap-4" 
           onClick={() => setReceiveAgendaReminders(!receiveAgendaReminders)}
         >
           <div className="flex items-center gap-4 sm:gap-5">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white flex items-center justify-center text-stone-400 group-hover:text-[#D4AF37] shadow-sm transition-all shrink-0">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white flex items-center justify-center text-stone-400 group-hover:text-[#FF6B00] shadow-sm transition-all shrink-0">
               <MonitorSmartphone size={20} />
             </div>
             <div>
@@ -69,24 +77,32 @@ export default function ProfilePreferencesForm({
               <p className="text-[10px] sm:text-xs text-stone-400 mt-0.5 leading-tight">Resumen matutino con la agenda completa del día.</p>
             </div>
           </div>
-          <label className="relative inline-flex items-center cursor-pointer shrink-0" onClick={e => e.stopPropagation()}>
-            <input
-              id="profile-agenda-reminders-check"
-              type="checkbox"
-              className="sr-only peer"
-              checked={receiveAgendaReminders}
-              onChange={(e) => setReceiveAgendaReminders(e.target.checked)}
+          <button
+            type="button"
+            role="switch"
+            aria-checked={receiveAgendaReminders}
+            onClick={(e) => {
+              e.stopPropagation();
+              setReceiveAgendaReminders(!receiveAgendaReminders);
+            }}
+            className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none shadow-inner ${
+              receiveAgendaReminders ? 'bg-[#FF6B00]' : 'bg-stone-300'
+            }`}
+          >
+            <span
+              className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                receiveAgendaReminders ? 'translate-x-5' : 'translate-x-0'
+              }`}
             />
-            <div className="w-13 h-7 bg-stone-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:border-gray-200 after:border after:rounded-full after:h-5.5 after:w-5.5 after:transition-all peer-checked:bg-[#D4AF37] shadow-inner"></div>
-          </label>
+          </button>
         </div>
 
-        <div className="mt-8 p-6 bg-[#D4AF37]/5 rounded-[2rem] border border-[#D4AF37]/10 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center text-[#D4AF37]">
+        <div className="mt-8 p-6 bg-orange-50/60 rounded-[2rem] border border-orange-200/50 flex items-center gap-4">
+          <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center text-[#FF6B00]">
             <Sparkles size={18} />
           </div>
-          <p className="text-[11px] text-stone-500 leading-relaxed">
-            Usa el botón <strong>Guardar Preferencias</strong> en la columna izquierda para aplicar los cambios de notificación.
+          <p className="text-[11px] text-stone-600 leading-relaxed">
+            Usa el botón <strong>Guardar Cambios</strong> en la columna izquierda para aplicar tus modificaciones de notificación.
           </p>
         </div>
       </div>

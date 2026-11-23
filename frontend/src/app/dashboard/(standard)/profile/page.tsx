@@ -38,7 +38,7 @@ export default function ProfilePage() {
       {/* ── Header Elegante ── */}
       <div className="mb-12 relative pt-8 lg:pt-0">
         <div className="absolute -left-10 top-0 w-20 h-20 bg-stone-100 rounded-full blur-3xl opacity-60"></div>
-        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#D4AF37] mb-3">Gestión de Identidad</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#FF6B00] mb-3">Gestión de Identidad</p>
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-medium text-stone-900 tracking-tight leading-tight">
           Mi Perfil <span className="text-stone-300 font-light block sm:inline">Digital</span>
         </h1>

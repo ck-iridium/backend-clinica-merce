@@ -34,7 +34,7 @@ export default function ProfileAvatarCard({
   return (
     <div className="lg:col-span-4 space-y-8 lg:sticky lg:top-24">
       <div className="bg-white rounded-3xl sm:rounded-[3rem] border border-stone-100 shadow-xl shadow-stone-200/40 p-6 sm:p-10 text-center relative overflow-hidden group">
-        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#D4AF37] via-primary/30 to-[#D4AF37] opacity-60"></div>
+        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-orange-400 via-[#FF6B00] to-orange-400 opacity-80"></div>
 
         {/* Avatar Upload */}
         <div className="relative group mb-6">
@@ -97,7 +97,7 @@ export default function ProfileAvatarCard({
 
         <div className="mt-8 flex items-center justify-center gap-3">
           <div className="px-5 py-2.5 bg-stone-50 border border-stone-100 rounded-2xl flex items-center gap-2 shadow-sm">
-            <Shield size={16} className="text-[#D4AF37]" />
+            <Shield size={16} className="text-[#FF6B00]" />
             <span className="text-xs font-bold text-stone-600 tracking-tighter uppercase">{role}</span>
           </div>
         </div>
@@ -126,14 +126,14 @@ export default function ProfileAvatarCard({
           id="profile-save-all-btn"
           onClick={handleSaveAll}
           disabled={savingPrefs || !isDirty}
-          className="w-full bg-stone-950 text-white hover:bg-[#D4AF37] hover:text-stone-950 px-6 sm:px-8 py-4 rounded-2xl font-bold text-sm shadow-luxury transition-all duration-300 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-3 group"
+          className="w-full bg-stone-900 text-white hover:bg-[#FF6B00] hover:text-white px-6 sm:px-8 py-4 rounded-2xl font-bold text-sm shadow-md transition-all duration-200 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-3 group cursor-pointer"
         >
           {savingPrefs ? (
-            <Loader2 className="animate-spin" size={18} />
+            <Loader2 className="animate-spin text-white" size={18} />
           ) : (
-            <CheckCircle2 size={18} className="text-[#D4AF37] group-hover:text-stone-950 group-hover:scale-110 transition-transform" />
+            <CheckCircle2 size={18} className="text-[#FF6B00] group-hover:text-white transition-colors" />
           )}
-          {isDirty ? 'Guardar Cambios' : 'Sin cambios pendientes'}
+          <span className="text-white font-bold">{isDirty ? 'Guardar Cambios' : 'Sin cambios pendientes'}</span>
         </button>
       </div>
     </div>

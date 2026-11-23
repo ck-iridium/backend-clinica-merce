@@ -11,13 +11,23 @@ export default function SoftLaunchBanners() {
   const [emailTimeLeft, setEmailTimeLeft] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [demoBannerDismissed, setDemoBannerDismissed] = useState(true); // default true until checked
+  const [trialBannerDismissed, setTrialBannerDismissed] = useState(true);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const dismissed = localStorage.getItem('probookia_demo_banner_dismissed') === 'true';
       setDemoBannerDismissed(dismissed);
+      const trialDismissed = sessionStorage.getItem('probookia_trial_banner_dismissed') === 'true';
+      setTrialBannerDismissed(trialDismissed);
     }
   }, []);
+
+  const handleDismissTrialBanner = () => {
+    setTrialBannerDismissed(true);
+    try {
+      sessionStorage.setItem('probookia_trial_banner_dismissed', 'true');
+    } catch {}
+  };
 
   const handleDismissDemoBanner = () => {
     setDemoBannerDismissed(true);
@@ -138,24 +148,37 @@ export default function SoftLaunchBanners() {
         </div>
       )}
 
-      {/* 2. Banner de Trial de 14 Días - Dorado Premium */}
-      {showTrialBanner && (
-        <div className="bg-gradient-to-r from-stone-950 to-stone-900 border border-stone-800 rounded-2xl p-4 flex flex-col md:flex-row items-center md:justify-between gap-4 shadow-luxury animate-in fade-in slide-in-from-top duration-300">
-          <div className="flex items-center gap-3">
-            <span className="w-10 h-10 rounded-xl bg-[#d4af37]/10 text-[#d4af37] border border-[#d4af37]/20 flex items-center justify-center shadow-inner">
-              <Compass className="w-5 h-5" />
+      {/* 2. Banner de Trial - Compacto, Elegante y Descartable */}
+      {showTrialBanner && !trialBannerDismissed && (
+        <div className="bg-gradient-to-r from-stone-950 via-stone-900 to-stone-950 border border-stone-800/90 rounded-2xl py-3 px-4 sm:px-5 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xl animate-in fade-in slide-in-from-top duration-300">
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            <span className="w-8 h-8 rounded-xl bg-orange-500/10 text-[#FF6B00] border border-orange-500/20 flex items-center justify-center shrink-0 shadow-inner">
+              <Compass className="w-4 h-4" />
             </span>
-            <div>
-              <p className="text-xs font-bold text-white">Periodo de Prueba Activo (Plan {limitsData.plan_type?.toUpperCase()})</p>
-              <p className="text-[10px] text-stone-400 font-medium mt-0.5 leading-normal">
-                Disfruta de todas las características premium sin límites de prueba. Activa tu suscripción en cualquier momento desde los ajustes de facturación.
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <p className="text-xs font-bold text-white truncate">Periodo de Prueba Activo (Plan {limitsData.plan_type?.toUpperCase() || 'PRO'})</p>
+                <span className="text-[9px] bg-orange-500/20 text-orange-400 border border-orange-500/30 px-2 py-0.5 rounded-full font-black uppercase shrink-0">
+                  Prueba
+                </span>
+              </div>
+              <p className="text-[11px] text-stone-400 font-medium mt-0.5 leading-tight truncate sm:whitespace-normal">
+                Disfruta de todas las características sin límites. Activa tu plan en cualquier momento.
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="bg-stone-950/80 border border-amber-500/30 rounded-xl px-4 py-2 shadow-inner hover:border-amber-400/50 transition-colors">
-              <span className="text-xs font-extrabold text-amber-400 font-mono tracking-tight">{trialTimeLeft}</span>
+          <div className="flex items-center gap-2.5 shrink-0 self-end sm:self-center">
+            <div className="bg-stone-900/90 border border-orange-500/30 rounded-xl px-3 py-1.5 shadow-inner">
+              <span className="text-xs font-black text-orange-400 font-mono tracking-tight">{trialTimeLeft}</span>
             </div>
+            <button
+              type="button"
+              onClick={handleDismissTrialBanner}
+              className="p-1.5 text-stone-400 hover:text-white transition-colors rounded-xl hover:bg-white/10 cursor-pointer"
+              title="Ocultar este aviso"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
         </div>
       )}

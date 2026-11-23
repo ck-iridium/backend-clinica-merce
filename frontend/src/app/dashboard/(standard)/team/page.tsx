@@ -595,11 +595,13 @@ export default function TeamPage() {
                     <tr key={member.id} className="group hover:bg-stone-50/50 transition-colors">
                       <td className="py-5 px-4">
                         <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-700 font-bold text-sm border border-stone-200/60 shadow-xs shrink-0">
-                            {member.role === 'Administrador' || member.role === 'admin' ? (
-                              <ShieldCheck size={18} className="text-stone-600" />
+                          <div className="w-10 h-10 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-700 font-bold text-sm border border-stone-200/60 shadow-xs shrink-0 overflow-hidden">
+                            {member.avatar_url ? (
+                              <img src={member.avatar_url} alt={member.full_name || "Avatar"} className="w-full h-full object-cover" />
                             ) : member.full_name ? (
                               <span className="font-bold text-stone-700 text-sm">{member.full_name.charAt(0).toUpperCase()}</span>
+                            ) : member.role === 'Administrador' || member.role === 'admin' ? (
+                              <ShieldCheck size={18} className="text-stone-600" />
                             ) : (
                               <Sparkles size={18} className="text-[#FF6B00]" />
                             )}
