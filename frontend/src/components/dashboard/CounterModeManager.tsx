@@ -15,7 +15,8 @@ import {
   CheckCircle2, 
   AlertCircle,
   Loader2,
-  Sparkles
+  Sparkles,
+  LogOut
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -64,10 +65,27 @@ export default function CounterModeManager({
   const [qrSecondsLeft, setQrSecondsLeft] = useState<number>(20);
   const [isFetchingToken, setIsFetchingToken] = useState<boolean>(false);
 
-  // Refs de temporizadores
+  // Refs de temporizadores y teclado físico
   const autolockTimerRef = useRef<NodeJS.Timeout | null>(null);
   const qrIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const qrCountdownRef = useRef<NodeJS.Timeout | null>(null);
+
+  const pinValueRef = useRef<string>(pinValue);
+  const selectedOperatorRef = useRef<Operator | null>(selectedOperator);
+  const isLockedRef = useRef<boolean>(isLocked);
+  const isVerifyingPinRef = useRef<boolean>(isVerifyingPin);
+  const availableOperatorsRef = useRef<Operator[]>([]);
+
+  // Filtrar estrictamente operadoras que cuentan con PIN configurado
+  const availableOperators = React.useMemo(() => {
+    return operators.filter(op => Boolean(op.has_pin));
+  }, [operators]);
+
+  useEffect(() => { pinValueRef.current = pinValue; }, [pinValue]);
+  useEffect(() => { selectedOperatorRef.current = selectedOperator; }, [selectedOperator]);
+  useEffect(() => { isLockedRef.current = isLocked; }, [isLocked]);
+  useEffect(() => { isVerifyingPinRef.current = isVerifyingPin; }, [isVerifyingPin]);
+  useEffect(() => { availableOperatorsRef.current = availableOperators; }, [availableOperators]);
 
   // 1. Obtención ultra-resiliente del tenant_id
   const getResolvedTenantId = useCallback(() => {
@@ -242,15 +260,23 @@ export default function CounterModeManager({
       return;
     }
     const list = opsList || operators;
-    if (list.length === 0) {
+    const withPin = list.filter(op => Boolean(op.has_pin));
+    if (withPin.length === 0) {
       toast.info("Para usar el Modo Mostrador, crea al menos una operadora con PIN en Equipo.");
       setIsLocked(false);
       sessionStorage.removeItem('counter_is_locked');
       return;
     }
     setIsLocked(true);
-    setSelectedOperator(null);
+    if (withPin.length === 1) {
+      setSelectedOperator(withPin[0]);
+      selectedOperatorRef.current = withPin[0];
+    } else {
+      setSelectedOperator(null);
+      selectedOperatorRef.current = null;
+    }
     setPinValue('');
+    pinValueRef.current = '';
     setPinError(null);
     sessionStorage.setItem('counter_is_locked', 'true');
     if (reason) {
@@ -261,9 +287,18 @@ export default function CounterModeManager({
   const unlockCounter = () => {
     setIsLocked(false);
     setSelectedOperator(null);
+    selectedOperatorRef.current = null;
     setPinValue('');
+    pinValueRef.current = '';
     setPinError(null);
     sessionStorage.removeItem('counter_is_locked');
+  };
+
+  const handleLogout = () => {
+    sessionStorage.removeItem('counter_is_locked');
+    localStorage.removeItem('counter_active_operator');
+    localStorage.removeItem('user');
+    window.location.href = '/login';
   };
 
   // 4. Obtención y rotación del Token QR cada 20 segundos
@@ -363,19 +398,91 @@ export default function CounterModeManager({
         throw new Error(data.detail || "PIN incorrecto.");
       }
 
-      // Guardar operadora activa en sesión
-      localStorage.setItem('counter_active_operator', JSON.stringify(data));
-      window.dispatchEvent(new CustomEvent('counter_operator_changed', { detail: data }));
+      // El backend devuelve { success: true, operator: { id, full_name, role, ... } }
+      const activeOperator = data.operator || data;
 
-      toast.success(`Mostrador activo: ${data.full_name}`);
+      // Guardar operadora activa en sesión
+      localStorage.setItem('counter_active_operator', JSON.stringify(activeOperator));
+      window.dispatchEvent(new CustomEvent('counter_operator_changed', { detail: activeOperator }));
+
+      toast.success(`Mostrador activo: ${activeOperator.full_name || 'Operadora'}`);
       unlockCounter();
     } catch (err: any) {
       setPinError(err.message || "PIN incorrecto.");
       setPinValue('');
+      pinValueRef.current = '';
     } finally {
       setIsVerifyingPin(false);
     }
   };
+
+  // 6. Soporte de Teclado Físico y Numpad para Desbloqueo por PIN
+  useEffect(() => {
+    if (!isLocked) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignorar si el modal de QR está abierto o si se está verificando el PIN
+      if (showQRModal || isVerifyingPinRef.current) return;
+
+      // Teclas numéricas 0 a 9 (tanto teclado alfanumérico superior como Numpad lateral)
+      if (/^[0-9]$/.test(e.key)) {
+        e.preventDefault();
+        let targetOp = selectedOperatorRef.current;
+        const currentAvailable = availableOperatorsRef.current;
+
+        // Si solo hay 1 operadora con PIN, auto-seleccionarla al pulsar el primer número
+        if (!targetOp && currentAvailable.length === 1) {
+          targetOp = currentAvailable[0];
+          setSelectedOperator(targetOp);
+          selectedOperatorRef.current = targetOp;
+        }
+
+        if (targetOp) {
+          const currentPin = pinValueRef.current;
+          if (currentPin.length < 4) {
+            const nextPin = currentPin + e.key;
+            setPinValue(nextPin);
+            pinValueRef.current = nextPin;
+            setPinError(null);
+            if (nextPin.length === 4) {
+              verifyPinAndUnlock(targetOp.id, nextPin);
+            }
+          }
+        }
+        return;
+      }
+
+      // Borrar dígito con Backspace
+      if (e.key === 'Backspace') {
+        e.preventDefault();
+        setPinValue(prev => {
+          const next = prev.slice(0, -1);
+          pinValueRef.current = next;
+          return next;
+        });
+        setPinError(null);
+        return;
+      }
+
+      // Volver a la lista de operadoras con Escape si hay más de una
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        if (selectedOperatorRef.current && availableOperatorsRef.current.length > 1) {
+          setSelectedOperator(null);
+          selectedOperatorRef.current = null;
+          setPinValue('');
+          pinValueRef.current = '';
+          setPinError(null);
+        }
+        return;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isLocked, showQRModal]);
 
   const qrUrl = qrToken?.startsWith('http')
     ? qrToken
@@ -478,22 +585,22 @@ export default function CounterModeManager({
                 </button>
               )}
 
-              {/* Botón de escape / desbloqueo directo para la Administradora */}
+              {/* Botón de Cerrar Sesión seguro */}
               <button
                 type="button"
-                onClick={unlockCounter}
-                className="flex items-center gap-2 py-2.5 px-4 rounded-2xl bg-white/10 hover:bg-orange-500/20 hover:border-orange-500/40 active:scale-95 text-stone-200 hover:text-white font-bold text-xs border border-white/15 transition-all shadow-sm cursor-pointer"
-                title="Salir del Modo Mostrador y volver al panel"
+                onClick={handleLogout}
+                className="flex items-center gap-2 py-2.5 px-4 rounded-2xl bg-white/5 hover:bg-rose-500/20 hover:border-rose-500/30 active:scale-95 text-stone-300 hover:text-rose-200 font-bold text-xs border border-white/10 transition-all shadow-sm cursor-pointer"
+                title="Cerrar la sesión de la clínica en este ordenador"
               >
-                <Unlock size={15} className="text-[#FF6B00]" />
-                <span>Salir / Continuar como Admin</span>
+                <LogOut size={15} />
+                <span>Cerrar Sesión</span>
               </button>
             </div>
           </div>
 
           {/* Centro: Selección de Empleada y Numpad */}
           <div className="max-w-md w-full mx-auto my-auto space-y-6">
-            {operators.length === 0 ? (
+            {availableOperators.length === 0 ? (
               <div className="p-8 rounded-3xl bg-white/5 border border-white/10 text-center space-y-4 max-w-md mx-auto animate-in zoom-in-95 duration-200">
                 <div className="w-12 h-12 rounded-2xl bg-orange-500/20 text-[#FF6B00] flex items-center justify-center mx-auto">
                   <AlertCircle size={24} />
@@ -503,7 +610,7 @@ export default function CounterModeManager({
                     Sin Operadoras con PIN
                   </h3>
                   <p className="text-xs text-stone-400 leading-relaxed">
-                    Aún no se ha registrado ninguna operadora con PIN en este centro. Para utilizar el modo mostrador bloqueado, crea primero a tus empleadas desde el panel de Equipo.
+                    Aún no se ha registrado ninguna operadora con PIN en este centro. Para utilizar el modo mostrador bloqueado, crea primero a tus empleadas o configúrate un PIN desde el panel de Equipo.
                   </p>
                 </div>
                 <button
@@ -515,7 +622,7 @@ export default function CounterModeManager({
                 </button>
               </div>
             ) : !selectedOperator ? (
-              /* Selección de Operadora para Desbloquear */
+              /* Selección de Operadora para Desbloquear (Solo operadoras con PIN) */
               <div className="space-y-4 text-center">
                 <div>
                   <h3 className="font-serif text-2xl sm:text-3xl font-bold text-white">
@@ -527,23 +634,25 @@ export default function CounterModeManager({
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2 max-h-[50vh] overflow-y-auto pr-1">
-                  {operators.map(op => (
+                  {availableOperators.map(op => (
                     <button
                       key={op.id}
                       type="button"
                       onClick={() => {
                         setSelectedOperator(op);
+                        selectedOperatorRef.current = op;
                         setPinValue('');
+                        pinValueRef.current = '';
                         setPinError(null);
                       }}
                       className="p-4 rounded-3xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-orange-500/50 flex flex-col items-center gap-2.5 text-center transition-all group active:scale-95 cursor-pointer"
                     >
                       <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-stone-800 to-stone-700 group-hover:from-orange-600 group-hover:to-orange-500 border border-white/10 flex items-center justify-center text-lg font-bold text-white shadow-md transition-all">
-                        {op.full_name.charAt(0)}
+                        {op.full_name.charAt(0).toUpperCase()}
                       </div>
                       <div className="w-full truncate">
                         <p className="text-xs font-bold text-white truncate">{op.full_name}</p>
-                        <p className="text-[10px] text-stone-400 truncate">{op.role}</p>
+                        <p className="text-[10px] text-stone-400 truncate capitalize">{op.role}</p>
                       </div>
                     </button>
                   ))}
@@ -554,14 +663,14 @@ export default function CounterModeManager({
               <div className="space-y-5 text-center animate-in zoom-in-95 duration-200">
                 <div className="flex flex-col items-center gap-2">
                   <div className="w-14 h-14 rounded-2xl bg-[#FF6B00] text-white flex items-center justify-center text-xl font-bold shadow-lg">
-                    {selectedOperator.full_name.charAt(0)}
+                    {selectedOperator.full_name.charAt(0).toUpperCase()}
                   </div>
                   <div>
                     <h3 className="font-serif text-xl sm:text-2xl font-bold text-white">
                       Hola, {selectedOperator.full_name}
                     </h3>
                     <p className="text-xs text-stone-400">
-                      Introduce tu PIN de 4 dígitos
+                      Introduce tu PIN de 4 dígitos o usa tu teclado físico
                     </p>
                   </div>
                 </div>
@@ -607,13 +716,17 @@ export default function CounterModeManager({
                   <button
                     type="button"
                     onClick={() => {
-                      setSelectedOperator(null);
+                      if (availableOperators.length > 1) {
+                        setSelectedOperator(null);
+                        selectedOperatorRef.current = null;
+                      }
                       setPinValue('');
+                      pinValueRef.current = '';
                       setPinError(null);
                     }}
                     className="h-13 rounded-2xl bg-white/5 hover:bg-white/10 text-[11px] font-bold uppercase tracking-wider text-stone-400 transition-all active:scale-95 flex items-center justify-center border border-white/5"
                   >
-                    Volver
+                    {availableOperators.length > 1 ? 'Cambiar' : 'Limpiar'}
                   </button>
                   <button
                     type="button"
@@ -625,11 +738,19 @@ export default function CounterModeManager({
                   </button>
                   <button
                     type="button"
-                    onClick={() => setPinValue(prev => prev.slice(0, -1))}
+                    onClick={() => {
+                      setPinValue(prev => {
+                        const next = prev.slice(0, -1);
+                        pinValueRef.current = next;
+                        return next;
+                      });
+                    }}
                     disabled={isVerifyingPin || pinValue.length === 0}
                     className="h-13 rounded-2xl bg-white/5 hover:bg-white/10 text-stone-300 transition-all active:scale-95 flex items-center justify-center border border-white/5 disabled:opacity-30"
                   >
                     ⌫
+                  </button>
+                </div>
                   </button>
                 </div>
 
