@@ -45,7 +45,13 @@ interface Client {
   last_name: string | null;
   email: string;
   phone: string | null;
+  phone2?: string | null;
   dni: string | null;
+  gender?: string | null;
+  birth_date?: string | null;
+  technical_notes?: string | null;
+  raw_history?: string | null;
+  color_formulas?: any[];
   service_address: string | null;
   service_postal_code: string | null;
   service_city: string | null;
@@ -526,6 +532,10 @@ export default function ClientProfilePage({ params }: { params: { id: string } }
             clientId={params.id}
             businessSector={businessSector}
             sectorMetadata={sectorMetadata}
+            colorFormulas={client?.color_formulas || []}
+            technicalNotes={client?.technical_notes}
+            rawHistory={client?.raw_history}
+            onRefresh={fetchClient}
           />
         </div>
       </div>

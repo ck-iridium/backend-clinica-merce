@@ -1,6 +1,6 @@
 "use client"
 import React from 'react';
-import { Pencil, Trash2, Loader2 } from 'lucide-react';
+import { Pencil, Trash2, Loader2, Sparkles, Package } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -120,8 +120,22 @@ export function DataGridRow({
 
       {/* Nombre y Badge de Categoría */}
       <td className="p-4">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 flex-wrap">
           <div className="font-bold text-stone-800 text-sm">{svc.name}</div>
+          {svc.is_product ? (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[9px] rounded-full font-bold bg-stone-100 text-stone-700 border border-stone-200">
+              <Package size={10} className="text-stone-500" /> Producto
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[9px] rounded-full font-semibold bg-orange-50 text-orange-900 border border-orange-200/60">
+              <Sparkles size={10} className="text-[#FF6B00]" /> Servicio
+            </span>
+          )}
+          {svc.is_visible_on_web === false && (
+            <span className="px-1.5 py-0.5 text-[9px] rounded-full font-bold bg-rose-50 text-rose-700 border border-rose-200" title="Oculto de la web pública (Uso interno TPV/Agenda)">
+              Solo TPV
+            </span>
+          )}
           {svc.is_featured && (
             <span className="px-2 py-0.5 text-[9px] rounded-full font-black uppercase tracking-wider bg-yellow-50 text-yellow-700 border border-yellow-200">
               {language === 'fr' ? 'À la une' : language === 'en' ? 'Featured' : 'Destacado'}

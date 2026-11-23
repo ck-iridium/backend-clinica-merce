@@ -4,13 +4,14 @@ import { useLanguage } from '@/app/contexts/LanguageContext';
 import { useAuthRole } from '@/hooks/useAuthRole';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Settings2, Plus, Download, Loader2 } from 'lucide-react';
+import { Settings2, Plus, Download, Loader2, FileSpreadsheet } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { toast } from 'sonner';
 import PlanLimitsCard from '@/components/PlanLimitsCard';
 import ServicesDataGrid from './components/ServicesDataGrid';
 import ManageCategoriesModal from './components/ManageCategoriesModal';
+import { UniversalExcelImportModal } from '@/components/common/UniversalExcelImportModal';
 import { DataGridSkeleton } from './components/datagrid/DataGridSkeleton';
 
 function getCookie(name: string): string | null {
@@ -32,6 +33,7 @@ export default function ServicesPage() {
   const [loading, setLoading] = useState(true);
   const [showArchived, setShowArchived] = useState(false);
   const [showManageCategoriesModal, setShowManageCategoriesModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [planType, setPlanType] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
 
@@ -272,11 +274,22 @@ export default function ServicesPage() {
             className="rounded-xl h-10 text-xs font-semibold px-3.5 gap-2 transition-all hover:bg-stone-50"
           >
             {exporting ? (
-              <Loader2 size={16} className="animate-spin text-[#D4AF37]" />
+              <Loader2 size={16} className="animate-spin text-[#FF6B00]" />
             ) : (
               <Download size={16} strokeWidth={1.75} className="text-stone-500" />
             )}
             <span className="hidden sm:inline">Exportar a Galería</span>
+          </Button>
+          <Button 
+            id="services-import-excel-btn"
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setShowImportModal(true)}
+            className="rounded-xl h-10 text-xs font-semibold px-3.5 gap-2 transition-all hover:bg-stone-50"
+          >
+            <FileSpreadsheet size={16} strokeWidth={1.75} className="text-[#FF6B00]" />
+            <span className="hidden sm:inline">Importar Excel / Tarifas</span>
           </Button>
           <Button 
             id="services-categories-btn"
@@ -322,6 +335,17 @@ export default function ServicesPage() {
         fetchCategories={fetchCategories}
         fetchServices={fetchServices}
         services={services}
+      />
+
+      {/* Modal de Importación Universal Excel de Tarifas y Productos */}
+      <UniversalExcelImportModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        type="services"
+        onSuccess={() => {
+          fetchServices();
+          fetchCategories();
+        }}
       />
     </div>
   );

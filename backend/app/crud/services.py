@@ -67,16 +67,18 @@ def get_service_by_slug(db: Session, slug: str):
         service.category_slug = service.category.slug
     return service
 
-def get_services(db: Session, skip: int = 0, limit: int = 100):
+def get_services(db: Session, skip: int = 0, limit: int = 100, is_visible_on_web: bool = None, is_product: bool = None):
     tenant_id = current_tenant_var.get()
-    services = (
+    query = (
         db.query(models.Service)
         .options(joinedload(models.Service.category))
         .filter(models.Service.tenant_id == tenant_id)
-        .offset(skip)
-        .limit(limit)
-        .all()
     )
+    if is_visible_on_web is not None:
+        query = query.filter(models.Service.is_visible_on_web == is_visible_on_web)
+    if is_product is not None:
+        query = query.filter(models.Service.is_product == is_product)
+    services = query.offset(skip).limit(limit).all()
     for s in services:
         if s.category:
             s.category_slug = s.category.slug

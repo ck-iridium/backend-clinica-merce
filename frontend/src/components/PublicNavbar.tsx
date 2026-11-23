@@ -232,8 +232,16 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
   };
   const navT = navTranslations[language] || navTranslations.es;
 
-  // El botón principal del Header siempre es la llamada a la reserva de la clínica
-  const btnText = t('common.book_appointment') || 'Reservar Cita';
+  // El botón principal del Header: respeta allow_online_booking
+  const isOnlineBookingAllowed = settings?.allow_online_booking !== false;
+  const targetPhone = settings?.clinic_phone || settings?.phone || settings?.contact_phone || '';
+  const effectiveBtnLink = isOnlineBookingAllowed
+    ? btnLink
+    : (targetPhone ? `tel:${targetPhone.replace(/\s+/g, '')}` : (settings?.whatsapp_number ? `https://wa.me/${settings.whatsapp_number.replace(/\D/g, '')}` : '/contacto'));
+
+  const effectiveBtnText = isOnlineBookingAllowed
+    ? (t('common.book_appointment') || 'Reservar Cita')
+    : (targetPhone ? `Llamar: ${targetPhone}` : (settings?.whatsapp_number ? `WhatsApp: ${settings.whatsapp_number}` : (navT.phone_booking || 'Pedir Cita por Teléfono')));
 
   useEffect(() => {
     setMounted(true);
@@ -557,8 +565,8 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
             })}
             <div className="flex items-center gap-3">
               <BotonReservaPro
-                texto={btnText}
-                href={getPreservedHref(btnLink)}
+                texto={effectiveBtnText}
+                href={getPreservedHref(effectiveBtnLink)}
                 className="scale-90 origin-right"
               />
               <LanguageSelector />
@@ -849,8 +857,8 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
 
           <div className="flex flex-col items-center gap-4 w-full">
             <BotonReservaPro
-              texto={btnText}
-              href={getPreservedHref(btnLink)}
+              texto={effectiveBtnText}
+              href={getPreservedHref(effectiveBtnLink)}
               onClick={() => setIsOpen(false)}
               className="w-full max-w-xs mx-auto"
             />

@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ClientQuickFormulasModal } from './ClientQuickFormulasModal';
 
 interface CreateAppointmentModalProps {
   showModal: boolean;
@@ -74,6 +75,7 @@ export function CreateAppointmentModal({
   const [customDuration, setCustomDuration] = useState<number>(30);
   const [appointmentNotes, setAppointmentNotes] = useState('');
   const [saving, setSaving] = useState(false);
+  const [showFormulasModal, setShowFormulasModal] = useState(false);
   const [blockReason, setBlockReason] = useState('');
   const [blockDuration, setBlockDuration] = useState(60);
 
@@ -329,7 +331,21 @@ export function CreateAppointmentModal({
 
               <div className="space-y-5">
                 <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1.5 uppercase tracking-wider">{t('dashboard.calendar.modal.client_req') || 'Cliente *'}</label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-xs font-bold text-stone-700 uppercase tracking-wider">
+                      {t('dashboard.calendar.modal.client_req') || 'Cliente *'}
+                    </label>
+                    {selectedClientId && (
+                      <button
+                        type="button"
+                        onClick={() => setShowFormulasModal(true)}
+                        className="inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-900 bg-amber-50 hover:bg-amber-100/80 px-2.5 py-0.5 rounded-lg border border-amber-200/70 transition-all active:scale-95"
+                      >
+                        <Sparkles size={11} className="text-[#D4AF37]" />
+                        <span>Ver Fórmulas Técnicas</span>
+                      </button>
+                    )}
+                  </div>
                   <Select required value={selectedClientId} onValueChange={setSelectedClientId}>
                     <SelectTrigger id="create-appt-client-select-trigger" className="w-full">
                       <SelectValue placeholder={t('dashboard.calendar.modal.choose_client') || '-- Elige un cliente --'} />
@@ -630,6 +646,14 @@ export function CreateAppointmentModal({
             {saving ? (t('dashboard.calendar.modal.saving') || 'Guardando...') : (modalType === 'appointment' ? (t('dashboard.calendar.modal.schedule') || 'Agendar Cita') : (t('dashboard.calendar.modal.block_btn') || 'Bloquear'))}
           </Button>
         </DialogFooter>
+
+        {/* Modal de Consulta Rápida de Fórmulas */}
+        <ClientQuickFormulasModal
+          isOpen={showFormulasModal}
+          onClose={() => setShowFormulasModal(false)}
+          clientId={selectedClientId || null}
+          clientFallbackName={clients.find(c => c.id === selectedClientId)?.name}
+        />
       </DialogContent>
     </Dialog>
   );

@@ -1,5 +1,5 @@
-from pydantic import BaseModel, EmailStr
-from typing import Optional, Dict, Any
+from pydantic import BaseModel
+from typing import Optional, Dict, Any, List
 from datetime import datetime
 
 class ClientBase(BaseModel):
@@ -7,9 +7,15 @@ class ClientBase(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     phone: Optional[str] = None
+    phone2: Optional[str] = None
     email: Optional[str] = None
+    gender: Optional[str] = None
+    birth_date: Optional[str] = None
     medical_history: Optional[str] = None
     allergies: Optional[str] = None
+    technical_notes: Optional[str] = None
+    raw_history: Optional[str] = None
+    color_formulas: Optional[List[Dict[str, Any]]] = None
     dni: Optional[str] = None
     address: Optional[str] = None
     
@@ -38,9 +44,15 @@ class ClientUpdate(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     phone: Optional[str] = None
-    email: Optional[EmailStr] = None
+    phone2: Optional[str] = None
+    email: Optional[str] = None
+    gender: Optional[str] = None
+    birth_date: Optional[str] = None
     medical_history: Optional[str] = None
     allergies: Optional[str] = None
+    technical_notes: Optional[str] = None
+    raw_history: Optional[str] = None
+    color_formulas: Optional[List[Dict[str, Any]]] = None
     dni: Optional[str] = None
     address: Optional[str] = None
     

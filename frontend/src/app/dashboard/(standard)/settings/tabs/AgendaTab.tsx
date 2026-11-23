@@ -1,6 +1,7 @@
-import { Clock, Calendar, Trash2, Hash } from 'lucide-react';
+import { Clock, Calendar, Trash2, Hash, PhoneCall } from 'lucide-react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface AgendaTabProps {
   settings: any;
@@ -31,6 +32,59 @@ export default function AgendaTab({
 
   return (
     <div className="space-y-6 md:space-y-8 animate-in slide-in-from-bottom-2 duration-300">
+      {/* Modalidad de Reservas & Recepción (Online vs Teléfono) */}
+      <div className="bg-white rounded-3xl border border-stone-200/80 p-6 md:p-8 shadow-sm">
+        <div className="flex items-center justify-between gap-4 flex-wrap pb-4 border-b border-stone-100">
+          <div className="flex items-center gap-3.5">
+            <span className="w-10 h-10 rounded-2xl bg-orange-50 border border-orange-200/60 flex items-center justify-center text-[#FF6B00] shadow-2xs shrink-0">
+              <PhoneCall size={18} strokeWidth={2} />
+            </span>
+            <div>
+              <h3 className="text-xl md:text-2xl font-serif font-bold text-stone-900">Modalidad de Reservas</h3>
+              <p className="text-xs text-stone-400 font-medium">Define cómo conciertan cita tus clientes</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className={cn(
+              "text-xs font-bold px-3 py-1 rounded-full border",
+              settings.allow_online_booking !== false
+                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                : "bg-amber-50 text-amber-800 border-amber-200"
+            )}>
+              {settings.allow_online_booking !== false ? "✓ Reservas Online Activas" : "📞 Modo Teléfono / Presencial"}
+            </span>
+            <button
+              type="button"
+              onClick={() => setSettings({
+                ...settings,
+                allow_online_booking: settings.allow_online_booking === false ? true : false
+              })}
+              className={cn(
+                "relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors",
+                settings.allow_online_booking !== false ? "bg-emerald-500" : "bg-stone-300"
+              )}
+            >
+              <span className={cn(
+                "inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform",
+                settings.allow_online_booking !== false ? "translate-x-6" : "translate-x-1"
+              )} />
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-4 p-4 rounded-2xl bg-stone-50 border border-stone-200/70 text-xs text-stone-600 leading-relaxed space-y-1">
+          {settings.allow_online_booking !== false ? (
+            <p>
+              <strong>Reservas Web habilitadas:</strong> Los clientes pueden navegar por tu catálogo y reservar su cita directamente en línea en tu calendario.
+            </p>
+          ) : (
+            <p className="text-amber-900 font-medium">
+              <strong>Modo Teléfono / Presencial exclusivo activo:</strong> El motor de reserva online se encuentra pausado. Los botones de tu página web invitan a los clientes a <strong>llamar por teléfono o contactar por WhatsApp</strong>. La agenda interna de tu equipo continuará funcionando con total normalidad para anotar todas las citas manuales.
+            </p>
+          )}
+        </div>
+      </div>
+
       {/* Horario Hábil */}
       <div className="bg-white rounded-3xl border border-stone-200/80 p-6 md:p-8 shadow-sm">
         <div className="flex items-center gap-3.5 mb-6 pb-4 border-b border-stone-100">

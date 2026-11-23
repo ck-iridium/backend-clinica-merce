@@ -33,6 +33,7 @@ export default function ServicesDataGrid({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [itemTypeFilter, setItemTypeFilter] = useState<'all' | 'services' | 'products'>('all');
 
   // Hook desacoplado de mutaciones y acciones rápidas
   const {
@@ -76,6 +77,13 @@ export default function ServicesDataGrid({
     // A. Filtrado por estado archivado (is_active)
     if (!showArchived) {
       result = result.filter(s => s.is_active);
+    }
+
+    // A2. Filtrado por Tipo de Ítem (Servicios vs Productos)
+    if (itemTypeFilter === 'services') {
+      result = result.filter(s => !s.is_product);
+    } else if (itemTypeFilter === 'products') {
+      result = result.filter(s => s.is_product);
     }
 
     // B. Filtrado por categoría seleccionada
@@ -138,6 +146,8 @@ export default function ServicesDataGrid({
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         language={language}
+        itemTypeFilter={itemTypeFilter}
+        onItemTypeFilterChange={setItemTypeFilter}
       />
 
       {/* ── BARRA FLOTANTE DE ACCIONES EN MASA ── */}

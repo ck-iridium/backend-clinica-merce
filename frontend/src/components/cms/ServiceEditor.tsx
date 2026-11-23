@@ -49,6 +49,11 @@ export interface ServiceFormData {
   allowed_modality: 'clinic' | 'home' | 'both';
   required_resource_id?: string | null;
   translations?: Record<string, any>;
+  is_product?: boolean;
+  is_visible_on_web?: boolean;
+  cost_price?: number | null;
+  sku?: string | null;
+  stock?: number | null;
 }
 
 const DEFAULT_FORM_DATA: ServiceFormData = {
@@ -59,6 +64,11 @@ const DEFAULT_FORM_DATA: ServiceFormData = {
   price: 0,
   is_active: true,
   is_featured: false,
+  is_product: false,
+  is_visible_on_web: true,
+  cost_price: null,
+  sku: '',
+  stock: null,
   category_id: '',
   image_url: '',
   video_url: '',

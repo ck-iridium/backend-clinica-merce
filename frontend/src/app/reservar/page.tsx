@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, PhoneCall } from 'lucide-react';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import Step1Treatments from './components/Step1Treatments';
@@ -540,6 +540,51 @@ export default function BookingPage() {
             <div className="m-auto text-center">
               <div className="w-8 h-8 border-2 border-stone-200 border-t-primary rounded-full animate-spin mb-3 mx-auto"></div>
               <p className="text-stone-400 font-bold tracking-widest uppercase text-[10px]">{t('common.loading')}</p>
+            </div>
+          ) : settings && settings.allow_online_booking === false ? (
+            <div className="m-auto text-center px-6 py-10 max-w-lg bg-white/95 rounded-[2rem] border border-stone-200/80 shadow-luxury space-y-6 animate-in fade-in zoom-in-95 duration-300">
+              <div className="w-16 h-16 rounded-full bg-orange-50 border border-orange-200/60 flex items-center justify-center text-[#FF6B00] mx-auto shadow-sm">
+                <PhoneCall size={28} />
+              </div>
+              <div className="space-y-2">
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#FF6B00] bg-orange-50 px-3 py-1 rounded-full border border-orange-200/50 inline-block">
+                  Atención Personalizada
+                </span>
+                <h2 className="text-2xl font-serif font-bold text-stone-900">
+                  Reserva Telefónica o Presencial
+                </h2>
+                <p className="text-stone-500 text-xs sm:text-sm leading-relaxed">
+                  En <strong className="text-stone-800">{settings.clinic_name || 'nuestro centro'}</strong> preferimos atenderte de forma directa y cercana. Llámanos o escríbenos para consultar huecos y concertar tu cita a medida.
+                </p>
+              </div>
+
+              <div className="space-y-3 pt-2">
+                {settings.clinic_phone && (
+                  <a
+                    href={`tel:${settings.clinic_phone.replace(/\s+/g, '')}`}
+                    className="w-full flex items-center justify-center gap-2.5 py-3.5 px-6 rounded-xl bg-[#FF6B00] hover:bg-[#EA5E00] text-white font-bold text-sm shadow-md transition-all active:scale-98"
+                  >
+                    <PhoneCall size={16} />
+                    <span>Llamar ahora: {settings.clinic_phone}</span>
+                  </a>
+                )}
+                {settings.whatsapp_number && (
+                  <a
+                    href={`https://wa.me/${settings.whatsapp_number.replace(/\D/g, '')}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-full flex items-center justify-center gap-2.5 py-3.5 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md transition-all active:scale-98"
+                  >
+                    <span>Contactar por WhatsApp</span>
+                  </a>
+                )}
+                <Link
+                  href="/"
+                  className="block text-xs font-semibold text-stone-400 hover:text-stone-700 pt-2 transition-colors"
+                >
+                  ← Volver a la página principal
+                </Link>
+              </div>
             </div>
           ) : (
             <>

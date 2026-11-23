@@ -4,6 +4,8 @@ export interface Service {
   price: number;
   category_id?: string;
   is_active: boolean;
+  is_product?: boolean;
+  is_visible_on_web?: boolean;
 }
 
 export interface CartItem extends Service {

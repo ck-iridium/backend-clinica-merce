@@ -88,6 +88,12 @@ class Client(Base):
     
     medical_history = Column(Text, nullable=True)
     allergies = Column(Text, nullable=True)
+    phone2 = Column(String, nullable=True)
+    gender = Column(String, nullable=True)
+    birth_date = Column(String, nullable=True)
+    technical_notes = Column(Text, nullable=True)
+    raw_history = Column(Text, nullable=True)
+    color_formulas = Column(JSONB, default=list, nullable=True)
     preferred_language = Column(String, default="es")
     is_verified = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -175,6 +181,11 @@ class Service(Base):
     price = Column(Numeric(10, 2), nullable=False)
     is_active = Column(Boolean, default=True)
     is_featured = Column(Boolean, default=False)
+    is_product = Column(Boolean, default=False, nullable=True)
+    is_visible_on_web = Column(Boolean, default=True, nullable=True)
+    cost_price = Column(Numeric(10, 2), nullable=True)
+    sku = Column(String, nullable=True)
+    stock = Column(Integer, nullable=True)
     image_url = Column(String, nullable=True)
     video_url = Column(String, nullable=True)
     seo_title = Column(String, nullable=True)
@@ -321,6 +332,7 @@ class ClinicSettings(Base):
     tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=False, unique=True, index=True)
     business_sector = Column(String, default="general", nullable=False)
     enable_consents = Column(Boolean, default=True, nullable=False)
+    allow_online_booking = Column(Boolean, default=True, nullable=True)
 
     # Company Details
     clinic_name = Column(String, default="Estética Mercè")

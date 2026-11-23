@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Search, Plus, X, Sparkles, Layers } from 'lucide-react';
+import { Search, Plus, X, Sparkles, Layers, Package } from 'lucide-react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { Service, Category } from './types';
 import { Badge } from '@/components/ui/badge';
@@ -195,10 +195,15 @@ export function POSCatalog({
                 <h4 className="font-serif font-semibold text-stone-900 text-xs sm:text-sm truncate group-hover:text-stone-950">
                   {s.name}
                 </h4>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 flex-wrap">
                   <span className="text-xs font-mono font-bold text-stone-800 bg-stone-100 group-hover:bg-orange-50 group-hover:text-orange-950 px-2 py-0.5 rounded-md transition-colors">
                     {Number(s.price).toFixed(2)}€
                   </span>
+                  {s.is_product && (
+                    <span className="inline-flex items-center gap-1 text-[9px] font-bold text-stone-700 bg-stone-100 px-1.5 py-0.5 rounded border border-stone-200">
+                      <Package size={10} className="text-stone-500" /> Producto
+                    </span>
+                  )}
                 </div>
               </div>
               <button

@@ -5,12 +5,32 @@ import { useFeedback } from '@/app/contexts/FeedbackContext';
 import CropImageModal from '@/components/CropImageModal';
 import VideoAudioPromptModal from '@/components/VideoAudioPromptModal';
 import { processVideo } from '@/lib/videoProcessor';
-import { type MediaFile, type Quota, MAX_BYTES } from '@/lib/mediaTypes';
+import { type MediaFile, type Quota, MAX_BYTES, isVideoFile, isDocumentFile } from '@/lib/mediaTypes';
 import MediaQuotaBar from '@/components/media/MediaQuotaBar';
 import MediaGrid from '@/components/media/MediaGrid';
 import MediaBulkBar from '@/components/media/MediaBulkBar';
 import MediaLuxuryViewer from '@/components/media/MediaLuxuryViewer';
-import { Loader2, Sparkles, Upload, Image, Film } from 'lucide-react';
+import { Loader2, Sparkles, Upload, Image, Film, FileSpreadsheet } from 'lucide-react';
+
+function getTenantHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {};
+  if (typeof document === 'undefined') return headers;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; tenant_id=`);
+  let tId = parts.length === 2 ? parts.pop()?.split(';').shift() || '' : '';
+  const userSession = localStorage.getItem('user');
+  let token = '';
+  if (userSession) {
+    try {
+      const parsed = JSON.parse(userSession);
+      if (!tId) tId = parsed.tenant_id || '';
+      token = parsed.access_token || parsed.token || '';
+    } catch {}
+  }
+  if (tId) headers['X-Tenant-ID'] = tId;
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  return headers;
+}
 
 export default function MediaGalleryPage() {
   const { showFeedback } = useFeedback();
@@ -21,7 +41,7 @@ export default function MediaGalleryPage() {
   const [loading, setLoading] = useState(true);
   const [selectedFile, setSelectedFile] = useState<MediaFile | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [filter, setFilter] = useState<'all' | 'in_use' | 'orphan' | 'video'>('all');
+  const [filter, setFilter] = useState<'all' | 'in_use' | 'orphan' | 'video' | 'document'>('all');
 
   // Multi-select state
   const [selectedNames, setSelectedNames] = useState<Set<string>>(new Set());
@@ -46,9 +66,10 @@ export default function MediaGalleryPage() {
     console.log("FETCH: Iniciando carga de medios...");
     
     try {
+      const headers = getTenantHeaders();
       // 1. Cargar Archivos (Prioritario)
       try {
-        const filesRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/all`);
+        const filesRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/all`, { headers });
         if (filesRes.ok) {
           const data = await filesRes.json();
           setFiles(data || []);
@@ -62,7 +83,7 @@ export default function MediaGalleryPage() {
 
       // 2. Cargar Cuota (Opcional, no debe bloquear la galería)
       try {
-        const quotaRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/quota`);
+        const quotaRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media/quota`, { headers });
         if (quotaRes.ok) {
           const qData = await quotaRes.json();
           setQuota(qData);
@@ -186,7 +207,12 @@ export default function MediaGalleryPage() {
     const uploadData = new FormData();
     uploadData.append('file', blob, name);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload/`, { method: 'POST', body: uploadData });
+      const headers = getTenantHeaders();
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload/`, { 
+        method: 'POST', 
+        headers,
+        body: uploadData 
+      });
       if (res.ok) {
         await fetchData();
         showFeedback({ type: 'success', title: 'Subida Completa', message: 'Nuevo archivo añadido a la galería.' });
@@ -276,6 +302,7 @@ export default function MediaGalleryPage() {
   const filteredFiles = files.filter(f => {
     if (filter === 'all') return true;
     if (filter === 'video') return f.name.toLowerCase().endsWith('.mp4') || f.content_type?.includes('video');
+    if (filter === 'document') return isDocumentFile(f);
     return f.status === filter;
   });
   const orphanCount = files.filter(f => f.status === 'orphan').length;
@@ -288,10 +315,12 @@ export default function MediaGalleryPage() {
       {/* Hero Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-extrabold text-stone-800 tracking-tight flex items-center gap-3">
-          <span className="bg-stone-900 text-white w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-xl">🖼️</span>
+          <div className="bg-orange-50 border border-orange-200/60 text-[#FF6B00] w-12 h-12 rounded-2xl flex items-center justify-center shadow-xs">
+            <Image size={24} strokeWidth={2} />
+          </div>
           Galería de Medios
         </h1>
-        <p className="text-stone-500 font-medium mt-2">Gestión centralizada de imágenes alojadas en Supabase.</p>
+        <p className="text-stone-500 font-medium mt-2">Gestión centralizada de imágenes y documentos alojados en Supabase.</p>
       </div>
 
       {/* Upload Zone */}
@@ -304,12 +333,12 @@ export default function MediaGalleryPage() {
             className={`
               flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-[2rem] cursor-pointer transition-all duration-300
               ${isDragging
-                ? 'border-[#d4af37] bg-[#fbf9f4] scale-[1.01] shadow-lg'
+                ? 'border-[#FF6B00] bg-orange-50/30 scale-[1.01] shadow-lg'
                 : 'border-stone-200 bg-white hover:bg-stone-50 hover:border-stone-300 shadow-sm'}
             `}
           >
             <div className="flex flex-col items-center justify-center pt-5 pb-6 text-center px-4">
-              <div className={`w-16 h-16 rounded-[2rem] flex items-center justify-center mb-4 transition-all duration-500 ${isDragging ? 'bg-[#d4af37] text-white scale-110 shadow-xl' : 'bg-stone-50 text-stone-300'}`}>
+              <div className={`w-16 h-16 rounded-[2rem] flex items-center justify-center mb-4 transition-all duration-500 ${isDragging ? 'bg-[#FF6B00] text-white scale-110 shadow-xl' : 'bg-stone-50 text-stone-300'}`}>
                 {isDragging ? (
                   <Upload size={32} />
                 ) : (
@@ -318,7 +347,7 @@ export default function MediaGalleryPage() {
                       <Image size={20} className="text-stone-400" />
                     </div>
                     <div className="w-10 h-10 rounded-xl bg-white shadow-md flex items-center justify-center border border-stone-100 z-10">
-                      <Film size={20} className="text-[#d4af37]" />
+                      <Film size={20} className="text-[#FF6B00]" />
                     </div>
                   </div>
                 )}
@@ -330,6 +359,8 @@ export default function MediaGalleryPage() {
                 <span className="flex items-center gap-1.5"><Image size={12} /> Imágenes</span>
                 <span className="w-1 h-1 rounded-full bg-stone-300" />
                 <span className="flex items-center gap-1.5"><Film size={12} /> Vídeos</span>
+                <span className="w-1 h-1 rounded-full bg-stone-300" />
+                <span className="flex items-center gap-1.5"><FileSpreadsheet size={12} /> Documentos</span>
               </div>
               <p className="text-[10px] text-stone-300 mt-3 italic font-serif">
                 Optimización inteligente y compresión automática activa para máxima velocidad.
@@ -348,16 +379,16 @@ export default function MediaGalleryPage() {
         <div className="mb-8 p-6 rounded-[2rem] bg-stone-900 text-white shadow-2xl border border-white/10 animate-in slide-in-from-top-4 duration-500">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-[#d4af37]/20 flex items-center justify-center text-[#d4af37]">
+              <div className="w-12 h-12 rounded-2xl bg-orange-500/20 flex items-center justify-center text-[#FF6B00]">
                 <Sparkles className="animate-pulse" />
               </div>
               <p className="text-lg font-bold">{processingStatus}</p>
             </div>
-            <p className="text-2xl font-black text-[#d4af37]">{processingProgress}%</p>
+            <p className="text-2xl font-black text-[#FF6B00]">{processingProgress}%</p>
           </div>
           <div className="w-full bg-white/10 rounded-full h-2.5 overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-[#d4af37] to-[#d9777f] transition-all duration-300"
+              className="h-full bg-gradient-to-r from-stone-900 to-[#FF6B00] transition-all duration-300"
               style={{ width: `${processingProgress}%` }}
             />
           </div>
@@ -370,7 +401,7 @@ export default function MediaGalleryPage() {
       {/* Toolbar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 flex-wrap">
         <div className="flex gap-2 bg-white border border-stone-200 p-1 rounded-2xl shadow-sm overflow-x-auto no-scrollbar">
-          {(['all', 'in_use', 'orphan', 'video'] as const).map(f => (
+          {(['all', 'in_use', 'orphan', 'video', 'document'] as const).map(f => (
             <button
               key={f}
               onClick={() => { setFilter(f); clearSelection(); }}
@@ -379,7 +410,8 @@ export default function MediaGalleryPage() {
               {f === 'all' ? `Todas (${files.length})` :
                 f === 'in_use' ? `En Uso (${files.filter(x => x.status === 'in_use').length})` :
                   f === 'orphan' ? `Huérfanas (${files.filter(x => x.status === 'orphan').length})` :
-                    `Vídeos (${files.filter(x => x.name.toLowerCase().endsWith('.mp4') || x.content_type?.includes('video')).length})`}
+                    f === 'video' ? `Vídeos (${files.filter(isVideoFile).length})` :
+                      `Documentos (${files.filter(isDocumentFile).length})`}
             </button>
           ))}
         </div>
@@ -395,7 +427,7 @@ export default function MediaGalleryPage() {
           )}
           <label className={`relative cursor-pointer ${(uploadingNew || isProcessing) ? 'opacity-60 pointer-events-none' : ''}`}>
             <input type="file" accept="image/*,video/*" className="sr-only" onChange={handleFileSelect} disabled={uploadingNew || isProcessing} />
-            <div className="flex items-center gap-2 bg-stone-900 hover:bg-[#d9777f] text-white px-5 py-3 rounded-2xl font-bold text-sm transition-all shadow-lg active:scale-95">
+            <div className="flex items-center gap-2 bg-stone-900 hover:bg-[#FF6B00] text-white px-5 py-3 rounded-2xl font-bold text-sm transition-all shadow-lg active:scale-95">
               {(uploadingNew || isProcessing)
                 ? <><Loader2 size={16} className="animate-spin" /><span>{isProcessing ? 'Procesando...' : 'Subiendo...'}</span></>
                 : <><span className="text-lg">+</span><span>Subir Nueva</span></>

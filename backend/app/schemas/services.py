@@ -49,6 +49,11 @@ class ServiceBase(BaseModel):
     price: float
     is_active: bool = True
     is_featured: bool = False
+    is_product: Optional[bool] = False
+    is_visible_on_web: Optional[bool] = True
+    cost_price: Optional[float] = None
+    sku: Optional[str] = None
+    stock: Optional[int] = None
     category_id: Optional[str] = None
     image_url: Optional[str] = None
     video_url: Optional[str] = None
@@ -74,6 +79,11 @@ class ServiceUpdate(BaseModel):
     price: Optional[float] = None
     is_active: Optional[bool] = None
     is_featured: Optional[bool] = None
+    is_product: Optional[bool] = None
+    is_visible_on_web: Optional[bool] = None
+    cost_price: Optional[float] = None
+    sku: Optional[str] = None
+    stock: Optional[int] = None
     category_id: Optional[str] = None
     image_url: Optional[str] = None
     video_url: Optional[str] = None

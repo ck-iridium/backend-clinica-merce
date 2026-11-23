@@ -13,44 +13,47 @@ def get_client(db: Session, client_id: str):
 
 def create_client(db: Session, client: schemas.ClientCreate):
     tenant_id = current_tenant_var.get()
-    if client.email:
+    existing = None
+    if client.email and client.email.strip():
         existing = db.query(models.Client).filter(
-            models.Client.email == client.email,
+            models.Client.email == client.email.strip(),
             models.Client.tenant_id == tenant_id
         ).first()
-        if existing:
-            existing.first_name = client.first_name
-            existing.last_name = client.last_name
-            existing.name = f"{client.first_name} {client.last_name or ''}".strip()
-            if client.phone:
-                existing.phone = client.phone
-            
-            # Map addresses and metadata if passed
-            if client.service_address:
-                existing.service_address = client.service_address
-                existing.service_postal_code = client.service_postal_code
-                existing.service_city = client.service_city
-                existing.service_latitude = client.service_latitude
-                existing.service_longitude = client.service_longitude
-            
-            if client.billing_address:
-                existing.billing_name = client.billing_name
-                existing.billing_nif = client.billing_nif
-                existing.billing_address = client.billing_address
-                existing.billing_postal_code = client.billing_postal_code
-                existing.billing_city = client.billing_city
-                
-            if client.sector_metadata is not None:
-                existing.sector_metadata = client.sector_metadata
-                
-            db.commit()
-            db.refresh(existing)
-            return existing
+    elif client.phone and client.phone.strip():
+        existing = db.query(models.Client).filter(
+            models.Client.phone == client.phone.strip(),
+            models.Client.tenant_id == tenant_id
+        ).first()
+
+    if existing:
+        update_dict = client.model_dump(exclude_unset=True)
+        if not update_dict.get("first_name") and update_dict.get("name"):
+            update_dict["name"] = update_dict["name"].strip()
+        elif update_dict.get("first_name"):
+            update_dict["name"] = f"{update_dict.get('first_name', '')} {update_dict.get('last_name', '')}".strip()
+
+        if update_dict.get("raw_history") and not update_dict.get("color_formulas"):
+            from ..utils.formula_parser import parse_technical_history
+            update_dict["color_formulas"] = parse_technical_history(update_dict["raw_history"])
+
+        for k, v in update_dict.items():
+            if v is not None and k not in ["id", "tenant_id", "user_id"]:
+                setattr(existing, k, v)
+        db.commit()
+        db.refresh(existing)
+        return existing
 
     client_dict = client.model_dump()
     client_dict["tenant_id"] = tenant_id
-    client_dict["name"] = f"{client.first_name} {client.last_name or ''}".strip()
+    if not client.first_name and client.name:
+        client_dict["name"] = client.name.strip()
+    else:
+        client_dict["name"] = f"{client.first_name or ''} {client.last_name or ''}".strip() or (client.name or "")
     
+    if client_dict.get("raw_history") and not client_dict.get("color_formulas"):
+        from ..utils.formula_parser import parse_technical_history
+        client_dict["color_formulas"] = parse_technical_history(client_dict["raw_history"])
+
     db_client = models.Client(**client_dict)
     db.add(db_client)
     db.commit()
@@ -71,6 +74,10 @@ def update_client(db: Session, client_id: str, client: schemas.ClientUpdate):
         if "first_name" in update_data or "last_name" in update_data:
             update_data["name"] = f"{first_name or ''} {last_name or ''}".strip()
             
+        if update_data.get("raw_history") and not update_data.get("color_formulas"):
+            from ..utils.formula_parser import parse_technical_history
+            update_data["color_formulas"] = parse_technical_history(update_data["raw_history"])
+
         for key, value in update_data.items():
             setattr(db_client, key, value)
         db.commit()

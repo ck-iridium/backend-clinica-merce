@@ -4,13 +4,14 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
-import { Eye, UserPlus, Search, X, Users, Sparkles, Phone, Mail, ArrowUpRight } from "lucide-react";
+import { Eye, UserPlus, Search, X, Users, Sparkles, Phone, Mail, ArrowUpRight, FileSpreadsheet } from "lucide-react";
 import { useFeedback } from '@/app/contexts/FeedbackContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { useLanguage } from '@/app/contexts/LanguageContext';
+import { UniversalExcelImportModal } from '@/components/common/UniversalExcelImportModal';
 import {
   Dialog,
   DialogContent,
@@ -48,6 +49,7 @@ export default function ClientsPage() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [businessSector, setBusinessSector] = useState<string>('general');
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -297,7 +299,7 @@ export default function ClientsPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 pb-2">
         <div className="space-y-1">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-stone-100/80 border border-stone-200/60 text-[10px] font-bold uppercase tracking-widest text-stone-500">
-            <Users className="w-3 h-3 text-[#D4AF37]" />
+            <Users className="w-3 h-3 text-[#FF6B00]" />
             <span>Fichas & Clientes</span>
           </div>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-stone-900 tracking-tight">
@@ -315,18 +317,31 @@ export default function ClientsPage() {
           </p>
         </div>
         
-        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <DialogTrigger asChild>
-            <Button 
-              id="add-client-btn" 
-              variant="luxury" 
-              size="default" 
-              className="gap-2 shadow-luxury h-11 px-6 shrink-0"
-            >
-              <UserPlus className="w-4 h-4" strokeWidth={2} />
-              <span>{t('dashboard.clients.add_client') || 'Añadir Cliente'}</span>
-            </Button>
-          </DialogTrigger>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <Button
+            id="import-clients-excel-btn"
+            type="button"
+            variant="outline"
+            size="default"
+            onClick={() => setIsImportModalOpen(true)}
+            className="gap-2 h-11 px-4 border-stone-200/90 text-stone-700 hover:text-stone-900 hover:bg-stone-50 rounded-xl font-bold text-xs shadow-2xs shrink-0"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-[#FF6B00]" strokeWidth={2} />
+            <span className="hidden sm:inline">Importar Excel</span>
+          </Button>
+
+          <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+            <DialogTrigger asChild>
+              <Button 
+                id="add-client-btn" 
+                variant="luxury" 
+                size="default" 
+                className="gap-2 shadow-luxury h-11 px-6 shrink-0"
+              >
+                <UserPlus className="w-4 h-4" strokeWidth={2} />
+                <span>{t('dashboard.clients.add_client') || 'Añadir Cliente'}</span>
+              </Button>
+            </DialogTrigger>
           <DialogContent className="p-0 border border-stone-200/80 max-w-2xl bg-white rounded-3xl overflow-hidden shadow-2xl">
             <DialogHeader className="p-7 sm:p-9 pb-5 border-b border-stone-100 bg-white relative z-10">
               <DialogTitle className="text-2xl sm:text-3xl font-serif font-bold text-stone-900 tracking-tight">
@@ -391,6 +406,7 @@ export default function ClientsPage() {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {/* ── Search & Filter Bar ── */}
@@ -401,7 +417,7 @@ export default function ClientsPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar por nombre, email, teléfono o DNI..."
-            className="pl-10 pr-9 h-11 bg-white/90 border-stone-200/80 rounded-xl focus-visible:ring-1 focus-visible:ring-[#D4AF37] text-xs sm:text-sm font-sans"
+            className="pl-10 pr-9 h-11 bg-white/90 border-stone-200/80 rounded-xl focus-visible:ring-1 focus-visible:ring-[#FF6B00] text-xs sm:text-sm font-sans"
           />
           {searchQuery && (
             <button
@@ -490,7 +506,7 @@ export default function ClientsPage() {
                     >
                       <td className="px-6 sm:px-8 py-6">
                         <div className="flex items-center gap-4">
-                          <div className="w-11 h-11 rounded-2xl bg-stone-100/90 border border-stone-200/60 flex items-center justify-center text-stone-700 font-serif font-bold text-base shadow-xs group-hover:border-[#D4AF37]/50 group-hover:bg-amber-500/10 group-hover:text-[#B38F26] transition-colors shrink-0">
+                          <div className="w-11 h-11 rounded-2xl bg-stone-100/90 border border-stone-200/60 flex items-center justify-center text-stone-700 font-serif font-bold text-base shadow-xs group-hover:border-[#FF6B00]/50 group-hover:bg-orange-500/10 group-hover:text-[#FF6B00] transition-colors shrink-0">
                             {initial}
                           </div>
                           <div>
@@ -520,11 +536,11 @@ export default function ClientsPage() {
                           asChild
                           variant="ghost"
                           size="sm"
-                          className="h-9 px-3.5 rounded-xl hover:bg-amber-500/10 hover:text-[#B38F26] gap-2 text-stone-500 font-medium group/eye transition-all"
+                          className="h-9 px-3.5 rounded-xl hover:bg-orange-500/10 hover:text-[#FF6B00] gap-2 text-stone-500 font-medium group/eye transition-all"
                         >
                           <Link href={`/dashboard/clients/${client.id}`}>
                             <span className="hidden sm:inline text-xs font-semibold">Ver ficha</span>
-                            <Eye className="w-4 h-4 text-stone-400 group-hover/eye:text-[#D4AF37] transition-colors" />
+                            <Eye className="w-4 h-4 text-stone-400 group-hover/eye:text-[#FF6B00] transition-colors" />
                           </Link>
                         </Button>
                       </td>
@@ -536,6 +552,14 @@ export default function ClientsPage() {
           </table>
         </div>
       </Card>
+
+      {/* Modal de Importación Universal Excel */}
+      <UniversalExcelImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        type="clients"
+        onSuccess={fetchClients}
+      />
     </div>
   );
 }

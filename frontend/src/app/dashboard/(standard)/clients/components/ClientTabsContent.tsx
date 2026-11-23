@@ -6,6 +6,7 @@ import { Calendar, ClipboardList, FileText, Scale, Printer, Trash2 } from "lucid
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { SectorMetadataDisplay } from './SectorMetadataDisplay';
+import { TechnicalFormulasCard } from './TechnicalFormulasCard';
 
 interface ClientTabsContentProps {
   activeTab: 'overview' | 'appointments' | 'vouchers' | 'consents';
@@ -21,6 +22,10 @@ interface ClientTabsContentProps {
   clientId: string;
   businessSector?: string;
   sectorMetadata?: any;
+  colorFormulas?: any[];
+  technicalNotes?: string | null;
+  rawHistory?: string | null;
+  onRefresh?: () => void;
 }
 
 export function ClientTabsContent({
@@ -36,7 +41,11 @@ export function ClientTabsContent({
   onDeleteConsent,
   clientId,
   businessSector = 'general',
-  sectorMetadata = {}
+  sectorMetadata = {},
+  colorFormulas = [],
+  technicalNotes = '',
+  rawHistory = '',
+  onRefresh
 }: ClientTabsContentProps) {
   const { t } = useLanguage();
   const [currentPage, setCurrentPage] = useState(1);
@@ -48,21 +57,31 @@ export function ClientTabsContent({
 
   if (activeTab === 'overview') {
     return (
-      <Card className="rounded-[2rem] border-stone-200/70 bg-white/80 backdrop-blur-xl p-6 sm:p-8 shadow-sm space-y-6">
-        <h3 className="text-xl font-serif font-bold text-stone-900 border-b border-stone-100 pb-4 flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-300/30 flex items-center justify-center text-[#B38F26] shadow-xs">
-            <ClipboardList className="w-4 h-4" />
+      <div className="space-y-6">
+        <TechnicalFormulasCard
+          clientId={clientId}
+          colorFormulas={colorFormulas}
+          technicalNotes={technicalNotes}
+          rawHistory={rawHistory}
+          onRefresh={onRefresh}
+        />
+
+        <Card className="rounded-[2rem] border-stone-200/70 bg-white/80 backdrop-blur-xl p-6 sm:p-8 shadow-sm space-y-6">
+          <h3 className="text-xl font-serif font-bold text-stone-900 border-b border-stone-100 pb-4 flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-300/30 flex items-center justify-center text-[#B38F26] shadow-xs">
+              <ClipboardList className="w-4 h-4" />
+            </div>
+            <span>{t(`dashboard.clients.sectors.${businessSector}`) || 'Notas Internas'}</span>
+          </h3>
+          
+          <div className="px-1">
+            <SectorMetadataDisplay
+              sector={businessSector}
+              value={sectorMetadata}
+            />
           </div>
-          <span>{t(`dashboard.clients.sectors.${businessSector}`) || 'Notas Internas'}</span>
-        </h3>
-        
-        <div className="px-1">
-          <SectorMetadataDisplay
-            sector={businessSector}
-            value={sectorMetadata}
-          />
-        </div>
-      </Card>
+        </Card>
+      </div>
     );
   }
 

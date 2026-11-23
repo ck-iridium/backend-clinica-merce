@@ -1,7 +1,7 @@
 'use client';
 
 import { type MediaFile, isVideoFile, isDocumentFile } from '@/lib/mediaTypes';
-import { FileText, FileSpreadsheet } from 'lucide-react';
+import { FileText, FileSpreadsheet, Image as ImageIcon } from 'lucide-react';
 
 interface MediaGridProps {
   files: MediaFile[];
@@ -31,9 +31,11 @@ export default function MediaGrid({
 
   if (files.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 gap-4 bg-white rounded-[2rem] border border-stone-100">
-        <span className="text-5xl opacity-30">🖼️</span>
-        <p className="text-stone-400 font-medium">No hay imágenes en esta categoría.</p>
+      <div className="flex flex-col items-center justify-center h-64 gap-3 bg-white rounded-3xl border border-stone-100 shadow-xs">
+        <div className="w-16 h-16 rounded-2xl bg-stone-50 border border-stone-100 flex items-center justify-center text-stone-300">
+          <ImageIcon size={32} strokeWidth={1.5} />
+        </div>
+        <p className="text-stone-400 font-medium text-xs">No hay archivos en esta categoría.</p>
       </div>
     );
   }
@@ -76,9 +78,9 @@ export default function MediaGrid({
               </div>
             ) : isDocumentFile(file) ? (
               <div className="w-full h-full relative bg-stone-50 flex flex-col items-center justify-center p-4 border border-stone-100 rounded-2xl">
-                <div className="text-stone-400 group-hover:text-[#d4af37] transition-colors mb-2">
+                <div className="text-stone-400 group-hover:text-[#FF6B00] transition-colors mb-2">
                   {file.name.toLowerCase().endsWith('.csv') ? (
-                    <FileSpreadsheet size={36} strokeWidth={1.5} className="text-[#d4af37]" />
+                    <FileSpreadsheet size={36} strokeWidth={1.5} className="text-[#FF6B00]" />
                   ) : (
                     <FileText size={36} strokeWidth={1.5} />
                   )}

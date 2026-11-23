@@ -75,10 +75,14 @@ def build_used_urls_map(db: Session) -> dict:
         add_usage(p.avatar_url, f"Perfil: {p.full_name or p.email or 'Usuario'}")
 
     # Gallery Media
-    gallery_items = db.query(models.Media.url).filter(models.Media.tenant_id == tenant_id).all()
+    gallery_items = db.query(models.Media).filter(models.Media.tenant_id == tenant_id).all()
     for item in gallery_items:
-        if item[0]:
-            add_usage(item[0], "Galería Multimedia")
+        if item.filename:
+            if item.filename not in usage_map:
+                usage_map[item.filename] = []
+            usage_map[item.filename].append("Galería Multimedia")
+        if item.url:
+            add_usage(item.url, "Galería Multimedia")
 
     # Showcase Sectors (Solo para el tenant del sistema/marketing)
     if tenant_id == "00000000-0000-0000-0000-000000000000":
@@ -165,15 +169,18 @@ def check_global_file_usage(filename: str, db: Session) -> bool:
 async def list_all_media(db: Session = Depends(get_db)):
     """Lists files in the Supabase media bucket associated with the current tenant."""
     supabase = get_supabase()
+    tenant_id = current_tenant_var.get()
 
     try:
-        files = supabase.storage.from_("media").list()
+        files = supabase.storage.from_("media").list(options={"limit": 1000})
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al conectar con Supabase Storage: {e}")
 
     usage_map = build_used_urls_map(db)
 
     result = []
+    seen_names = set()
+
     for f in files:
         name = f.get("name")
         if not name or name == ".emptyFolderPlaceholder":
@@ -188,16 +195,37 @@ async def list_all_media(db: Session = Depends(get_db)):
         public_url = supabase.storage.from_("media").get_public_url(name)
 
         is_orphan = len(usages) == 1 and usages[0] == "Galería Multimedia"
+        content_type = metadata.get("mimetype")
+        if not content_type:
+            content_type = "text/csv" if name.lower().endswith(".csv") else "video/mp4" if name.lower().endswith(".mp4") else "image/webp"
 
         result.append({
             "name": name,
             "url": public_url,
             "size": metadata.get("size", 0),
-            "content_type": metadata.get("mimetype", "image/webp"),
+            "content_type": content_type,
             "created_at": f.get("created_at"),
             "status": "orphan" if is_orphan else "in_use",
             "usages": [u for u in usages if u != "Galería Multimedia"],
         })
+        seen_names.add(name)
+
+    # Asegurar que cualquier archivo registrado en models.Media para este tenant esté presente (ej: exportaciones CSV)
+    if tenant_id:
+        db_medias = db.query(models.Media).filter(models.Media.tenant_id == tenant_id).all()
+        for m in db_medias:
+            if m.filename and m.filename not in seen_names:
+                m_url = m.url or supabase.storage.from_("media").get_public_url(m.filename)
+                result.append({
+                    "name": m.filename,
+                    "url": m_url,
+                    "size": m.size or 0,
+                    "content_type": m.mime_type or ("text/csv" if m.filename.lower().endswith(".csv") else "image/webp"),
+                    "created_at": m.created_at.isoformat() if m.created_at else None,
+                    "status": "orphan",
+                    "usages": ["Exportación de Servicios"] if m.filename.startswith("servicios_") else [],
+                })
+                seen_names.add(m.filename)
 
     # Añadir recursos del Showcase de Sectores únicamente para el tenant central de ProBookia
     current_tid = current_tenant_var.get()

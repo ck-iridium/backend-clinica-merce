@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { UseFormRegister, Control, UseFormSetValue } from 'react-hook-form';
-import { Lock, Unlock, Sparkles, Plus } from 'lucide-react';
+import { Lock, Unlock, Sparkles, Plus, Package, Scissors } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import {
   Select,
   SelectContent,
@@ -102,6 +103,68 @@ export default function GeneralTab({
           </button>
         </div>
       </div>
+      {/* TIPO DE ÍTEM: SERVICIO VS PRODUCTO & VISIBILIDAD */}
+      <div className="p-4 bg-stone-50 border border-stone-200/80 rounded-2xl space-y-3">
+        <label className="block text-xs font-bold text-stone-700 uppercase tracking-widest">
+          Tipo de Ítem en Catálogo
+        </label>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => setValue('is_product', false, { shouldDirty: true })}
+            className={cn(
+              "p-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all",
+              !formValues.is_product
+                ? "bg-white border-[#FF6B00] text-[#FF6B00] shadow-sm ring-1 ring-[#FF6B00]/30"
+                : "bg-white/60 border-stone-200 text-stone-500 hover:bg-white"
+            )}
+          >
+            <Scissors size={14} />
+            <span>Servicio (Tratamiento)</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setValue('is_product', true, { shouldDirty: true })}
+            className={cn(
+              "p-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all",
+              formValues.is_product
+                ? "bg-white border-[#FF6B00] text-[#FF6B00] shadow-sm ring-1 ring-[#FF6B00]/30"
+                : "bg-white/60 border-stone-200 text-stone-500 hover:bg-white"
+            )}
+          >
+            <Package size={14} />
+            <span>Producto (Artículo TPV)</span>
+          </button>
+        </div>
+
+        {/* SWITCH: VISIBILIDAD EN WEB PÚBLICA */}
+        <div className="pt-3 border-t border-stone-200/60 flex items-center justify-between">
+          <div>
+            <span className="text-xs font-bold text-stone-800 block">
+              Mostrar en la Página Web Pública
+            </span>
+            <span className="text-[10px] text-stone-500 block">
+              {formValues.is_visible_on_web !== false
+                ? "Visible en el escaparate y catálogo de tu web."
+                : "Oculto de la web pública (Uso interno exclusivo para TPV y Agenda)."}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setValue('is_visible_on_web', formValues.is_visible_on_web === false ? true : false, { shouldDirty: true })}
+            className={cn(
+              "relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors",
+              formValues.is_visible_on_web !== false ? "bg-[#FF6B00]" : "bg-stone-300"
+            )}
+          >
+            <span className={cn(
+              "inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform",
+              formValues.is_visible_on_web !== false ? "translate-x-6" : "translate-x-1"
+            )} />
+          </button>
+        </div>
+      </div>
+
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">{t('dashboard.services.price_label')}</label>
@@ -112,6 +175,45 @@ export default function GeneralTab({
           <input id="service-editor-general-duration-input" type="number" step="15" {...register('duration_minutes', { required: true, valueAsNumber: true })} className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-white text-stone-900 dark:text-stone-900 focus:ring-2 focus:ring-[#FF6B00] outline-none transition-all font-semibold" />
         </div>
       </div>
+
+      {formValues.is_product && (
+        <div className="grid grid-cols-3 gap-3 p-4 bg-amber-50/40 border border-amber-200/60 rounded-2xl animate-in fade-in duration-300">
+          <div>
+            <label className="block text-[10px] font-bold text-stone-600 uppercase tracking-widest mb-1.5">
+              Precio Compra / Coste (€)
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              {...register('cost_price', { valueAsNumber: true })}
+              className="w-full px-3 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-xs font-semibold outline-none focus:ring-2 focus:ring-[#FF6B00]"
+              placeholder="0.00"
+            />
+          </div>
+          <div>
+            <label className="block text-[10px] font-bold text-stone-600 uppercase tracking-widest mb-1.5">
+              Ref. / Código Barras
+            </label>
+            <input
+              type="text"
+              {...register('sku')}
+              className="w-full px-3 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-xs font-semibold outline-none focus:ring-2 focus:ring-[#FF6B00]"
+              placeholder="SKU-1234"
+            />
+          </div>
+          <div>
+            <label className="block text-[10px] font-bold text-stone-600 uppercase tracking-widest mb-1.5">
+              Stock Inicial
+            </label>
+            <input
+              type="number"
+              {...register('stock', { valueAsNumber: true })}
+              className="w-full px-3 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-xs font-semibold outline-none focus:ring-2 focus:ring-[#FF6B00]"
+              placeholder="0"
+            />
+          </div>
+        </div>
+      )}
 
       <div>
         <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Modalidad Permitida</label>

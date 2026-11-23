@@ -130,7 +130,7 @@ export default function MediaLuxuryViewer({ file, onClose, onDelete, deleting }:
                   <div className="flex flex-col items-center justify-center p-8 text-center max-h-[70vh]">
                     <div className="w-20 h-20 rounded-3xl bg-stone-100 flex items-center justify-center text-stone-400 mb-4 border border-stone-200 shadow-sm">
                       {file.name.toLowerCase().endsWith('.csv') ? (
-                        <FileSpreadsheet size={40} className="text-[#d4af37]" />
+                        <FileSpreadsheet size={40} className="text-[#FF6B00]" />
                       ) : (
                         <FileText size={40} />
                       )}

@@ -16,11 +16,15 @@ import {
   Home,
   UserX, 
   XCircle,
-  Layers
+  Layers,
+  Receipt
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
+import { ClientQuickFormulasModal } from './ClientQuickFormulasModal';
+import { ClientTechnicalHistoryPanel } from './ClientTechnicalHistoryPanel';
+import { AppointmentPOSModal } from './AppointmentPOSModal';
 import {
   Dialog,
   DialogContent,
@@ -140,6 +144,8 @@ export function EditAppointmentModal({
   }, [selectedAppt]);
 
   const [duration, setDuration] = useState<number>(30);
+  const [showFormulasModal, setShowFormulasModal] = useState(false);
+  const [showPOSModal, setShowPOSModal] = useState(false);
 
   useEffect(() => {
     setDuration(currentApptDuration);
@@ -271,37 +277,71 @@ export function EditAppointmentModal({
 
   return (
     <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-      <DialogContent className="p-0 border border-stone-200/80 w-[95vw] sm:max-w-md lg:max-w-[36em] h-fit max-h-[100dvh] sm:max-h-[calc(100vh-2rem)] rounded-3xl shadow-2xl bg-white overflow-hidden">
-        <DialogHeader className="sticky top-0 z-30 shrink-0 p-6 sm:p-8 border-b border-stone-100 bg-white/95 backdrop-blur-md">
-          <div className="flex flex-col gap-2">
-            {selectedAppt && (() => {
-              const currentStatus = getStatusConfig(selectedAppt.status);
-              const StIcon = currentStatus.icon;
-              return (
-                <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border w-fit shadow-2xs flex items-center gap-1.5 ${currentStatus.badgeClasses}`}>
-                  <StIcon size={12} className={currentStatus.color} />
-                  {currentStatus.label}
-                </span>
-              );
-            })()}
-            <DialogTitle className="text-2xl sm:text-3xl font-serif font-bold text-stone-900 leading-tight">
-              {selectedAppt ? clientMap.get(selectedAppt.client_id)?.name : (t('dashboard.calendar.modal.appt_detail') || 'Detalle Cita')}
-            </DialogTitle>
-            {selectedAppt && (
-              <DialogDescription className="text-[#B38F26] font-semibold flex items-center gap-2 text-xs">
-                <Calendar size={14} strokeWidth={2} />
-                {parseIsoDate(selectedAppt.start_time).toLocaleDateString(getLocaleString(), {
-                  day: 'numeric',
-                  month: 'long',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })} h
-              </DialogDescription>
-            )}
-          </div>
-        </DialogHeader>
+      <DialogContent className={`p-0 border border-stone-200/80 w-[95vw] h-fit max-h-[94vh] rounded-3xl shadow-2xl bg-white overflow-hidden transition-all duration-300 ${
+        showFormulasModal 
+          ? 'sm:max-w-md lg:max-w-6xl' 
+          : 'sm:max-w-md lg:max-w-[36rem]'
+      }`}>
+        <div className="flex flex-col lg:flex-row w-full h-full max-h-[94vh] overflow-hidden">
+          {/* Columna Izquierda: Datos y Acciones de la Cita */}
+          <div className={`flex flex-col h-full overflow-hidden ${showFormulasModal ? 'w-full lg:w-[480px] shrink-0 lg:border-r border-stone-200/80' : 'w-full'}`}>
+            <DialogHeader className="sticky top-0 z-30 shrink-0 p-6 sm:p-8 border-b border-stone-100 bg-white/95 backdrop-blur-md">
+              <div className="flex flex-col gap-2">
+                {selectedAppt && (() => {
+                  const currentStatus = getStatusConfig(selectedAppt.status);
+                  const StIcon = currentStatus.icon;
+                  return (
+                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border w-fit shadow-2xs flex items-center gap-1.5 ${currentStatus.badgeClasses}`}>
+                      <StIcon size={12} className={currentStatus.color} />
+                      {currentStatus.label}
+                    </span>
+                  );
+                })()}
+                <DialogTitle className="text-2xl sm:text-3xl font-serif font-bold text-stone-900 leading-tight">
+                  {selectedAppt ? clientMap.get(selectedAppt.client_id)?.name : (t('dashboard.calendar.modal.appt_detail') || 'Detalle Cita')}
+                </DialogTitle>
+                {selectedAppt && (
+                  <DialogDescription className="text-[#FF6B00] font-semibold flex items-center gap-2 text-xs">
+                    <Calendar size={14} strokeWidth={2} />
+                    {parseIsoDate(selectedAppt.start_time).toLocaleDateString(getLocaleString(), {
+                      day: 'numeric',
+                      month: 'long',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })} h
+                  </DialogDescription>
+                )}
+              </div>
+            </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto p-8 custom-scrollbar space-y-8">
+            <div className="flex-1 overflow-y-auto p-6 sm:p-8 custom-scrollbar space-y-6">
+              {/* Barra de Acceso Rápido: Ficha Técnica & Cobro TPV */}
+              <div className="grid grid-cols-2 gap-3 p-1">
+                <button
+                  type="button"
+                  id="edit-appt-open-formulas-btn"
+                  onClick={() => setShowFormulasModal(!showFormulasModal)}
+                  className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl border font-bold text-xs shadow-2xs transition-all active:scale-95 group cursor-pointer ${
+                    showFormulasModal 
+                      ? 'border-[#FF6B00] bg-orange-50 text-[#FF6B00] ring-1 ring-[#FF6B00]/30' 
+                      : 'border-orange-200/90 bg-orange-50/70 hover:bg-orange-100/80 text-orange-950'
+                  }`}
+                >
+                  <Sparkles size={15} className="text-[#FF6B00] group-hover:scale-110 transition-transform" />
+                  <span>{showFormulasModal ? 'Ocultar Historial' : 'Ficha & Historial'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  id="edit-appt-open-pos-btn"
+                  onClick={() => setShowPOSModal(true)}
+                  className="flex items-center justify-center gap-2 py-3 px-4 rounded-2xl border border-emerald-200/90 bg-emerald-50/80 hover:bg-emerald-100/90 text-emerald-950 font-bold text-xs shadow-2xs transition-all active:scale-95 group cursor-pointer"
+                >
+                  <Receipt size={15} className="text-emerald-700 group-hover:scale-110 transition-transform" />
+                  <span>Cobrar Cita (TPV)</span>
+                </button>
+              </div>
+
           <div>
             <div className="flex items-center gap-2 mb-1">
               <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">{t('dashboard.calendar.service') || 'Tratamiento'}</p>
@@ -697,7 +737,7 @@ export function EditAppointmentModal({
                 size="icon"
                 onClick={handleDeleteAppointment}
                 disabled={updatingStatus}
-                className="w-12 h-12 shrink-0 bg-stone-100 hover:bg-rose-50 text-stone-400 hover:text-rose-600 rounded-xl transition-all"
+                className="w-12 h-12 shrink-0 bg-stone-100 hover:bg-rose-50 text-stone-400 hover:text-rose-600 rounded-xl transition-all cursor-pointer"
                 title={t('dashboard.calendar.modal.delete_appt') || 'Eliminar cita'}
               >
                 <Trash2 size={18} strokeWidth={2} />
@@ -705,6 +745,44 @@ export function EditAppointmentModal({
             </div>
           </div>
         </div>
+
+        {/* Columna Derecha (Desktop Side-by-Side): Ficha e Historial Técnico */}
+        {showFormulasModal && (
+          <div className="hidden lg:flex flex-1 flex-col h-full overflow-hidden bg-white animate-in fade-in slide-in-from-left-4 duration-300">
+            <ClientTechnicalHistoryPanel
+              clientId={selectedAppt?.client_id || null}
+              clientFallbackName={clientMap.get(selectedAppt?.client_id)?.name}
+              onClose={() => setShowFormulasModal(false)}
+              availableServices={Array.from(serviceMap.values())}
+              isEmbedded={true}
+            />
+          </div>
+        )}
+      </div>
+
+        {/* Modal de Ficha Técnica & Historial (Solo Móvil / Tablet) */}
+        <div className="lg:hidden">
+          <ClientQuickFormulasModal
+            isOpen={showFormulasModal}
+            onClose={() => setShowFormulasModal(false)}
+            clientId={selectedAppt?.client_id || null}
+            clientFallbackName={clientMap.get(selectedAppt?.client_id)?.name}
+            availableServices={Array.from(serviceMap.values())}
+          />
+        </div>
+
+        {/* Modal de Cobro Rápido en TPV */}
+        <AppointmentPOSModal
+          isOpen={showPOSModal}
+          onClose={() => setShowPOSModal(false)}
+          selectedAppt={selectedAppt}
+          client={clientMap.get(selectedAppt?.client_id)}
+          initialService={serviceMap.get(selectedAppt?.service_id)}
+          allServices={Array.from(serviceMap.values())}
+          onPaymentComplete={async () => {
+            await handleStatusChange('completed');
+          }}
+        />
       </DialogContent>
     </Dialog>
   );
