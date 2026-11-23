@@ -679,12 +679,12 @@ export default function CounterModeManager({
                   <div className={`h-8 w-60 rounded-2xl mx-auto animate-pulse ${isDarkMode ? 'bg-white/10' : 'bg-stone-200/70'}`} />
                   <div className={`h-4 w-44 rounded-xl mx-auto animate-pulse ${isDarkMode ? 'bg-white/5' : 'bg-stone-100'}`} />
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5 p-2 pb-4">
                   {[1, 2, 3].map(i => (
                     <div key={i} className={`p-4 rounded-3xl flex flex-col items-center gap-2.5 animate-pulse ${
                       isDarkMode ? 'bg-white/5 border border-white/10' : 'bg-white border border-stone-200/70 shadow-xs'
                     }`}>
-                      <div className={`w-14 h-14 rounded-2xl ${isDarkMode ? 'bg-stone-800' : 'bg-stone-100'}`} />
+                      <div className={`w-16 h-16 sm:w-[68px] sm:h-[68px] rounded-2xl ${isDarkMode ? 'bg-stone-800' : 'bg-stone-100'}`} />
                       <div className={`h-3 w-16 rounded mt-1 ${isDarkMode ? 'bg-stone-800' : 'bg-stone-200'}`} />
                       <div className={`h-2.5 w-12 rounded ${isDarkMode ? 'bg-stone-850' : 'bg-stone-100'}`} />
                     </div>
@@ -728,7 +728,7 @@ export default function CounterModeManager({
                   </p>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2 max-h-[50vh] overflow-y-auto pr-1">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5 p-2 pb-4 max-h-[55vh] overflow-y-auto custom-scrollbar">
                   {availableOperators.map(op => (
                     <button
                       key={op.id}
@@ -746,7 +746,7 @@ export default function CounterModeManager({
                           : 'bg-white hover:bg-orange-50/50 border border-stone-200/80 hover:border-[#FF6B00] shadow-sm hover:shadow-md'
                       }`}
                     >
-                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-lg font-bold shadow-md transition-all overflow-hidden ${
+                      <div className={`w-16 h-16 sm:w-[68px] sm:h-[68px] rounded-2xl flex items-center justify-center text-xl font-bold shadow-md transition-all overflow-hidden shrink-0 ${
                         isDarkMode
                           ? 'bg-gradient-to-tr from-stone-800 to-stone-700 group-hover:from-orange-600 group-hover:to-orange-500 border border-white/10 text-white'
                           : 'bg-stone-100 group-hover:bg-[#FF6B00] border border-stone-200 text-stone-700 group-hover:text-white'
@@ -769,7 +769,7 @@ export default function CounterModeManager({
               /* Numpad de Desbloqueo por PIN */
               <div className="space-y-5 text-center animate-in zoom-in-95 duration-200">
                 <div className="flex flex-col items-center gap-2">
-                  <div className="w-14 h-14 rounded-2xl bg-[#FF6B00] text-white flex items-center justify-center text-xl font-bold shadow-lg overflow-hidden">
+                  <div className="w-16 h-16 sm:w-[68px] sm:h-[68px] rounded-2xl bg-[#FF6B00] text-white flex items-center justify-center text-2xl font-bold shadow-lg overflow-hidden shrink-0">
                     {selectedOperator.avatar_url ? (
                       <img src={selectedOperator.avatar_url} alt={selectedOperator.full_name || "Operadora"} className="w-full h-full object-cover" />
                     ) : (
