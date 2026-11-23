@@ -716,23 +716,144 @@ export async function getTimeClockDailySummaryAction(month?: number, year?: numb
     if (month) query.set('month', month.toString());
     if (year) query.set('year', year.toString());
     if (staffId && staffId !== 'all') query.set('staff_id', staffId);
+    if (tenantId) query.set('tenant_id', tenantId);
 
-    const res = await fetch(`${apiUrl}/time-clock/daily-summary?${query.toString()}`, {
-      headers: {
-        'X-Tenant-ID': tenantId,
-      },
-      cache: 'no-store',
-      signal: AbortSignal.timeout(8000),
-    });
+    // Intento 1: Llamar al backend FastAPI (con timeout estricto)
+    try {
+      const res = await fetch(`${apiUrl}/time-clock/daily-summary?${query.toString()}`, {
+        headers: {
+          'X-Tenant-ID': tenantId,
+        },
+        cache: 'no-store',
+        signal: AbortSignal.timeout(4000),
+      });
 
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      return { success: false, error: err.detail || 'Error cargando resumen de jornada' };
+      if (res.ok) {
+        const data = await res.json();
+        return { success: true, data };
+      }
+    } catch (apiErr) {
+      console.warn("Fallo API time-clock/daily-summary, usando fallback directo Supabase:", apiErr);
     }
 
-    const data = await res.json();
-    return { success: true, data };
+    // Intento 2: Fallback directo de alta resiliencia a Supabase
+    const supabaseAdmin = getSupabaseAdmin();
+    let resolvedId = tenantId;
+    if (!/^[0-9a-fA-F-]{36}$/.test(tenantId)) {
+      const { data: tRow } = await supabaseAdmin.from('tenants').select('id').eq('slug', tenantId).maybeSingle();
+      if (tRow?.id) resolvedId = tRow.id;
+    }
+
+    const now = new Date();
+    const tYear = year || now.getFullYear();
+    const tMonth = month || (now.getMonth() + 1);
+    const startDate = new Date(Date.UTC(tYear, tMonth - 1, 1, 0, 0, 0)).toISOString();
+    const endDate = tMonth === 12
+      ? new Date(Date.UTC(tYear + 1, 0, 1, 0, 0, 0)).toISOString()
+      : new Date(Date.UTC(tYear, tMonth, 1, 0, 0, 0)).toISOString();
+
+    let querySupa = supabaseAdmin
+      .from('time_clock_records')
+      .select('*')
+      .eq('tenant_id', resolvedId)
+      .gte('timestamp', startDate)
+      .lt('timestamp', endDate)
+      .order('timestamp', { ascending: true });
+
+    if (staffId && staffId !== 'all') {
+      querySupa = querySupa.eq('staff_id', staffId);
+    }
+
+    const { data: records, error: recErr } = await querySupa;
+    if (recErr) throw recErr;
+
+    // Obtener perfiles para asociar nombres de operadoras
+    const { data: profs } = await supabaseAdmin
+      .from('profiles')
+      .select('id, full_name, email')
+      .eq('tenant_id', resolvedId);
+    const profMap: Record<string, string> = {};
+    (profs || []).forEach(p => { profMap[p.id] = p.full_name || p.email || 'Operador'; });
+
+    // Agrupar eventos por día y por empleada
+    const grouped: Record<string, any[]> = {};
+    (records || []).forEach(r => {
+      const dateStr = r.timestamp ? r.timestamp.slice(0, 10) : '';
+      const key = `${dateStr}__${r.staff_id}`;
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push(r);
+    });
+
+    const shifts: any[] = [];
+    Object.keys(grouped).sort().reverse().forEach(key => {
+      const dayRecs = grouped[key];
+      const [dateStr, sId] = key.split('__');
+      let firstIn: string | null = null;
+      let lastOut: string | null = null;
+      let breakMins = 0;
+      let currentBreakStart: Date | null = null;
+      let totalMins = 0;
+      let deviceLabel = 'Terminal Mostrador';
+
+      for (const ev of dayRecs) {
+        if (ev.device_label) deviceLabel = ev.device_label;
+        const evTime = new Date(ev.timestamp);
+        const timeFormatted = evTime.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+
+        if (ev.event_type === 'clock_in' && !firstIn) {
+          firstIn = timeFormatted;
+        } else if (ev.event_type === 'clock_out') {
+          lastOut = timeFormatted;
+        } else if (ev.event_type === 'break_start') {
+          currentBreakStart = evTime;
+        } else if (ev.event_type === 'break_end' && currentBreakStart) {
+          const diffMs = evTime.getTime() - currentBreakStart.getTime();
+          breakMins += Math.max(0, Math.floor(diffMs / 60000));
+          currentBreakStart = null;
+        }
+      }
+
+      if (typeof firstIn === 'string' && typeof lastOut === 'string') {
+        const [hIn, mIn] = firstIn.split(':').map(Number);
+        const [hOut, mOut] = lastOut.split(':').map(Number);
+        const elapsed = (hOut * 60 + mOut) - (hIn * 60 + mIn);
+        totalMins = Math.max(0, elapsed - breakMins);
+      } else if (firstIn) {
+        totalMins = 0;
+      }
+
+      shifts.push({
+        date: dateStr,
+        staff_id: sId,
+        staff_name: profMap[sId] || 'Operador',
+        first_in: firstIn,
+        last_out: lastOut,
+        break_minutes: breakMins,
+        worked_minutes: totalMins,
+        worked_hours: (totalMins / 60.0).toFixed(2),
+        is_complete: Boolean(firstIn && lastOut),
+        status_label: firstIn && lastOut ? 'Completada' : firstIn ? 'En curso' : 'Sin salida',
+        device_label: deviceLabel
+      });
+    });
+
+    const totalWorkedMinutes = shifts.reduce((acc, s) => acc + s.worked_minutes, 0);
+    const uniqueDays = new Set(shifts.map(s => s.date)).size;
+    const uniqueStaff = new Set(shifts.map(s => s.staff_id)).size;
+
+    return {
+      success: true,
+      data: {
+        year: tYear,
+        month: tMonth,
+        total_worked_hours: Number((totalWorkedMinutes / 60.0).toFixed(2)),
+        total_days_worked: uniqueDays,
+        active_staff_count: uniqueStaff,
+        shifts
+      }
+    };
   } catch (error: any) {
+    console.error("Excepción en getTimeClockDailySummaryAction:", error);
     return { success: false, error: error.message };
   }
 }

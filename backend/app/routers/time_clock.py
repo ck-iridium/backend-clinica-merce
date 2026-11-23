@@ -683,12 +683,17 @@ def compute_daily_shifts(records, profile_map):
 # ── 11. Resumen Agrupado Mensual de Jornadas ────────────────────────────────
 @router.get("/daily-summary")
 def get_daily_shifts_summary(
+    request: Request,
+    tenant_id: Optional[str] = Query(None),
     month: Optional[int] = Query(None),
     year: Optional[int] = Query(None),
     staff_id: Optional[str] = Query(None),
     db: Session = Depends(database.get_db)
 ):
-    tenant_id = database.current_tenant_var.get()
+    resolved_tenant = get_resolved_tenant(request, tenant_id)
+    if not resolved_tenant:
+        raise HTTPException(status_code=400, detail="Tenant context missing")
+
     now = datetime.utcnow()
     target_year = year or now.year
     target_month = month or now.month
@@ -700,7 +705,7 @@ def get_daily_shifts_summary(
         end_date = datetime(target_year, target_month + 1, 1, 0, 0, 0)
 
     query = db.query(models.TimeClockRecord).filter(
-        models.TimeClockRecord.tenant_id == tenant_id,
+        models.TimeClockRecord.tenant_id == resolved_tenant,
         models.TimeClockRecord.timestamp >= start_date,
         models.TimeClockRecord.timestamp < end_date
     )
@@ -710,7 +715,7 @@ def get_daily_shifts_summary(
 
     records = query.order_by(models.TimeClockRecord.timestamp).all()
 
-    profiles = db.query(models.Profile).filter(models.Profile.tenant_id == tenant_id).all()
+    profiles = db.query(models.Profile).filter(models.Profile.tenant_id == resolved_tenant).all()
     profile_map = {p.id: p.full_name or p.email for p in profiles}
 
     shifts = compute_daily_shifts(records, profile_map)
@@ -733,6 +738,8 @@ def get_daily_shifts_summary(
 # ── 12. Exportar Registro Oficial en Excel (RDL 8/2019) ─────────────────────
 @router.get("/export-excel")
 def export_time_clock_excel(
+    request: Request,
+    tenant_id: Optional[str] = Query(None),
     month: Optional[int] = Query(None),
     year: Optional[int] = Query(None),
     staff_id: Optional[str] = Query(None),
@@ -748,13 +755,16 @@ def export_time_clock_excel(
             detail="Módulo openpyxl no disponible para exportación Excel."
         )
 
-    tenant_id = database.current_tenant_var.get()
+    resolved_tenant = get_resolved_tenant(request, tenant_id)
+    if not resolved_tenant:
+        raise HTTPException(status_code=400, detail="Tenant context missing")
+
     now = datetime.utcnow()
     target_year = year or now.year
     target_month = month or now.month
 
     # Nombre de la clínica
-    settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == tenant_id).first()
+    settings = db.query(models.ClinicSettings).filter(models.ClinicSettings.tenant_id == resolved_tenant).first()
     clinic_name = settings.clinic_name if settings and settings.clinic_name else "Salón / Clínica"
     clinic_cif = getattr(settings, "cif_nif", "") or ""
 
@@ -765,7 +775,7 @@ def export_time_clock_excel(
         end_date = datetime(target_year, target_month + 1, 1, 0, 0, 0)
 
     query = db.query(models.TimeClockRecord).filter(
-        models.TimeClockRecord.tenant_id == tenant_id,
+        models.TimeClockRecord.tenant_id == resolved_tenant,
         models.TimeClockRecord.timestamp >= start_date,
         models.TimeClockRecord.timestamp < end_date
     )
@@ -775,7 +785,7 @@ def export_time_clock_excel(
 
     records = query.order_by(models.TimeClockRecord.timestamp).all()
 
-    profiles = db.query(models.Profile).filter(models.Profile.tenant_id == tenant_id).all()
+    profiles = db.query(models.Profile).filter(models.Profile.tenant_id == resolved_tenant).all()
     profile_map = {p.id: p.full_name or p.email for p in profiles}
 
     shifts = compute_daily_shifts(records, profile_map)

@@ -38,6 +38,7 @@ interface CounterModeManagerProps {
   logoUrl?: string | null;
   initialEnableCounterMode?: boolean;
   initialEnableTimeClock?: boolean;
+  initialDarkMode?: boolean;
 }
 
 export default function CounterModeManager({ 
@@ -45,11 +46,13 @@ export default function CounterModeManager({
   clinicName = "Clínica", 
   logoUrl,
   initialEnableCounterMode = false,
-  initialEnableTimeClock = true
+  initialEnableTimeClock = true,
+  initialDarkMode = false
 }: CounterModeManagerProps) {
   const [tenantId, setTenantId] = useState<string>(initialTenantId || '');
   const [enableCounterMode, setEnableCounterMode] = useState<boolean>(initialEnableCounterMode);
   const [enableTimeClock, setEnableTimeClock] = useState<boolean>(initialEnableTimeClock);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(initialDarkMode);
   const [autolockMinutes, setAutolockMinutes] = useState<number>(10);
   const [isLocked, setIsLocked] = useState<boolean>(false);
   const [showQRModal, setShowQRModal] = useState<boolean>(false);
@@ -93,6 +96,21 @@ export default function CounterModeManager({
       setTenantId(initialTenantId);
     }
   }, [initialTenantId, tenantId]);
+
+  useEffect(() => {
+    if (typeof initialDarkMode !== 'undefined' && initialDarkMode !== isDarkMode) {
+      setIsDarkMode(initialDarkMode);
+    }
+  }, [initialDarkMode]);
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      const hasDark = document.documentElement.classList.contains('dark') || document.body.classList.contains('dark');
+      if (hasDark) {
+        setIsDarkMode(true);
+      }
+    }
+  }, []);
 
   // 1. Obtención ultra-resiliente del tenant_id
   const getResolvedTenantId = useCallback(() => {
@@ -183,6 +201,9 @@ export default function CounterModeManager({
             const isEnabled = Boolean(settings.enable_counter_mode);
             setEnableCounterMode(isEnabled);
             setEnableTimeClock(settings.enable_time_clock !== false);
+            if (typeof settings.dark_mode_enabled !== 'undefined') {
+              setIsDarkMode(Boolean(settings.dark_mode_enabled));
+            }
             if (!isEnabled) {
               setIsLocked(false);
               sessionStorage.removeItem('counter_is_locked');
@@ -224,6 +245,9 @@ export default function CounterModeManager({
         }
         if (typeof e.detail.enable_time_clock !== 'undefined') {
           setEnableTimeClock(e.detail.enable_time_clock !== false);
+        }
+        if (typeof e.detail.dark_mode_enabled !== 'undefined') {
+          setIsDarkMode(Boolean(e.detail.dark_mode_enabled));
         }
       }
     };
@@ -574,18 +598,28 @@ export default function CounterModeManager({
 
       {/* PANTALLA COMPLETA 2: PROTECTOR DE PANTALLA / MODO MOSTRADOR BLOQUEADO */}
       {isLocked && (
-        <div className="fixed inset-0 z-[150] bg-stone-950/95 backdrop-blur-2xl flex flex-col justify-between p-6 sm:p-10 text-white animate-in fade-in duration-300">
+        <div className={`fixed inset-0 z-[150] backdrop-blur-2xl flex flex-col justify-between p-6 sm:p-10 animate-in fade-in duration-300 ${
+          isDarkMode 
+            ? 'bg-stone-950/95 text-white' 
+            : 'bg-[#FAF9F6]/95 text-stone-900'
+        }`}>
           {/* Header Superior */}
           <div className="flex items-center justify-between max-w-4xl w-full mx-auto">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-[#FF6B00] shadow-sm">
+              <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-[#FF6B00] shadow-sm ${
+                isDarkMode ? 'bg-orange-500/20 border border-orange-500/30' : 'bg-orange-50 border border-orange-200/80'
+              }`}>
                 <Lock size={20} />
               </div>
               <div>
-                <h2 className="font-serif font-bold text-lg sm:text-xl text-white tracking-tight">
+                <h2 className={`font-serif font-bold text-lg sm:text-xl tracking-tight ${
+                  isDarkMode ? 'text-white' : 'text-stone-900'
+                }`}>
                   {clinicName}
                 </h2>
-                <p className="text-[11px] text-stone-400 font-medium">Modo Mostrador Protegido</p>
+                <p className={`text-[11px] font-medium ${isDarkMode ? 'text-stone-400' : 'text-stone-500'}`}>
+                  Modo Mostrador Protegido
+                </p>
               </div>
             </div>
 
@@ -595,7 +629,11 @@ export default function CounterModeManager({
                 <button
                   type="button"
                   onClick={() => setShowQRModal(true)}
-                  className="flex items-center gap-2 py-2.5 px-4 rounded-2xl bg-white/10 hover:bg-white/15 active:scale-95 text-white font-bold text-xs border border-white/15 transition-all shadow-sm cursor-pointer"
+                  className={`flex items-center gap-2 py-2.5 px-4 rounded-2xl font-bold text-xs transition-all shadow-xs active:scale-95 cursor-pointer ${
+                    isDarkMode 
+                      ? 'bg-white/10 hover:bg-white/15 text-white border border-white/15' 
+                      : 'bg-white hover:bg-stone-100 text-stone-800 border border-stone-200/80'
+                  }`}
                 >
                   <QrCode size={15} className="text-[#FF6B00]" />
                   <span>Fichar con Móvil</span>
@@ -606,7 +644,11 @@ export default function CounterModeManager({
               <button
                 type="button"
                 onClick={handleLogout}
-                className="flex items-center gap-2 py-2.5 px-4 rounded-2xl bg-white/5 hover:bg-rose-500/20 hover:border-rose-500/30 active:scale-95 text-stone-300 hover:text-rose-200 font-bold text-xs border border-white/10 transition-all shadow-sm cursor-pointer"
+                className={`flex items-center gap-2 py-2.5 px-4 rounded-2xl font-bold text-xs transition-all shadow-xs active:scale-95 cursor-pointer ${
+                  isDarkMode 
+                    ? 'bg-white/5 hover:bg-rose-500/20 hover:border-rose-500/30 text-stone-300 hover:text-rose-200 border border-white/10' 
+                    : 'bg-stone-100 hover:bg-rose-50 hover:border-rose-200 text-stone-600 hover:text-rose-700 border border-stone-200/70'
+                }`}
                 title="Cerrar la sesión de la clínica en este ordenador"
               >
                 <LogOut size={15} />
@@ -618,15 +660,19 @@ export default function CounterModeManager({
           {/* Centro: Selección de Empleada y Numpad */}
           <div className="max-w-md w-full mx-auto my-auto space-y-6">
             {availableOperators.length === 0 ? (
-              <div className="p-8 rounded-3xl bg-white/5 border border-white/10 text-center space-y-4 max-w-md mx-auto animate-in zoom-in-95 duration-200">
-                <div className="w-12 h-12 rounded-2xl bg-orange-500/20 text-[#FF6B00] flex items-center justify-center mx-auto">
+              <div className={`p-8 rounded-3xl text-center space-y-4 max-w-md mx-auto animate-in zoom-in-95 duration-200 ${
+                isDarkMode ? 'bg-white/5 border border-white/10' : 'bg-white border border-stone-200/80 shadow-xl'
+              }`}>
+                <div className={`w-12 h-12 rounded-2xl text-[#FF6B00] flex items-center justify-center mx-auto ${
+                  isDarkMode ? 'bg-orange-500/20' : 'bg-orange-50 border border-orange-200/60'
+                }`}>
                   <AlertCircle size={24} />
                 </div>
                 <div className="space-y-1.5">
-                  <h3 className="font-serif text-xl font-bold text-white">
+                  <h3 className={`font-serif text-xl font-bold ${isDarkMode ? 'text-white' : 'text-stone-900'}`}>
                     Sin Operadoras con PIN
                   </h3>
-                  <p className="text-xs text-stone-400 leading-relaxed">
+                  <p className={`text-xs leading-relaxed ${isDarkMode ? 'text-stone-400' : 'text-stone-500'}`}>
                     Aún no se ha registrado ninguna operadora con PIN en este centro. Para utilizar el modo mostrador bloqueado, crea primero a tus empleadas o configúrate un PIN desde el panel de Equipo.
                   </p>
                 </div>
@@ -642,10 +688,10 @@ export default function CounterModeManager({
               /* Selección de Operadora para Desbloquear (Solo operadoras con PIN) */
               <div className="space-y-4 text-center">
                 <div>
-                  <h3 className="font-serif text-2xl sm:text-3xl font-bold text-white">
+                  <h3 className={`font-serif text-2xl sm:text-3xl font-bold ${isDarkMode ? 'text-white' : 'text-stone-900'}`}>
                     ¿Quién va a usar el mostrador?
                   </h3>
-                  <p className="text-xs text-stone-400 mt-1">
+                  <p className={`text-xs mt-1 ${isDarkMode ? 'text-stone-400' : 'text-stone-500'}`}>
                     Toca tu nombre e introduce tu PIN de 4 dígitos para acceder.
                   </p>
                 </div>
@@ -662,9 +708,17 @@ export default function CounterModeManager({
                         pinValueRef.current = '';
                         setPinError(null);
                       }}
-                      className="p-4 rounded-3xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-orange-500/50 flex flex-col items-center gap-2.5 text-center transition-all group active:scale-95 cursor-pointer"
+                      className={`p-4 rounded-3xl flex flex-col items-center gap-2.5 text-center transition-all group active:scale-95 cursor-pointer ${
+                        isDarkMode
+                          ? 'bg-white/5 hover:bg-white/10 border border-white/10 hover:border-orange-500/50'
+                          : 'bg-white hover:bg-orange-50/50 border border-stone-200/80 hover:border-[#FF6B00] shadow-sm hover:shadow-md'
+                      }`}
                     >
-                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-stone-800 to-stone-700 group-hover:from-orange-600 group-hover:to-orange-500 border border-white/10 flex items-center justify-center text-lg font-bold text-white shadow-md transition-all overflow-hidden">
+                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-lg font-bold shadow-md transition-all overflow-hidden ${
+                        isDarkMode
+                          ? 'bg-gradient-to-tr from-stone-800 to-stone-700 group-hover:from-orange-600 group-hover:to-orange-500 border border-white/10 text-white'
+                          : 'bg-stone-100 group-hover:bg-[#FF6B00] border border-stone-200 text-stone-700 group-hover:text-white'
+                      }`}>
                         {op.avatar_url ? (
                           <img src={op.avatar_url} alt={op.full_name || "Operadora"} className="w-full h-full object-cover" />
                         ) : (
@@ -672,8 +726,8 @@ export default function CounterModeManager({
                         )}
                       </div>
                       <div className="w-full truncate">
-                        <p className="text-xs font-bold text-white truncate">{op.full_name}</p>
-                        <p className="text-[10px] text-stone-400 truncate capitalize">{op.role}</p>
+                        <p className={`text-xs font-bold truncate ${isDarkMode ? 'text-white' : 'text-stone-900'}`}>{op.full_name}</p>
+                        <p className={`text-[10px] truncate capitalize ${isDarkMode ? 'text-stone-400' : 'text-stone-500'}`}>{op.role}</p>
                       </div>
                     </button>
                   ))}
@@ -691,10 +745,10 @@ export default function CounterModeManager({
                     )}
                   </div>
                   <div>
-                    <h3 className="font-serif text-xl sm:text-2xl font-bold text-white">
+                    <h3 className={`font-serif text-xl sm:text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-stone-900'}`}>
                       Hola, {selectedOperator.full_name}
                     </h3>
-                    <p className="text-xs text-stone-400">
+                    <p className={`text-xs ${isDarkMode ? 'text-stone-400' : 'text-stone-500'}`}>
                       Introduce tu PIN de 4 dígitos o usa tu teclado físico
                     </p>
                   </div>
@@ -709,8 +763,12 @@ export default function CounterModeManager({
                         key={index}
                         className={`w-11 h-12 rounded-xl flex items-center justify-center text-2xl font-bold font-mono transition-all border ${
                           hasChar 
-                            ? 'border-[#FF6B00] bg-orange-500/20 text-[#FF6B00] scale-105 shadow-[0_0_15px_rgba(255,107,0,0.3)]' 
-                            : 'border-white/20 bg-white/5 text-stone-600'
+                            ? isDarkMode
+                              ? 'border-[#FF6B00] bg-orange-500/20 text-[#FF6B00] scale-105 shadow-[0_0_15px_rgba(255,107,0,0.3)]'
+                              : 'border-[#FF6B00] bg-orange-50 text-[#FF6B00] scale-105 shadow-2xs'
+                            : isDarkMode
+                              ? 'border-white/20 bg-white/5 text-stone-600'
+                              : 'border-stone-200 bg-white text-stone-300 shadow-2xs'
                         }`}
                       >
                         {hasChar ? '•' : ''}
@@ -720,7 +778,7 @@ export default function CounterModeManager({
                 </div>
 
                 {pinError && (
-                  <p className="text-xs text-rose-400 font-bold animate-in shake duration-300">
+                  <p className="text-xs text-rose-500 font-bold animate-in shake duration-300">
                     {pinError}
                   </p>
                 )}
@@ -733,7 +791,11 @@ export default function CounterModeManager({
                       type="button"
                       disabled={isVerifyingPin}
                       onClick={() => handlePinInput(num)}
-                      className="h-13 rounded-2xl bg-white/10 hover:bg-white/20 active:bg-orange-500/30 font-mono font-bold text-xl text-white transition-all active:scale-95 flex items-center justify-center border border-white/5"
+                      className={`h-13 rounded-2xl font-mono font-bold text-xl transition-all active:scale-95 flex items-center justify-center border cursor-pointer ${
+                        isDarkMode
+                          ? 'bg-white/10 hover:bg-white/20 active:bg-orange-500/30 text-white border-white/5'
+                          : 'bg-white hover:bg-stone-100 active:bg-orange-50 text-stone-900 border-stone-200/80 shadow-2xs'
+                      }`}
                     >
                       {num}
                     </button>
@@ -749,7 +811,11 @@ export default function CounterModeManager({
                       pinValueRef.current = '';
                       setPinError(null);
                     }}
-                    className="h-13 rounded-2xl bg-white/5 hover:bg-white/10 text-[11px] font-bold uppercase tracking-wider text-stone-400 transition-all active:scale-95 flex items-center justify-center border border-white/5"
+                    className={`h-13 rounded-2xl text-[11px] font-bold uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center border cursor-pointer ${
+                      isDarkMode
+                        ? 'bg-white/5 hover:bg-white/10 text-stone-400 border-white/5'
+                        : 'bg-stone-100 hover:bg-stone-200 text-stone-600 border-stone-200/60 shadow-2xs'
+                    }`}
                   >
                     {availableOperators.length > 1 ? 'Cambiar' : 'Limpiar'}
                   </button>
@@ -757,7 +823,11 @@ export default function CounterModeManager({
                     type="button"
                     disabled={isVerifyingPin}
                     onClick={() => handlePinInput('0')}
-                    className="h-13 rounded-2xl bg-white/10 hover:bg-white/20 active:bg-orange-500/30 font-mono font-bold text-xl text-white transition-all active:scale-95 flex items-center justify-center border border-white/5"
+                    className={`h-13 rounded-2xl font-mono font-bold text-xl transition-all active:scale-95 flex items-center justify-center border cursor-pointer ${
+                      isDarkMode
+                        ? 'bg-white/10 hover:bg-white/20 active:bg-orange-500/30 text-white border-white/5'
+                        : 'bg-white hover:bg-stone-100 active:bg-orange-50 text-stone-900 border-stone-200/80 shadow-2xs'
+                    }`}
                   >
                     0
                   </button>
@@ -771,15 +841,19 @@ export default function CounterModeManager({
                       });
                     }}
                     disabled={isVerifyingPin || pinValue.length === 0}
-                    className="h-13 rounded-2xl bg-white/5 hover:bg-white/10 text-stone-300 transition-all active:scale-95 flex items-center justify-center border border-white/5 disabled:opacity-30"
+                    className={`h-13 rounded-2xl transition-all active:scale-95 flex items-center justify-center border disabled:opacity-30 cursor-pointer ${
+                      isDarkMode
+                        ? 'bg-white/5 hover:bg-white/10 text-stone-300 border-white/5'
+                        : 'bg-stone-100 hover:bg-stone-200 text-stone-700 border-stone-200/60 shadow-2xs'
+                    }`}
                   >
                     ⌫
                   </button>
                 </div>
 
                 {isVerifyingPin && (
-                  <div className="flex items-center justify-center gap-2 pt-2 text-xs text-stone-400">
-                    <Loader2 size={14} className="animate-spin text-[#FF6B00]" />
+                  <div className="flex items-center justify-center gap-2 pt-2 text-xs text-[#FF6B00] font-semibold">
+                    <Loader2 size={14} className="animate-spin" />
                     <span>Verificando PIN de seguridad...</span>
                   </div>
                 )}
@@ -788,8 +862,10 @@ export default function CounterModeManager({
           </div>
 
           {/* Footer del Lock */}
-          <div className="max-w-4xl w-full mx-auto text-center text-xs text-stone-500">
-            Auto-bloqueo configurado a {autolockMinutes > 0 ? `${autolockMinutes} minutos de inactividad` : 'desactivado'}.
+          <div className="max-w-4xl w-full mx-auto text-center text-xs">
+            <p className={isDarkMode ? 'text-stone-500' : 'text-stone-400'}>
+              Auto-bloqueo configurado a {autolockMinutes > 0 ? `${autolockMinutes} minutos de inactividad` : 'desactivado'}.
+            </p>
           </div>
         </div>
       )}

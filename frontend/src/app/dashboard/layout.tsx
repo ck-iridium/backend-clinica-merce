@@ -76,6 +76,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         tenantId={tenantId} 
         initialEnableCounterMode={Boolean(settings?.enable_counter_mode)}
         initialEnableTimeClock={settings?.enable_time_clock !== false}
+        initialDarkMode={Boolean(settings?.dark_mode_enabled)}
       />
     </AIImageProvider>
   );

@@ -117,17 +117,6 @@ export default function TeamPage() {
     }
   };
 
-  React.useEffect(() => {
-    if (!loadingRole) {
-      const currentRole = role?.toLowerCase();
-      if (currentRole !== 'administrador' && currentRole !== 'admin') {
-        router.replace('/dashboard');
-        toast.error(t('dashboard.team.access_denied_admin') || "Acceso denegado: Solo los administradores pueden gestionar el equipo.");
-      }
-    }
-  }, [role, loadingRole, router]);
-
-
   const fetchMembers = async () => {
     try {
       setLoading(true);

@@ -28,6 +28,7 @@ interface TimeClockManagerProps {
 }
 
 export default function TimeClockManager({ teamMembers }: TimeClockManagerProps) {
+  const [mounted, setMounted] = useState<boolean>(false);
   const now = new Date();
   const [selectedYear, setSelectedYear] = useState<number>(now.getFullYear());
   const [selectedMonth, setSelectedMonth] = useState<number>(now.getMonth() + 1);
@@ -41,6 +42,10 @@ export default function TimeClockManager({ teamMembers }: TimeClockManagerProps)
     active_staff_count: number;
     shifts: any[];
   } | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const monthNames = [
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -93,7 +98,6 @@ export default function TimeClockManager({ teamMembers }: TimeClockManagerProps)
   const handleExportExcel = async () => {
     try {
       setExporting(true);
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
       const tenantMatch = document.cookie.match(/(?:^|; )tenant_id=([^;]*)/);
       const tenantId = tenantMatch ? tenantMatch[1] : '';
 
@@ -104,13 +108,10 @@ export default function TimeClockManager({ teamMembers }: TimeClockManagerProps)
         ...(tenantId ? { tenant_id: tenantId } : {})
       });
 
-      const downloadUrl = `${apiUrl}/time-clock/export-excel?${query.toString()}`;
+      // Llamada directa al proxy local same-origin (cero problemas CORS)
+      const downloadUrl = `/api/time-clock/export-excel?${query.toString()}`;
 
-      const res = await fetch(downloadUrl, {
-        headers: {
-          ...(tenantId ? { 'X-Tenant-ID': tenantId } : {})
-        }
-      });
+      const res = await fetch(downloadUrl);
 
       if (!res.ok) {
         throw new Error("No se pudo generar el archivo Excel de fichajes.");
@@ -145,6 +146,21 @@ export default function TimeClockManager({ teamMembers }: TimeClockManagerProps)
     const dayName = dateObj.toLocaleDateString('es-ES', { weekday: 'short' });
     return `${dayName.charAt(0).toUpperCase() + dayName.slice(1)}, ${d} ${monthNames[m - 1].slice(0, 3)}`;
   };
+
+  if (!mounted) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-16 w-full rounded-2xl" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <Skeleton className="h-28 rounded-2xl" />
+          <Skeleton className="h-28 rounded-2xl" />
+          <Skeleton className="h-28 rounded-2xl" />
+          <Skeleton className="h-28 rounded-2xl" />
+        </div>
+        <Skeleton className="h-64 w-full rounded-2xl" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
