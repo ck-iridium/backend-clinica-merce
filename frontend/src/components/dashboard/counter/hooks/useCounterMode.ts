@@ -46,6 +46,12 @@ export function useCounterMode({
   const isVerifyingPinRef = useRef<boolean>(isVerifyingPin);
   const availableOperatorsRef = useRef<Operator[]>([]);
 
+  const operatorsRef = useRef<Operator[]>([]);
+  const enableCounterModeRef = useRef<boolean>(initialEnableCounterMode);
+  const autolockMinutesRef = useRef<number>(10);
+  const isFetchingOperatorsRef = useRef<boolean>(false);
+  const initialLoadedRef = useRef<string>('');
+
   // Filtrar estrictamente operadoras que cuentan con PIN configurado
   const availableOperators = useMemo(() => {
     return operators.filter(op => Boolean(op.has_pin));
@@ -56,6 +62,9 @@ export function useCounterMode({
   useEffect(() => { isLockedRef.current = isLocked; }, [isLocked]);
   useEffect(() => { isVerifyingPinRef.current = isVerifyingPin; }, [isVerifyingPin]);
   useEffect(() => { availableOperatorsRef.current = availableOperators; }, [availableOperators]);
+  useEffect(() => { operatorsRef.current = operators; }, [operators]);
+  useEffect(() => { enableCounterModeRef.current = enableCounterMode; }, [enableCounterMode]);
+  useEffect(() => { autolockMinutesRef.current = autolockMinutes; }, [autolockMinutes]);
 
   useEffect(() => {
     if (initialTenantId && initialTenantId !== tenantId) {
@@ -105,13 +114,17 @@ export function useCounterMode({
 
   // Cargar operadoras frescas del backend
   const fetchOperators = useCallback(async () => {
+    if (isFetchingOperatorsRef.current) return operatorsRef.current;
+    isFetchingOperatorsRef.current = true;
     setIsLoadingOperators(true);
     const tid = getResolvedTenantId();
     try {
       const actionRes = await getCounterOperatorsAction(tid || undefined);
       if (actionRes.success && Array.isArray(actionRes.data) && actionRes.data.length > 0) {
         setOperators(actionRes.data);
+        operatorsRef.current = actionRes.data;
         setIsLoadingOperators(false);
+        isFetchingOperatorsRef.current = false;
         return actionRes.data as Operator[];
       }
     } catch (e) {
@@ -120,6 +133,7 @@ export function useCounterMode({
 
     if (!tid) {
       setIsLoadingOperators(false);
+      isFetchingOperatorsRef.current = false;
       return [] as Operator[];
     }
     try {
@@ -142,11 +156,13 @@ export function useCounterMode({
         const data = await res.json();
         if (Array.isArray(data)) {
           setOperators(data);
+          operatorsRef.current = data;
           if (data.length === 0) {
             setIsLocked(false);
             sessionStorage.removeItem('counter_is_locked');
           }
           setIsLoadingOperators(false);
+          isFetchingOperatorsRef.current = false;
           return data as Operator[];
         }
       }
@@ -154,16 +170,17 @@ export function useCounterMode({
       console.warn("No se pudieron cargar operadoras:", err);
     } finally {
       setIsLoadingOperators(false);
+      isFetchingOperatorsRef.current = false;
     }
     return [] as Operator[];
   }, [getResolvedTenantId]);
 
   const lockCounter = useCallback((reason?: string, opsList?: Operator[]) => {
-    if (!enableCounterMode) {
+    if (!enableCounterModeRef.current) {
       toast.info("El Modo Mostrador está desactivado en Ajustes > Agenda.");
       return;
     }
-    const list = opsList || operators;
+    const list = opsList || operatorsRef.current;
     const withPin = list.filter(op => Boolean(op.has_pin));
     if (withPin.length === 0) {
       toast.info("Para usar el Modo Mostrador, crea al menos una operadora con PIN en Equipo.");
@@ -186,7 +203,7 @@ export function useCounterMode({
     if (reason) {
       toast.info(`Mostrador bloqueado por seguridad (${reason}).`);
     }
-  }, [enableCounterMode, operators]);
+  }, []);
 
   const unlockCounter = useCallback(() => {
     setIsLocked(false);
@@ -208,24 +225,26 @@ export function useCounterMode({
   // 3. Sistema de Auto-bloqueo por Inactividad
   const resetAutolockTimer = useCallback(() => {
     if (autolockTimerRef.current) clearTimeout(autolockTimerRef.current);
-    if (!enableCounterMode) return;
-    if (isLocked) return;
-    if (autolockMinutes <= 0) return;
-    if (operators.length === 0) return;
+    if (!enableCounterModeRef.current) return;
+    if (isLockedRef.current) return;
+    if (autolockMinutesRef.current <= 0) return;
+    if (operatorsRef.current.length === 0) return;
 
-    const timeoutMs = autolockMinutes * 60 * 1000;
+    const timeoutMs = autolockMinutesRef.current * 60 * 1000;
     autolockTimerRef.current = setTimeout(() => {
       lockCounter("Inactividad prolongada en el mostrador");
     }, timeoutMs);
-  }, [enableCounterMode, isLocked, autolockMinutes, operators.length, lockCounter]);
+  }, [lockCounter]);
 
   // Sincronizar tenantId y escuchar eventos globales
   useEffect(() => {
-    if (typeof document === 'undefined') return;
+    if (typeof window === 'undefined') return;
     const resolved = getResolvedTenantId();
     if (resolved && !tenantId) setTenantId(resolved);
 
-    if (resolved) {
+    if (resolved && initialLoadedRef.current !== resolved) {
+      initialLoadedRef.current = resolved;
+
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
       fetch(`${apiUrl}/settings/?tenant_id=${resolved}`, {
         headers: { 'X-Tenant-ID': resolved }
@@ -260,7 +279,7 @@ export function useCounterMode({
 
     const handleOpenQR = () => setShowQRModal(true);
     const handleLock = async () => {
-      if (!enableCounterMode) {
+      if (!enableCounterModeRef.current) {
         toast.info("El Modo Mostrador está desactivado en Ajustes > Agenda.");
         return;
       }
@@ -296,7 +315,7 @@ export function useCounterMode({
       window.removeEventListener('lock_counter', handleLock);
       window.removeEventListener('settings_updated', handleSettingsUpdated);
     };
-  }, [tenantId, getResolvedTenantId, fetchOperators, enableCounterMode, lockCounter]);
+  }, [tenantId, getResolvedTenantId, fetchOperators, lockCounter]);
 
   useEffect(() => {
     if (!enableCounterMode || isLocked || autolockMinutes <= 0 || operators.length === 0) return;
@@ -348,8 +367,7 @@ export function useCounterMode({
   }, [getResolvedTenantId]);
 
   useEffect(() => {
-    if (!showQRModal && !isLocked) {
-      if (qrIntervalRef.current) clearInterval(qrIntervalRef.current);
+    if (!showQRModal) {
       if (qrCountdownRef.current) clearInterval(qrCountdownRef.current);
       return;
     }
@@ -369,7 +387,7 @@ export function useCounterMode({
     return () => {
       if (qrCountdownRef.current) clearInterval(qrCountdownRef.current);
     };
-  }, [showQRModal, isLocked, fetchQRToken]);
+  }, [showQRModal, fetchQRToken]);
 
   // 5. Verificación de PIN
   const verifyPinAndUnlock = useCallback(async (staffId: string, pin: string) => {

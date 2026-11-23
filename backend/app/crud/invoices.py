@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.attributes import flag_modified
 from sqlalchemy import or_, func
 import math
 import uuid
@@ -378,6 +379,7 @@ def create_direct_sale(db: Session, sale: schemas.DirectSaleRequest):
                 }
                 current_formulas.insert(0, new_entry)
                 client.color_formulas = current_formulas
+                flag_modified(client, "color_formulas")
                 db.add(client)
 
     db.commit()

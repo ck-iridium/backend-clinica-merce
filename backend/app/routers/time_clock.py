@@ -818,7 +818,9 @@ def export_time_clock_excel(
         writer.writerow(["TOTAL HORAS NETAS:", f"{total_hours:.2f} h", "DÍAS REGISTRADOS:", len(set(s['date'] for s in shifts)), "TRABAJADORES:", len(set(s['staff_id'] for s in shifts))])
         
         csv_content = csv_buffer.getvalue().encode("utf-8-sig")
-        csv_filename = f"registro_jornada_{clinic_name.lower().replace(' ', '_')}_{target_year}_{target_month:02d}.csv"
+        safe_name = "".join(c for c in clinic_name if c.isalnum() or c in (' ', '_', '-')).strip()
+        safe_name = safe_name.replace(' ', '_').lower() or "clinica"
+        csv_filename = f"registro_jornada_{safe_name}_{target_year}_{target_month:02d}.csv"
         return Response(
             content=csv_content,
             media_type="text/csv; charset=utf-8",
@@ -971,7 +973,9 @@ def export_time_clock_excel(
     wb.save(output)
     output.seek(0)
 
-    filename = f"registro_jornada_{clinic_name.lower().replace(' ', '_')}_{target_year}_{target_month:02d}.xlsx"
+    safe_name = "".join(c for c in clinic_name if c.isalnum() or c in (' ', '_', '-')).strip()
+    safe_name = safe_name.replace(' ', '_').lower() or "clinica"
+    filename = f"registro_jornada_{safe_name}_{target_year}_{target_month:02d}.xlsx"
     return StreamingResponse(
         output,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

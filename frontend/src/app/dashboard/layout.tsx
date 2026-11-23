@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic';
 
+import nextDynamic from 'next/dynamic';
 import { headers } from 'next/headers';
 import DashboardSidebar from '@/components/DashboardSidebar';
 import RouteGuard from '@/components/RouteGuard';
@@ -9,8 +10,9 @@ import AIGenerationFloatingCard from '@/components/cms/AIGenerationFloatingCard'
 import AICopilotWidget from '@/components/ai/AICopilotWidget';
 import CoachTooltipManager from '@/components/ui/CoachTooltipManager';
 import GracePeriodBanner from '@/components/dashboard/GracePeriodBanner';
-import CounterModeManager from '@/components/dashboard/CounterModeManager';
 import { TerminalGuard } from '@/components/dashboard/TerminalGuard';
+
+const CounterModeManager = nextDynamic(() => import('@/components/dashboard/CounterModeManager'), { ssr: false });
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   // El middleware inyecta x-tenant-id en cada request para Server Components

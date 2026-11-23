@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.attributes import flag_modified
 from typing import List, Optional
 import io
 import json
@@ -222,6 +223,7 @@ def add_client_formula(client_id: str, formula_in: FormulaCreate, db: Session = 
     current_formulas = list(db_client.color_formulas or [])
     current_formulas.insert(0, new_entry)
     db_client.color_formulas = current_formulas
+    flag_modified(db_client, "color_formulas")
     db.commit()
     db.refresh(db_client)
     return {"status": "ok", "formulas": db_client.color_formulas}
@@ -242,6 +244,7 @@ def update_client_formula(client_id: str, index: int, formula_in: FormulaCreate,
         "notes": (formula_in.notes or "").strip()
     }
     db_client.color_formulas = current_formulas
+    flag_modified(db_client, "color_formulas")
     db.commit()
     db.refresh(db_client)
     return {"status": "ok", "formulas": db_client.color_formulas}
@@ -258,6 +261,7 @@ def delete_client_formula(client_id: str, index: int, db: Session = Depends(data
 
     current_formulas.pop(index)
     db_client.color_formulas = current_formulas
+    flag_modified(db_client, "color_formulas")
     db.commit()
     db.refresh(db_client)
     return {"status": "ok", "formulas": db_client.color_formulas}

@@ -20,10 +20,10 @@ else:
     }
     engine_args = {
         "connect_args": connect_args,
-        "pool_size": 15,
-        "max_overflow": 10,
-        "pool_timeout": 10,
-        "pool_recycle": 1800,
+        "pool_size": 5,
+        "max_overflow": 2,
+        "pool_timeout": 5,
+        "pool_recycle": 300,
         "pool_pre_ping": True
     }
 

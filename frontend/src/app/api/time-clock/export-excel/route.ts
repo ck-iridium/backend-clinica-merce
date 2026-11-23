@@ -28,7 +28,30 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const supabaseAdmin = getSupabaseAdmin();
+    let supabaseAdmin = null;
+    try {
+      supabaseAdmin = getSupabaseAdmin();
+    } catch (e) {
+      console.warn("getSupabaseAdmin no disponible, usando fallback backend:", e);
+    }
+
+    // Fallback a FastAPI backend si Supabase Admin no está configurado
+    if (!supabaseAdmin) {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+      const backendRes = await fetch(`${apiUrl}/time-clock/export-excel?${searchParams.toString()}`, {
+        headers: {
+          'X-Tenant-ID': tenantId
+        }
+      });
+      if (backendRes.ok) {
+        const buffer = await backendRes.arrayBuffer();
+        const headers = new Headers();
+        headers.set('Content-Type', backendRes.headers.get('Content-Type') || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        headers.set('Content-Disposition', backendRes.headers.get('Content-Disposition') || `attachment; filename="registro_jornada.xlsx"`);
+        return new NextResponse(new Uint8Array(buffer), { status: 200, headers });
+      }
+      throw new Error("Cliente de administración no disponible");
+    }
 
     // Resolver slug a UUID si es necesario
     let resolvedId = tenantId;
@@ -224,7 +247,7 @@ export async function GET(request: NextRequest) {
     headers.set('Content-Disposition', `attachment; filename="${filename}"`);
     headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
 
-    return new NextResponse(fileBuffer, {
+    return new NextResponse(new Uint8Array(fileBuffer), {
       status: 200,
       headers
     });
