@@ -65,7 +65,7 @@ export default function CounterModeManager({ tenantId: initialTenantId, clinicNa
       if (match) setTenantId(match[1]);
     }
 
-    // Verificar si estaba bloqueado en sessionStorage
+    // Verificar si estaba bloqueado en sessionStorage (solo si hay operadoras)
     const wasLocked = sessionStorage.getItem('counter_is_locked');
     if (wasLocked === 'true') {
       setIsLocked(true);
@@ -107,7 +107,14 @@ export default function CounterModeManager({ tenantId: initialTenantId, clinicNa
     })
       .then(res => res.json())
       .then(data => {
-        if (Array.isArray(data)) setOperators(data);
+        if (Array.isArray(data)) {
+          setOperators(data);
+          // Si no hay operadoras con PIN creadas, NUNCA bloquear el mostrador
+          if (data.length === 0) {
+            setIsLocked(false);
+            sessionStorage.removeItem('counter_is_locked');
+          }
+        }
       })
       .catch(err => console.warn("No se pudieron cargar operadoras:", err));
   }, [tenantId]);
@@ -117,15 +124,16 @@ export default function CounterModeManager({ tenantId: initialTenantId, clinicNa
     if (autolockTimerRef.current) clearTimeout(autolockTimerRef.current);
     if (isLocked) return;
     if (autolockMinutes <= 0) return; // 0 significa desactivado
+    if (operators.length === 0) return; // Si no hay operadoras con PIN, no bloquear
 
     const timeoutMs = autolockMinutes * 60 * 1000;
     autolockTimerRef.current = setTimeout(() => {
       lockCounter("Inactividad prolongada en el mostrador");
     }, timeoutMs);
-  }, [isLocked, autolockMinutes]);
+  }, [isLocked, autolockMinutes, operators.length]);
 
   useEffect(() => {
-    if (isLocked || autolockMinutes <= 0) return;
+    if (isLocked || autolockMinutes <= 0 || operators.length === 0) return;
 
     const events = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'];
     const handleActivity = () => resetAutolockTimer();
@@ -137,9 +145,15 @@ export default function CounterModeManager({ tenantId: initialTenantId, clinicNa
       events.forEach(ev => window.removeEventListener(ev, handleActivity));
       if (autolockTimerRef.current) clearTimeout(autolockTimerRef.current);
     };
-  }, [isLocked, autolockMinutes, resetAutolockTimer]);
+  }, [isLocked, autolockMinutes, operators.length, resetAutolockTimer]);
 
   const lockCounter = (reason?: string) => {
+    if (operators.length === 0) {
+      toast.info("Para usar el Modo Mostrador, crea al menos una operadora con PIN en Equipo.");
+      setIsLocked(false);
+      sessionStorage.removeItem('counter_is_locked');
+      return;
+    }
     setIsLocked(true);
     setSelectedOperator(null);
     setPinValue('');
@@ -323,7 +337,7 @@ export default function CounterModeManager({ tenantId: initialTenantId, clinicNa
 
       {/* PANTALLA COMPLETA 2: PROTECTOR DE PANTALLA / MODO MOSTRADOR BLOQUEADO */}
       {isLocked && (
-        <div className="fixed inset-0 z-[99999] bg-stone-950/95 backdrop-blur-2xl flex flex-col justify-between p-6 sm:p-10 text-white animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[80] bg-stone-950/95 backdrop-blur-2xl flex flex-col justify-between p-6 sm:p-10 text-white animate-in fade-in duration-300">
           {/* Header Superior */}
           <div className="flex items-center justify-between max-w-4xl w-full mx-auto">
             <div className="flex items-center gap-3">
@@ -338,20 +352,54 @@ export default function CounterModeManager({ tenantId: initialTenantId, clinicNa
               </div>
             </div>
 
-            {/* Acceso a QR de fichaje directamente desde la pantalla bloqueada */}
-            <button
-              type="button"
-              onClick={() => setShowQRModal(true)}
-              className="flex items-center gap-2 py-2.5 px-4 rounded-2xl bg-white/10 hover:bg-white/15 active:scale-95 text-white font-bold text-xs border border-white/15 transition-all shadow-sm"
-            >
-              <QrCode size={15} className="text-[#FF6B00]" />
-              <span>Fichar con Móvil</span>
-            </button>
+            <div className="flex items-center gap-2">
+              {/* Acceso a QR de fichaje directamente desde la pantalla bloqueada */}
+              <button
+                type="button"
+                onClick={() => setShowQRModal(true)}
+                className="flex items-center gap-2 py-2.5 px-4 rounded-2xl bg-white/10 hover:bg-white/15 active:scale-95 text-white font-bold text-xs border border-white/15 transition-all shadow-sm cursor-pointer"
+              >
+                <QrCode size={15} className="text-[#FF6B00]" />
+                <span>Fichar con Móvil</span>
+              </button>
+
+              {/* Botón de escape / desbloqueo directo para la Administradora */}
+              <button
+                type="button"
+                onClick={unlockCounter}
+                className="flex items-center gap-2 py-2.5 px-4 rounded-2xl bg-white/10 hover:bg-orange-500/20 hover:border-orange-500/40 active:scale-95 text-stone-200 hover:text-white font-bold text-xs border border-white/15 transition-all shadow-sm cursor-pointer"
+                title="Salir del Modo Mostrador y volver al panel"
+              >
+                <Unlock size={15} className="text-[#FF6B00]" />
+                <span>Salir / Continuar como Admin</span>
+              </button>
+            </div>
           </div>
 
           {/* Centro: Selección de Empleada y Numpad */}
           <div className="max-w-md w-full mx-auto my-auto space-y-6">
-            {!selectedOperator ? (
+            {operators.length === 0 ? (
+              <div className="p-8 rounded-3xl bg-white/5 border border-white/10 text-center space-y-4 max-w-md mx-auto animate-in zoom-in-95 duration-200">
+                <div className="w-12 h-12 rounded-2xl bg-orange-500/20 text-[#FF6B00] flex items-center justify-center mx-auto">
+                  <AlertCircle size={24} />
+                </div>
+                <div className="space-y-1.5">
+                  <h3 className="font-serif text-xl font-bold text-white">
+                    Sin Operadoras con PIN
+                  </h3>
+                  <p className="text-xs text-stone-400 leading-relaxed">
+                    Aún no se ha registrado ninguna operadora con PIN en este centro. Para utilizar el modo mostrador bloqueado, crea primero a tus empleadas desde el panel de Equipo.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={unlockCounter}
+                  className="w-full py-3 px-5 rounded-2xl bg-[#FF6B00] hover:bg-[#e05e00] text-white font-bold text-xs shadow-md transition-all cursor-pointer"
+                >
+                  Continuar al Panel Principal
+                </button>
+              </div>
+            ) : !selectedOperator ? (
               /* Selección de Operadora para Desbloquear */
               <div className="space-y-4 text-center">
                 <div>
