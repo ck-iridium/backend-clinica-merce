@@ -262,11 +262,11 @@ export function EditAppointmentModal({
       .sort((a, b) => a.start.getTime() - b.start.getTime());
 
     let nextLimit = futureEvents.length > 0 ? futureEvents[0].start : closingTime;
-    if (s_time < lunchStart && nextLimit > lunchStart) {
+    if (s_time.getTime() < lunchStart.getTime() && nextLimit.getTime() > lunchStart.getTime()) {
       nextLimit = lunchStart;
     }
 
-    const effectiveLimit = nextLimit < closingTime ? nextLimit : closingTime;
+    const effectiveLimit = nextLimit.getTime() < closingTime.getTime() ? nextLimit : closingTime;
     const diffMins = Math.floor((effectiveLimit.getTime() - s_time.getTime()) / 60000);
     return Math.max(0, diffMins);
   }, [selectedAppt, endHour, settings, getAppointmentsForDay, getBlocksForDay]);
@@ -745,6 +745,7 @@ export function EditAppointmentModal({
             </div>
           </div>
         </div>
+      </div>
 
         {/* Columna Derecha (Desktop Side-by-Side): Ficha e Historial Técnico */}
         {showFormulasModal && (
