@@ -17,9 +17,11 @@ def normalize_plan_name(raw_plan: str | None) -> str:
         return "pro"
     p = str(raw_plan).lower().strip()
     if p in ("basic", "individual", "autonomo"):
-        return "individual"
+        return "basic"
     elif p in ("gold", "elite", "vip"):
-        return "elite"
+        return "gold"
+    elif p in ("free", "trial"):
+        return "free"
     return "pro"
 
 def handle_saas_onboarding(data_object, metadata, db: Session):
@@ -55,6 +57,7 @@ def handle_saas_subscription_update(data_object, metadata, db: Session):
         tenant.stripe_customer_id = customer_id
         tenant.stripe_subscription_id = subscription_id
         tenant.plan_type = plan_type
+        tenant.billing_mode = "stripe"
         tenant.subscription_status = "active"
         db.commit()
         print(f"[BILLING] [SUCCESS] Inquilino '{tenant.name}' actualizado al plan {plan_type} de forma inmediata.")

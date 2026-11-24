@@ -252,6 +252,11 @@ $function$;
             "ALTER TABLE tenants ADD COLUMN ai_monthly_images_used INTEGER DEFAULT 0",
             "ALTER TABLE tenants ADD COLUMN ai_trial_images_used INTEGER DEFAULT 0",
             "ALTER TABLE tenants ADD COLUMN ai_images_reset_at TIMESTAMP NULL",
+            # ── Acuerdos Económicos Personalizados y Cobro Híbrido (SaaS) ───────────
+            "ALTER TABLE tenants ADD COLUMN custom_monthly_price NUMERIC(10, 2) NULL",
+            "ALTER TABLE tenants ADD COLUMN billing_mode VARCHAR DEFAULT 'stripe' NOT NULL",
+            "ALTER TABLE tenants ADD COLUMN billing_interval VARCHAR DEFAULT 'monthly' NOT NULL",
+            "ALTER TABLE tenants ADD COLUMN billing_notes TEXT NULL",
             # ── Multi-Location & Rostering ──────────────────────────────────────────
             "ALTER TABLE appointments ADD COLUMN staff_id VARCHAR",
             "ALTER TABLE appointments ADD COLUMN location_id VARCHAR",

@@ -48,8 +48,13 @@ def request_bizum_payment(
     if period not in ["monthly", "yearly"]:
         raise HTTPException(status_code=400, detail="Periodo de facturación debe ser 'monthly' o 'yearly'.")
         
-    # Obtener precio
-    amount = PLAN_PRICES[plan][period]
+    # Obtener precio (priorizar acuerdo personalizado del tenant si existe)
+    tenant = db.query(models.Tenant).filter(models.Tenant.id == tenant_id).first()
+    if tenant and getattr(tenant, "custom_monthly_price", None) is not None and float(tenant.custom_monthly_price) > 0:
+        base_m = float(tenant.custom_monthly_price)
+        amount = round(base_m * 12, 2) if period == "yearly" else round(base_m, 2)
+    else:
+        amount = PLAN_PRICES[plan][period]
     
     # Resolver user_id si no viene
     if not user_id:

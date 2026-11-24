@@ -26,6 +26,10 @@ class TenantOut(BaseModel):
     stripe_subscription_id: Optional[str] = None
     plan_type: str
     subscription_expires_at: Optional[datetime] = None
+    custom_monthly_price: Optional[float] = None
+    billing_mode: Optional[str] = "stripe"
+    billing_interval: Optional[str] = "monthly"
+    billing_notes: Optional[str] = None
     custom_domain: Optional[str] = None
     created_at: Optional[datetime] = None
     business_sector: Optional[str] = None
@@ -141,6 +145,251 @@ def get_tenant_out(tenant, db: Session) -> TenantOut:
 # ---------------------------------------------------------------------
 # ENDPOINTS DEL BACKOFFICE
 # ---------------------------------------------------------------------
+class CreateTenantRequest(BaseModel):
+    tenant_name: str
+    tenant_slug: str
+    admin_name: str
+    admin_email: str
+    admin_password: str
+    business_sector: str = "barber"
+    plan_type: str = "pro"
+    subscription_status: str = "active"
+    custom_monthly_price: Optional[float] = None
+    billing_mode: str = "manual_cash"
+    billing_interval: str = "monthly"
+    billing_notes: Optional[str] = None
+    expiry_days: Optional[int] = None  # None = sin fecha límite; 30 / 365 para ciclo
+    seed_sector_services: bool = True
+    onboarding_completed: bool = True
+
+class TenantBillingUpdate(BaseModel):
+    plan_type: Optional[str] = None
+    custom_monthly_price: Optional[float] = None
+    clear_custom_price: bool = False
+    billing_mode: Optional[str] = None
+    billing_interval: Optional[str] = None
+    billing_notes: Optional[str] = None
+    subscription_expires_at: Optional[str] = None  # ISO str o "" para limpiar
+    clear_expiry: bool = False
+
+class ManualPaymentRequest(BaseModel):
+    amount: Optional[float] = None
+    billing_period: str = "monthly"  # monthly | yearly
+    payment_channel: str = "manual_cash"  # manual_cash | manual_transfer
+    extend_days: Optional[int] = None  # Si se omite, 30 (monthly) o 365 (yearly); 0 = no tocar vencimiento
+    notes: Optional[str] = None
+
+class StripeLinkRequest(BaseModel):
+    interval: Optional[str] = None
+    frontend_url: Optional[str] = None
+
+@router.post("/tenants", response_model=TenantOut)
+def create_tenant_admin(
+    payload: CreateTenantRequest,
+    db: Session = Depends(database.get_db),
+    admin_payload: dict = Depends(verify_super_admin)
+):
+    """
+    Crea y aprovisiona un nuevo inquilino (Tenant) directamente desde Backoffice Master,
+    permitiendo configurar sector, plan funcional, precio personalizado y cobro manual o Stripe.
+    """
+    from ..services.tenant_provisioner import provision_tenant
+
+    allowed_billing_modes = {"stripe", "manual_cash", "manual_transfer", "complimentary"}
+    b_mode = (payload.billing_mode or "manual_cash").lower().strip()
+    if b_mode not in allowed_billing_modes:
+        raise HTTPException(status_code=400, detail="Modalidad de cobro no válida.")
+
+    b_interval = "yearly" if (payload.billing_interval or "").lower().strip() == "yearly" else "monthly"
+
+    expires_at = None
+    if payload.expiry_days and payload.expiry_days > 0:
+        expires_at = datetime.utcnow() + timedelta(days=payload.expiry_days)
+
+    custom_price = None
+    if b_mode == "complimentary":
+        custom_price = 0.0
+    elif payload.custom_monthly_price is not None and payload.custom_monthly_price >= 0:
+        custom_price = round(float(payload.custom_monthly_price), 2)
+
+    new_tenant = provision_tenant(
+        db=db,
+        tenant_name=payload.tenant_name,
+        tenant_slug=payload.tenant_slug,
+        admin_email=payload.admin_email.strip(),
+        admin_name=payload.admin_name.strip(),
+        admin_password=payload.admin_password,
+        plan_type=payload.plan_type,
+        subscription_status=payload.subscription_status or "active",
+        subscription_expires_at=expires_at,
+        business_sector=payload.business_sector,
+        custom_monthly_price=custom_price,
+        billing_mode=b_mode,
+        billing_interval=b_interval,
+        billing_notes=payload.billing_notes,
+        seed_sector_services=payload.seed_sector_services,
+        onboarding_completed=payload.onboarding_completed,
+    )
+    return get_tenant_out(new_tenant, db)
+
+@router.put("/tenants/{tenant_id}/billing", response_model=TenantOut)
+def update_tenant_billing(
+    tenant_id: str,
+    payload: TenantBillingUpdate,
+    db: Session = Depends(database.get_db),
+    admin_payload: dict = Depends(verify_super_admin)
+):
+    """
+    Actualiza el plan funcional, precio personalizado, modalidad de cobro y vencimiento de un tenant.
+    """
+    from ..limits import normalize_plan_type
+    tenant = db.query(models.Tenant).filter(models.Tenant.id == tenant_id).first()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Inquilino no encontrado")
+
+    if payload.plan_type is not None:
+        tenant.plan_type = normalize_plan_type(payload.plan_type)
+
+    if payload.clear_custom_price:
+        tenant.custom_monthly_price = None
+    elif payload.custom_monthly_price is not None:
+        if payload.custom_monthly_price < 0:
+            raise HTTPException(status_code=400, detail="El precio personalizado no puede ser negativo.")
+        tenant.custom_monthly_price = round(float(payload.custom_monthly_price), 2)
+
+    if payload.billing_mode is not None:
+        b_mode = payload.billing_mode.lower().strip()
+        if b_mode not in {"stripe", "manual_cash", "manual_transfer", "complimentary"}:
+            raise HTTPException(status_code=400, detail="Modalidad de cobro no válida.")
+        tenant.billing_mode = b_mode
+        if b_mode == "complimentary":
+            tenant.custom_monthly_price = 0.0
+
+    if payload.billing_interval is not None:
+        tenant.billing_interval = "yearly" if payload.billing_interval.lower().strip() == "yearly" else "monthly"
+
+    if payload.billing_notes is not None:
+        tenant.billing_notes = payload.billing_notes
+
+    if payload.clear_expiry:
+        tenant.subscription_expires_at = None
+    elif payload.subscription_expires_at is not None and payload.subscription_expires_at.strip() != "":
+        try:
+            clean_iso = payload.subscription_expires_at.replace("Z", "")
+            tenant.subscription_expires_at = datetime.fromisoformat(clean_iso)
+        except Exception:
+            raise HTTPException(status_code=400, detail="Formato de fecha de vencimiento inválido (use ISO).")
+
+    db.commit()
+    db.refresh(tenant)
+    try:
+        from ..main import invalidate_tenant_cache
+        invalidate_tenant_cache(tenant.id)
+    except Exception:
+        pass
+    return get_tenant_out(tenant, db)
+
+@router.post("/tenants/{tenant_id}/register-manual-payment", response_model=TenantOut)
+def register_manual_payment(
+    tenant_id: str,
+    payload: ManualPaymentRequest,
+    db: Session = Depends(database.get_db),
+    admin_payload: dict = Depends(verify_super_admin)
+):
+    """
+    Registra un cobro manual (efectivo o transferencia) para el tenant,
+    activa la cuenta y extiende su ciclo si procede.
+    """
+    import uuid
+    import random
+    import string
+
+    tenant = db.query(models.Tenant).filter(models.Tenant.id == tenant_id).first()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Inquilino no encontrado")
+
+    period = "yearly" if (payload.billing_period or "").lower().strip() == "yearly" else "monthly"
+    default_prices = {"free": 0.0, "basic": 39.0, "pro": 69.0, "gold": 129.0}
+    resolved_monthly = float(tenant.custom_monthly_price) if tenant.custom_monthly_price is not None else default_prices.get((tenant.plan_type or "pro").lower(), 69.0)
+    amount = payload.amount if payload.amount is not None else (resolved_monthly * 12 if period == "yearly" else resolved_monthly)
+
+    tenant.subscription_status = "active"
+    if payload.payment_channel in ("manual_cash", "manual_transfer", "complimentary"):
+        tenant.billing_mode = payload.payment_channel
+
+    if payload.extend_days is None:
+        days = 365 if period == "yearly" else 30
+    else:
+        days = payload.extend_days
+
+    if days > 0:
+        base_date = tenant.subscription_expires_at if (tenant.subscription_expires_at and tenant.subscription_expires_at > datetime.utcnow()) else datetime.utcnow()
+        tenant.subscription_expires_at = base_date + timedelta(days=days)
+
+    user = db.query(models.User).filter(models.User.tenant_id == tenant.id).first()
+    if user:
+        ref = "CASH-" + "".join(random.choices(string.ascii_uppercase + string.digits, k=5))
+        log_req = models.SubscriptionRequest(
+            id=str(uuid.uuid4()),
+            tenant_id=tenant.id,
+            user_id=user.id,
+            plan_type=tenant.plan_type or "pro",
+            billing_period=period,
+            amount=round(float(amount), 2),
+            reference_code=ref,
+            status="approved",
+            notes=payload.notes or f"Cobro manual ({tenant.billing_mode}) registrado desde Super Admin"
+        )
+        db.add(log_req)
+
+    db.commit()
+    db.refresh(tenant)
+    try:
+        from ..main import invalidate_tenant_cache
+        invalidate_tenant_cache(tenant.id)
+    except Exception:
+        pass
+    return get_tenant_out(tenant, db)
+
+@router.post("/tenants/{tenant_id}/stripe-link")
+def generate_tenant_stripe_link(
+    tenant_id: str,
+    payload: StripeLinkRequest,
+    db: Session = Depends(database.get_db),
+    admin_payload: dict = Depends(verify_super_admin)
+):
+    """
+    Genera un enlace directo de Stripe Checkout para este tenant respetando
+    su precio personalizado si lo tiene configurado.
+    """
+    import os
+    from ..services.stripe_service import StripeService
+
+    tenant = db.query(models.Tenant).filter(models.Tenant.id == tenant_id).first()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Inquilino no encontrado")
+
+    user = db.query(models.User).filter(models.User.tenant_id == tenant.id).first()
+    owner_email = user.email if user else None
+    interval = (payload.interval or tenant.billing_interval or "monthly").lower().strip()
+    frontend_url = (payload.frontend_url or os.environ.get("FRONTEND_URL") or f"https://{tenant.slug}.probookia.com").rstrip("/")
+
+    custom_cents = None
+    if tenant.custom_monthly_price is not None and float(tenant.custom_monthly_price) > 0:
+        custom_cents = int(round(float(tenant.custom_monthly_price) * 100))
+
+    url = StripeService.create_subscription_session(
+        tenant_id=tenant.id,
+        plan_type=tenant.plan_type or "pro",
+        stripe_customer_id=tenant.stripe_customer_id,
+        frontend_url=frontend_url,
+        interval=interval,
+        plan=tenant.plan_type or "pro",
+        email=owner_email,
+        custom_amount_cents=custom_cents
+    )
+    return {"url": url, "custom_monthly_price": float(tenant.custom_monthly_price) if tenant.custom_monthly_price is not None else None}
+
 @router.get("/tenants", response_model=List[TenantOut])
 def get_tenants(
     db: Session = Depends(database.get_db),

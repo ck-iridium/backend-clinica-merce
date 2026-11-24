@@ -15,6 +15,10 @@ interface Tenant {
   stripe_subscription_id?: string | null
   plan_type?: string
   subscription_expires_at?: string | null
+  custom_monthly_price?: number | null
+  billing_mode?: string
+  billing_interval?: string
+  billing_notes?: string | null
   created_at: string | null
   custom_domain?: string | null
 }
@@ -70,6 +74,26 @@ export default function TenantOverviewTab({ tenant }: TenantOverviewTabProps) {
 
   const planInfo = getPlanDetails(tenant.plan_type)
   const PlanIcon = planInfo.icon
+  const billingModeLabel =
+    tenant.billing_mode === 'manual_cash'
+      ? 'Efectivo (Manual)'
+      : tenant.billing_mode === 'manual_transfer'
+        ? 'Transferencia / Bizum'
+        : tenant.billing_mode === 'complimentary'
+          ? 'Cortesía (0€)'
+          : 'Stripe Automático'
+  const effectivePrice =
+    tenant.billing_mode === 'complimentary'
+      ? 0
+      : tenant.custom_monthly_price !== null && tenant.custom_monthly_price !== undefined
+        ? Number(tenant.custom_monthly_price)
+        : tenant.plan_type === 'gold'
+          ? 129
+          : tenant.plan_type === 'pro'
+            ? 69
+            : tenant.plan_type === 'basic'
+              ? 39
+              : 0
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
@@ -105,14 +129,27 @@ export default function TenantOverviewTab({ tenant }: TenantOverviewTabProps) {
 
         {/* Plan Comercial */}
         <Card className="p-4 bg-white/90 border-stone-200/70 flex flex-col justify-between space-y-2">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
-            Nivel de Suscripción
-          </span>
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+              Nivel de Suscripción
+            </span>
+            <span className="text-[10px] font-bold text-stone-500">
+              {billingModeLabel}
+            </span>
+          </div>
+          <div className="flex items-center justify-between gap-2 flex-wrap">
             <div className={cn("px-2.5 py-1 rounded-lg border text-xs font-bold inline-flex items-center gap-1.5", planInfo.badgeClass)}>
               <PlanIcon className="w-3.5 h-3.5 shrink-0" />
               <span>{planInfo.name}</span>
             </div>
+            <span className="text-sm font-mono font-bold text-stone-900">
+              {effectivePrice}€<span className="text-[10px] font-sans font-normal text-stone-400">/mes</span>
+              {tenant.custom_monthly_price !== null && tenant.custom_monthly_price !== undefined && (
+                <span className="ml-1.5 text-[9px] font-sans font-bold uppercase bg-amber-50 text-[#B38F26] border border-[#D4AF37]/30 px-1.5 py-0.5 rounded-full">
+                  Acordado
+                </span>
+              )}
+            </span>
           </div>
           <span className="text-[11px] text-stone-500 font-medium leading-tight">
             {planInfo.desc}

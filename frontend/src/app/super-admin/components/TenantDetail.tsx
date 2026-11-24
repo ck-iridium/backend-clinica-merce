@@ -37,6 +37,10 @@ interface Tenant {
   stripe_subscription_id?: string | null
   plan_type?: string
   subscription_expires_at?: string | null
+  custom_monthly_price?: number | null
+  billing_mode?: string
+  billing_interval?: string
+  billing_notes?: string | null
   created_at: string | null
   custom_domain?: string | null
   business_sector?: string | null
@@ -545,6 +549,8 @@ export default function TenantDetail({ tenant, onUpdateStatus, onUpdateTenant, o
                 tenant={tenant}
                 onSubscribe={handleSubscribe}
                 redirectingPlan={redirectingPlan}
+                onUpdateTenant={onUpdateTenant}
+                getJwtToken={getJwtToken}
               />
             )}
 

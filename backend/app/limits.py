@@ -39,8 +39,19 @@ PLAN_LIMITS = {
     }
 }
 
+def normalize_plan_type(plan_type: str | None) -> str:
+    """Normaliza alias comerciales (individual/elite) a claves canónicas de límites (basic/pro/gold/free)."""
+    plan = (plan_type or "free").lower().strip()
+    if plan in ("individual", "autonomo", "basic"):
+        return "basic"
+    if plan in ("elite", "vip", "gold"):
+        return "gold"
+    if plan in ("free", "trial"):
+        return "free"
+    return "pro"
+
 def get_tenant_limits(plan_type: str):
-    plan = (plan_type or "free").lower()
+    plan = normalize_plan_type(plan_type)
     return PLAN_LIMITS.get(plan, PLAN_LIMITS["free"])
 
 def check_service_limit(db: Session):

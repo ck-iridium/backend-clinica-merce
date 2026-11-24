@@ -339,13 +339,41 @@ export default function SubscriptionTab() {
             </p>
           </div>
 
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-5 shrink-0 text-center md:text-right min-w-[200px]">
-            <p className="text-[10px] font-black uppercase tracking-widest text-[#D4AF37]">Estado del Pago</p>
-            <p className="text-xl font-bold mt-1 text-white flex items-center justify-center md:justify-end gap-1.5">
-              <CheckCircle2 className="w-5 h-5 text-[#D4AF37]" />
-              Sincronizado
-            </p>
-            <p className="text-[10px] font-medium text-stone-400 mt-1">Tenant ID: {data.tenant_id.slice(0, 8)}...</p>
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-5 shrink-0 text-center md:text-right min-w-[220px] space-y-2">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-[#D4AF37]">
+                {data.custom_monthly_price !== null && data.custom_monthly_price !== undefined ? 'Tarifa Especial Pactada' : 'Estado del Pago'}
+              </p>
+              <p className="text-xl font-bold mt-1 text-white flex items-center justify-center md:justify-end gap-1.5">
+                <CheckCircle2 className="w-5 h-5 text-[#D4AF37]" />
+                {data.custom_monthly_price !== null && data.custom_monthly_price !== undefined
+                  ? `${data.custom_monthly_price}€ / mes`
+                  : 'Sincronizado'}
+              </p>
+              <p className="text-[10px] font-medium text-stone-400 mt-1">
+                {data.billing_mode === 'manual_cash'
+                  ? 'Acuerdo de pago en efectivo'
+                  : data.billing_mode === 'manual_transfer'
+                    ? 'Acuerdo por transferencia / Bizum'
+                    : data.billing_mode === 'complimentary'
+                      ? 'Cuenta de cortesía'
+                      : `Tenant ID: ${data.tenant_id.slice(0, 8)}...`}
+              </p>
+            </div>
+
+            {data.billing_mode !== 'stripe' && data.billing_mode !== 'complimentary' && currentPlan !== 'free' && (
+              <Button
+                type="button"
+                size="sm"
+                variant="luxury"
+                disabled={redirectingPlan !== null}
+                onClick={() => handleUpgrade(currentPlan, data.billing_interval || 'monthly')}
+                className="w-full text-[11px] font-bold gap-1.5"
+              >
+                <CreditCard className="w-3.5 h-3.5" />
+                {redirectingPlan ? 'Conectando...' : 'Domiciliar con Tarjeta'}
+              </Button>
+            )}
           </div>
         </div>
 

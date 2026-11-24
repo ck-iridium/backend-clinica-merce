@@ -16,6 +16,7 @@ import SaaSGlobalSettings from './components/SaaSGlobalSettings';
 import SaaSAnalytics from './components/SaaSAnalytics';
 import SaaSFinance from './components/SaaSFinance';
 import SaaSCMSManager from './components/SaaSCMSManager';
+import CreateTenantModal from './components/CreateTenantModal';
 
 interface Tenant {
   id: string;
@@ -26,6 +27,10 @@ interface Tenant {
   stripe_subscription_id?: string | null;
   plan_type?: string;
   subscription_expires_at?: string | null;
+  custom_monthly_price?: number | null;
+  billing_mode?: string;
+  billing_interval?: string;
+  billing_notes?: string | null;
   custom_domain?: string | null;
   business_sector?: string | null;
   created_at: string | null;
@@ -53,6 +58,7 @@ export default function SuperAdminPage() {
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const router = useRouter();
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -405,6 +411,7 @@ export default function SuperAdminPage() {
               statusFilter={statusFilter}
               setStatusFilter={setStatusFilter}
               loadingData={loadingData}
+              onOpenCreateModal={() => setShowCreateModal(true)}
             />
 
             {/* Ficha Detallada Modular */}
@@ -426,6 +433,16 @@ export default function SuperAdminPage() {
           </div>
         )}
       </main>
+
+      <CreateTenantModal
+        open={showCreateModal}
+        onOpenChange={setShowCreateModal}
+        accessToken={user?.access_token || ''}
+        onCreated={(newTenant) => {
+          setTenants((prev) => [newTenant, ...prev]);
+          setSelectedTenant(newTenant);
+        }}
+      />
     </div>
   );
 }

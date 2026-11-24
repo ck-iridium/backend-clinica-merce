@@ -1,4 +1,5 @@
 import os
+import re
 import uuid
 import logging
 from datetime import datetime
@@ -7,9 +8,16 @@ from sqlalchemy import text
 from fastapi import HTTPException
 from .. import models
 from ..database import current_tenant_var
+from ..limits import normalize_plan_type
 from ..routers.users import pwd_context
+from .sector_blueprints import get_sector_blueprint
 
 logger = logging.getLogger(__name__)
+
+RESERVED_SLUGS = {
+    "www", "app", "api", "admin", "super-admin", "superadmin",
+    "mail", "smtp", "probookia", "static", "assets", "cdn", "docs"
+}
 
 def provision_tenant(
     db: Session,
@@ -22,7 +30,14 @@ def provision_tenant(
     stripe_subscription_id: str | None = None,
     plan_type: str = "pro",
     subscription_status: str = "active",
-    subscription_expires_at: datetime | None = None
+    subscription_expires_at: datetime | None = None,
+    business_sector: str = "beauty",
+    custom_monthly_price: float | None = None,
+    billing_mode: str = "stripe",
+    billing_interval: str = "monthly",
+    billing_notes: str | None = None,
+    seed_sector_services: bool = False,
+    onboarding_completed: bool = False
 ) -> models.Tenant:
     """
     Aprovisiona de forma atómica y aislada un nuevo inquilino (Tenant) en la base de datos,
@@ -30,14 +45,30 @@ def provision_tenant(
     
     Establece de forma estricta las variables de contexto RLS para evitar fugas de información.
     """
-    # 1. Cortafuegos de identidad: Comprobar existencia previa de usuario
+    clean_slug = (tenant_slug or "").strip().lower()
+    if not re.match(r"^[a-z0-9-]+$", clean_slug) or len(clean_slug) < 2:
+        raise HTTPException(
+            status_code=400,
+            detail="El subdominio solo puede contener letras minúsculas, números y guiones (mínimo 2 caracteres)."
+        )
+    if clean_slug in RESERVED_SLUGS:
+        raise HTTPException(status_code=400, detail=f"El subdominio '{clean_slug}' está reservado por el sistema.")
+
+    existing_slug = db.query(models.Tenant).filter(models.Tenant.slug == clean_slug).first()
+    if existing_slug:
+        raise HTTPException(status_code=409, detail=f"El subdominio '{clean_slug}.probookia.com' ya está en uso.")
+
+    # 1. Cortafuegos de identidad: impedir asignar un correo que ya pertenece a otro tenant
     existing_user = db.query(models.User).filter(models.User.email == admin_email).first()
     if existing_user:
-        logger.info(f"[PROVISIONER] El correo {admin_email} ya existía en la base de datos. Se vinculará al nuevo tenant {tenant_slug}.")
+        raise HTTPException(
+            status_code=409,
+            detail=f"El correo '{admin_email}' ya está registrado en otro negocio del sistema."
+        )
 
     # 2. Generar UUID atómico para el Tenant
     tenant_id = str(uuid.uuid4())
-    logger.info(f"[PROVISIONER] Iniciando aprovisionamiento del Tenant SaaS: {tenant_slug} | ID: {tenant_id}")
+    logger.info(f"[PROVISIONER] Iniciando aprovisionamiento del Tenant SaaS: {clean_slug} | ID: {tenant_id}")
 
     try:
         # 3. Sincronizar ContextVar y PostgreSQL para RLS
@@ -47,50 +78,100 @@ def provision_tenant(
             {"tenant_id": tenant_id}
         )
 
-        # 4. Crear el Tenant
-        if not plan_type or plan_type.strip() == "":
-            plan_type = "pro"
+        # 4. Crear el Tenant con plan normalizado y condiciones comerciales
+        canonical_plan = normalize_plan_type(plan_type)
+        blueprint = get_sector_blueprint(business_sector or "beauty")
+        resolved_sector = blueprint.get("id", "general")
+        branding = blueprint.get("branding", {})
+        sc_bp = blueprint.get("site_content", {})
 
         new_tenant = models.Tenant(
             id=tenant_id,
-            name=tenant_name,
-            slug=tenant_slug,
+            name=tenant_name.strip(),
+            slug=clean_slug,
             stripe_customer_id=stripe_customer_id,
             stripe_subscription_id=stripe_subscription_id,
-            plan_type=plan_type,
+            plan_type=canonical_plan,
             subscription_status=subscription_status,
-            subscription_expires_at=subscription_expires_at
+            subscription_expires_at=subscription_expires_at,
+            custom_monthly_price=custom_monthly_price,
+            billing_mode=billing_mode or "stripe",
+            billing_interval=billing_interval or "monthly",
+            billing_notes=billing_notes
         )
         db.add(new_tenant)
         db.flush()  # Hace persistente el tenant_id para las relaciones/claves foráneas
 
-        # 5. Configuración Base por Defecto (ClinicSettings)
+        # 5. Configuración Base por Defecto (ClinicSettings) alineada al sector
         default_settings = models.ClinicSettings(
             id=str(uuid.uuid4()),
             tenant_id=tenant_id,
-            clinic_name=tenant_name,
-            clinic_email=admin_email,
+            clinic_name=tenant_name.strip(),
+            clinic_email=admin_email.strip(),
             clinic_phone="",
             clinic_address="",
             maps_url="",
             instagram_url="",
+            business_sector=resolved_sector,
+            branding_font_headings=branding.get("branding_font_headings", "Playfair Display"),
+            branding_font_body=branding.get("branding_font_body", "Inter"),
+            theme_palette=branding.get("theme_palette", "charcoal-gold"),
+            accent_color_primary=branding.get("accent_color_primary", "#D4AF37"),
+            accent_color_secondary=branding.get("accent_color_secondary", "#1C1917"),
             allow_search_engine_indexing=True,
-            onboarding_completed=False
+            onboarding_completed=onboarding_completed
         )
         db.add(default_settings)
 
-        # 6. Contenido del Sitio por Defecto
+        # 6. Contenido del Sitio por Defecto adaptado al sector
+        c_name = tenant_name.strip()
         default_content = models.SiteContent(
             id=str(uuid.uuid4()),
             tenant_id=tenant_id,
-            hero_title=f"Bienvenidos a {tenant_name}",
-            hero_subtitle="Servicios profesionales y cuidado personalizado.",
-            hero_image_url="https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/beauty/hero.jpg",
-            about_text="Nos dedicamos a ofrecer los mejores servicios para resaltar tu bienestar.",
-            about_title=f"Sobre {tenant_name}",
-            about_image_url="https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/beauty/about.jpg"
+            hero_title=(sc_bp.get("hero_title") or f"Bienvenidos a {c_name}").format(clinic_name=c_name),
+            hero_subtitle=sc_bp.get("hero_subtitle") or "Servicios profesionales y cuidado personalizado.",
+            hero_image_url=sc_bp.get("hero_image_url") or "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/beauty/hero.jpg",
+            about_text=(sc_bp.get("about_text") or "Nos dedicamos a ofrecer los mejores servicios para resaltar tu bienestar.").format(clinic_name=c_name),
+            about_title=(sc_bp.get("about_title") or f"Sobre {c_name}").format(clinic_name=c_name),
+            about_image_url=sc_bp.get("about_image_url") or "https://ypimdbkiuguiszaddzaj.supabase.co/storage/v1/object/public/media/blueprints/beauty/about.jpg",
+            cta_title=sc_bp.get("cta_title"),
+            cta_subtitle=sc_bp.get("cta_subtitle")
         )
         db.add(default_content)
+
+        # 6.1 Opcional: Precargar categoría y servicios base del sector (ej. Peluquería)
+        if seed_sector_services:
+            cat_info = blueprint.get("category")
+            category_id = None
+            if cat_info:
+                cat = models.ServiceCategory(
+                    id=str(uuid.uuid4()),
+                    tenant_id=tenant_id,
+                    name=cat_info["name"],
+                    slug=cat_info["slug"],
+                    description=cat_info.get("description", ""),
+                    is_active=True,
+                    order_index=0
+                )
+                db.add(cat)
+                db.flush()
+                category_id = cat.id
+
+            for s in blueprint.get("services", []):
+                db_service = models.Service(
+                    id=str(uuid.uuid4()),
+                    tenant_id=tenant_id,
+                    category_id=category_id,
+                    name=s["name"],
+                    slug=s["slug"],
+                    duration_minutes=s["duration_minutes"],
+                    price=s["price"],
+                    description=s.get("description", ""),
+                    is_active=True,
+                    is_featured=s.get("is_featured", False),
+                    image_url=s.get("image_url")
+                )
+                db.add(db_service)
 
         # 7. Crear el usuario en Supabase Auth
         supabase_user_id = None
@@ -200,9 +281,12 @@ def provision_tenant(
 
         # Confirmar transacción atómica
         db.commit()
-        logger.info(f"[PROVISIONER] [SUCCESS] Nuevo Tenant '{tenant_slug}' aprovisionado completamente con éxito.")
+        logger.info(f"[PROVISIONER] [SUCCESS] Nuevo Tenant '{clean_slug}' aprovisionado completamente con éxito.")
         return new_tenant
 
+    except HTTPException:
+        db.rollback()
+        raise
     except Exception as e:
         logger.error(f"[PROVISIONER ERROR] Fallo crítico al aprovisionar tenant en base de datos. Ejecutando rollback.")
         db.rollback()

@@ -27,11 +27,15 @@ def create_subscription_session(
     if not tenant:
         raise HTTPException(status_code=404, detail="Inquilino no encontrado")
 
-    target_plan = (request.plan or request.plan_type or "pro").lower().strip()
-    target_interval = (request.interval or "monthly").lower().strip()
+    target_plan = (request.plan or request.plan_type or tenant.plan_type or "pro").lower().strip()
+    target_interval = (request.interval or tenant.billing_interval or "monthly").lower().strip()
 
     user = db.query(models.User).filter(models.User.tenant_id == tenant.id).first()
     owner_email = request.email or (user.email if user else None)
+
+    custom_cents = None
+    if getattr(tenant, "custom_monthly_price", None) is not None and float(tenant.custom_monthly_price) > 0:
+        custom_cents = int(round(float(tenant.custom_monthly_price) * 100))
 
     url = StripeService.create_subscription_session(
         tenant_id=request.tenant_id,
@@ -40,7 +44,8 @@ def create_subscription_session(
         frontend_url=frontend_url,
         interval=target_interval,
         plan=target_plan,
-        email=owner_email
+        email=owner_email,
+        custom_amount_cents=custom_cents
     )
     return {"url": url}
 
@@ -75,7 +80,9 @@ def verify_checkout_session(session_id: str, db: Session = Depends(database.get_
 
         tenant.stripe_customer_id = stripe_cust_id
         tenant.stripe_subscription_id = stripe_sub_id
-        tenant.plan_type = plan_type
+        from ...limits import normalize_plan_type
+        tenant.plan_type = normalize_plan_type(plan_type)
+        tenant.billing_mode = "stripe"
         tenant.subscription_status = "active"
         db.commit()
 

@@ -1,7 +1,8 @@
 "use client"
 
-import { Search, Building2, CheckCircle2, AlertCircle, Clock, Sparkles } from 'lucide-react'
+import { Search, Building2, CheckCircle2, AlertCircle, Clock, Sparkles, Plus } from 'lucide-react'
 import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import {
   Select,
   SelectContent,
@@ -44,6 +45,7 @@ interface TenantListProps {
   statusFilter: string
   setStatusFilter: (filter: string) => void
   loadingData: boolean
+  onOpenCreateModal?: () => void
 }
 
 export default function TenantList({
@@ -54,7 +56,8 @@ export default function TenantList({
   setSearchQuery,
   statusFilter,
   setStatusFilter,
-  loadingData
+  loadingData,
+  onOpenCreateModal
 }: TenantListProps) {
 
   const getTenantHealthScore = (slug: string) => {
@@ -83,6 +86,18 @@ export default function TenantList({
             <span className="bg-stone-100 text-stone-700 px-2 py-0.5 rounded-full text-[10px] font-bold">
               {filteredTenants.length}
             </span>
+            {onOpenCreateModal && (
+              <Button
+                type="button"
+                size="sm"
+                variant="luxury"
+                onClick={onOpenCreateModal}
+                className="h-7 px-2.5 text-[11px] gap-1 ml-1"
+              >
+                <Plus className="w-3 h-3" />
+                Nuevo
+              </Button>
+            )}
           </div>
           
           <div className="w-40">

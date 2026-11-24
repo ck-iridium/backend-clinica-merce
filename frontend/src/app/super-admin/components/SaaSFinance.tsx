@@ -11,6 +11,9 @@ interface Tenant {
   subscription_status: string;
   stripe_subscription_id?: string | null;
   plan_type?: string;
+  custom_monthly_price?: number | null;
+  billing_mode?: string;
+  billing_interval?: string;
   subscription_expires_at?: string | null;
   created_at: string | null;
 }
@@ -19,17 +22,22 @@ interface SaaSFinanceProps {
   tenants: Tenant[];
 }
 
+function getEffectiveMonthlyPrice(t: Tenant): number {
+  if (t.subscription_status !== 'active') return 0;
+  if (t.billing_mode === 'complimentary') return 0;
+  if (t.custom_monthly_price !== null && t.custom_monthly_price !== undefined) {
+    return Number(t.custom_monthly_price);
+  }
+  if (t.plan_type === 'basic') return 39;
+  if (t.plan_type === 'pro') return 69;
+  if (t.plan_type === 'gold') return 129;
+  return 0;
+}
+
 export default function SaaSFinance({ tenants }: SaaSFinanceProps) {
   const activeTenantsCount = tenants.filter(t => t.subscription_status === 'active').length;
   
-  const activeMRR = tenants.reduce((acc, t) => {
-    if (t.subscription_status === 'active') {
-      if (t.plan_type === 'basic') return acc + 39;
-      if (t.plan_type === 'pro') return acc + 69;
-      if (t.plan_type === 'gold') return acc + 129;
-    }
-    return acc;
-  }, 0);
+  const activeMRR = tenants.reduce((acc, t) => acc + getEffectiveMonthlyPrice(t), 0);
 
   const arpu = activeMRR / (activeTenantsCount || 1);
   const annualRunRate = activeMRR * 12;
@@ -98,12 +106,16 @@ export default function SaaSFinance({ tenants }: SaaSFinanceProps) {
             </thead>
             <tbody>
               {tenants.map((t) => {
-                let planPrice = 0;
-                if (t.subscription_status === 'active') {
-                  if (t.plan_type === 'basic') planPrice = 39;
-                  if (t.plan_type === 'pro') planPrice = 69;
-                  if (t.plan_type === 'gold') planPrice = 129;
-                }
+                const planPrice = getEffectiveMonthlyPrice(t);
+                const isCustom = t.custom_monthly_price !== null && t.custom_monthly_price !== undefined;
+                const modeLabel =
+                  t.billing_mode === 'manual_cash'
+                    ? 'Efectivo'
+                    : t.billing_mode === 'manual_transfer'
+                      ? 'Transferencia'
+                      : t.billing_mode === 'complimentary'
+                        ? 'Cortesía'
+                        : 'Stripe';
 
                 return (
                   <tr key={t.id} className="border-b border-stone-100 hover:bg-stone-50/50 transition-colors">
@@ -130,11 +142,22 @@ export default function SaaSFinance({ tenants }: SaaSFinanceProps) {
                           ? 'bg-emerald-50 text-emerald-700' 
                           : 'bg-amber-50 text-amber-700'
                       }`}>
-                        {t.subscription_status === 'active' ? 'Pagado' : 'Suspendido / Trial'}
+                        {t.subscription_status === 'active' ? `Activo · ${modeLabel}` : 'Suspendido / Trial'}
                       </span>
                     </td>
                     <td className="py-4 px-8 text-right font-mono font-bold text-stone-700">
-                      {planPrice > 0 ? `${planPrice}€ / mes` : '0€ (Trial)'}
+                      {t.subscription_status === 'active' ? (
+                        <div className="inline-flex flex-col items-end">
+                          <span>{planPrice}€ / mes</span>
+                          {isCustom && (
+                            <span className="text-[9px] font-sans font-bold uppercase text-[#b08e23]">
+                              Acuerdo especial
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        '0€ (Trial)'
+                      )}
                     </td>
                   </tr>
                 );

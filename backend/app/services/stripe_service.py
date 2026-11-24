@@ -41,11 +41,42 @@ def resolve_stripe_price_id(plan: str | None = None, interval: str | None = None
     return price_id, canonical_plan, canonical_interval
 
 
-def build_line_items(price_id: str | None, canonical_plan: str, canonical_interval: str):
+def build_line_items(
+    price_id: str | None,
+    canonical_plan: str,
+    canonical_interval: str,
+    custom_amount_cents: int | None = None
+):
     """
-    Genera los line_items para Checkout Session. Si hay price_id configurado (Stripe Live),
-    usa directamente el precio oficial de Stripe. De lo contrario, genera price_data dinámico.
+    Genera los line_items para Checkout Session. Si existe un acuerdo económico personalizado
+    (custom_amount_cents), prioriza el precio pactado dinámicamente. Si no, usa el price_id
+    oficial de Stripe o genera price_data con la tarifa estándar.
     """
+    plan_names = {
+        "individual": "Plan Individual - ProBookia SaaS",
+        "pro": "Plan Pro - ProBookia SaaS",
+        "elite": "Plan Elite - ProBookia SaaS",
+    }
+    rec_interval = "year" if canonical_interval == "yearly" else "month"
+
+    if custom_amount_cents is not None and custom_amount_cents > 0:
+        unit_amount = int(custom_amount_cents)
+        if canonical_interval == "yearly":
+            unit_amount = unit_amount * 12
+        base_name = plan_names.get(canonical_plan, "Plan Pro - ProBookia SaaS")
+        return [{
+            "price_data": {
+                "currency": "eur",
+                "product_data": {
+                    "name": f"{base_name} (Tarifa Acordada)",
+                    "description": f"Suscripción {canonical_interval} personalizada ProBookia SaaS",
+                },
+                "unit_amount": unit_amount,
+                "recurring": {"interval": rec_interval}
+            },
+            "quantity": 1,
+        }]
+
     if price_id and (price_id.startswith("price_") or price_id.startswith("plan_")):
         return [{
             "price": price_id,
@@ -60,14 +91,8 @@ def build_line_items(price_id: str | None, canonical_plan: str, canonical_interv
         ("elite", "monthly"): 12900,
         ("elite", "yearly"): 129000,
     }
-    plan_names = {
-        "individual": "Plan Individual - ProBookia SaaS",
-        "pro": "Plan Pro - ProBookia SaaS",
-        "elite": "Plan Elite - ProBookia SaaS",
-    }
     amount = plan_amounts.get((canonical_plan, canonical_interval), 6900)
     name = plan_names.get(canonical_plan, "Plan Pro - ProBookia SaaS")
-    rec_interval = "year" if canonical_interval == "yearly" else "month"
 
     return [{
         "price_data": {
@@ -174,7 +199,8 @@ class StripeService:
         frontend_url: str = "https://www.probookia.com",
         interval: str = "monthly",
         plan: str | None = None,
-        email: str | None = None
+        email: str | None = None,
+        custom_amount_cents: int | None = None
     ) -> str:
         """
         Crea una Checkout Session para actualizaciones de suscripción de inquilinos existentes.
@@ -183,7 +209,7 @@ class StripeService:
 
         target_plan = plan or plan_type or "pro"
         price_id, canonical_plan, canonical_interval = resolve_stripe_price_id(target_plan, interval)
-        line_items = build_line_items(price_id, canonical_plan, canonical_interval)
+        line_items = build_line_items(price_id, canonical_plan, canonical_interval, custom_amount_cents=custom_amount_cents)
 
         session_params = {
             "payment_method_types": ["card"],
