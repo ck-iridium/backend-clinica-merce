@@ -86,6 +86,8 @@ export default function ThemeStyleSection({
                       ...settings,
                       branding_palette_id: p.id,
                       accent_color: p.primary,
+                      accent_color_primary: p.primary,
+                      accent_color_secondary: p.secondary,
                       secondary_color: p.secondary
                     });
                   }
@@ -134,7 +136,7 @@ export default function ThemeStyleSection({
           <div className="p-4 bg-stone-50/60 rounded-2xl border border-stone-200/60 flex items-center justify-between gap-4">
             <div className="space-y-1">
               <span className="text-xs font-bold text-stone-800 flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: settings.accent_color || '#d4af37' }} />
+                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: settings.accent_color_primary || settings.accent_color || '#d4af37' }} />
                 {t('dashboard.branding.theme_style.primary_color_label') || 'Color Primario (Acento / Botones)'}
               </span>
               <p className="text-[10px] text-stone-400 font-medium">Botones CTA, enlaces activos e iconos</p>
@@ -144,15 +146,20 @@ export default function ThemeStyleSection({
               <input 
                 id="branding-color-primary-input"
                 type="color" 
-                value={settings.accent_color || '#d4af37'} 
+                value={settings.accent_color_primary || settings.accent_color || '#d4af37'} 
                 onChange={e => {
-                  updateSetting('accent_color', e.target.value);
-                  updateSetting('branding_palette_id', 'custom');
+                  const val = e.target.value;
+                  setSettings({
+                    ...settings,
+                    accent_color: val,
+                    accent_color_primary: val,
+                    branding_palette_id: 'custom'
+                  });
                 }}
                 className="w-9 h-9 rounded-xl border border-stone-200 cursor-pointer p-0.5 bg-white shadow-2xs" 
               />
               <span className="font-mono text-xs font-bold text-stone-700 bg-white px-2.5 py-1.5 rounded-lg border border-stone-200">
-                {settings.accent_color || '#d4af37'}
+                {settings.accent_color_primary || settings.accent_color || '#d4af37'}
               </span>
             </div>
           </div>
@@ -161,7 +168,7 @@ export default function ThemeStyleSection({
           <div className="p-4 bg-stone-50/60 rounded-2xl border border-stone-200/60 flex items-center justify-between gap-4">
             <div className="space-y-1">
               <span className="text-xs font-bold text-stone-800 flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: settings.secondary_color || '#1C1917' }} />
+                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: settings.accent_color_secondary || settings.secondary_color || '#1C1917' }} />
                 {t('dashboard.branding.theme_style.secondary_color_label') || 'Color Secundario (Fondo / Superficies)'}
               </span>
               <p className="text-[10px] text-stone-400 font-medium">Banners, footers y contrastes de fondo</p>
@@ -171,15 +178,20 @@ export default function ThemeStyleSection({
               <input 
                 id="branding-color-secondary-input"
                 type="color" 
-                value={settings.secondary_color || '#1C1917'} 
+                value={settings.accent_color_secondary || settings.secondary_color || '#1C1917'} 
                 onChange={e => {
-                  updateSetting('secondary_color', e.target.value);
-                  updateSetting('branding_palette_id', 'custom');
+                  const val = e.target.value;
+                  setSettings({
+                    ...settings,
+                    accent_color_secondary: val,
+                    secondary_color: val,
+                    branding_palette_id: 'custom'
+                  });
                 }}
                 className="w-9 h-9 rounded-xl border border-stone-200 cursor-pointer p-0.5 bg-white shadow-2xs" 
               />
               <span className="font-mono text-xs font-bold text-stone-700 bg-white px-2.5 py-1.5 rounded-lg border border-stone-200">
-                {settings.secondary_color || '#1C1917'}
+                {settings.accent_color_secondary || settings.secondary_color || '#1C1917'}
               </span>
             </div>
           </div>
