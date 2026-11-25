@@ -10,6 +10,7 @@ interface PreviewProps {
   formData: any;
   categories: any[];
   services: any[];
+  sections?: any[];
   viewportDevice?: 'desktop' | 'tablet' | 'mobile';
   settings?: any;
 }
@@ -68,7 +69,7 @@ const getPriceStyleConfig = (style?: string) => {
 };
 
 // Memoizar el componente para que no se re-renderice si sus props no cambian (fundamental para el drag & drop)
-const HomeBuilderPreview = React.memo(({ formData, categories, services = [], viewportDevice = 'desktop', settings }: PreviewProps) => {
+const HomeBuilderPreview = React.memo(({ formData, categories, services = [], sections = [], viewportDevice = 'desktop', settings }: PreviewProps) => {
   const { translate, t } = useLanguage();
   
   // Lista normalizada de diapositivas
@@ -124,19 +125,69 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
   const headingFontVal = getFontVar(previewHeadingFont, "var(--font-playfair-base), 'Playfair', serif");
   const bodyFontVal = getFontVar(previewBodyFont, 'var(--font-inter-base), sans-serif');
 
-  return (
-    <div 
-      className="w-full h-full flex flex-col overflow-y-auto bg-stone-50 select-none custom-scrollbar"
-      style={{
-        ['--font-heading' as any]: headingFontVal,
-        ['--font-playfair' as any]: headingFontVal,
-        ['--font-cormorant' as any]: headingFontVal,
-        ['--font-inter' as any]: bodyFontVal,
-      }}
-    >
-      
-      {/* ─── 1. HERO SECTION (Adaptativo según Viewport) ─── */}
-      <section className={`relative w-full ${
+  // Lista de secciones disponibles y su orden dinámico para la previsualización
+  const baseSections = useMemo(() => [
+    { id: 'hero', type: 'hero' },
+    { id: 'featured', type: 'featured' },
+    { id: 'categories_catalog', type: 'categories_catalog' },
+    { id: 'about', type: 'about' },
+    { id: 'cta', type: 'cta' },
+  ], []);
+
+  const hideIndividualSections = Boolean(formData?.categories_catalog_config?.hide_individual_sections);
+  const activeCategories = useMemo(() => {
+    return categories
+      .filter((c: any) => c.is_active !== false)
+      .sort((a: any, b: any) => (a.order_index ?? 0) - (b.order_index ?? 0));
+  }, [categories]);
+
+  const catSections = useMemo(() => {
+    return hideIndividualSections
+      ? []
+      : (activeCategories.length > 0 ? activeCategories : categories).map((c: any) => ({
+          id: c.id,
+          type: 'category',
+          data: c
+        }));
+  }, [hideIndividualSections, activeCategories, categories]);
+
+  const dynamicOrderedSections = useMemo(() => {
+    const allAvailable = [...baseSections, ...catSections];
+    let ordered: any[] = [];
+
+    if (Array.isArray(sections) && sections.length > 0) {
+      sections.forEach((sec: any) => {
+        const found = allAvailable.find(s => s.id === sec.id);
+        if (found) ordered.push(found);
+      });
+      allAvailable.forEach(s => {
+        if (!ordered.find(o => o.id === s.id)) ordered.push(s);
+      });
+    } else if (formData?.home_sections_order) {
+      try {
+        const savedOrder = JSON.parse(formData.home_sections_order);
+        savedOrder.forEach((id: string) => {
+          const found = allAvailable.find(s => s.id === id);
+          if (found) ordered.push(found);
+        });
+        allAvailable.forEach(s => {
+          if (!ordered.find(o => o.id === s.id)) ordered.push(s);
+        });
+      } catch {
+        ordered = [...baseSections.slice(0, 3), ...catSections, baseSections[3], baseSections[4]];
+      }
+    } else {
+      ordered = [...baseSections.slice(0, 3), ...catSections, baseSections[3], baseSections[4]];
+    }
+
+    const hero = ordered.find(s => s.type === 'hero') || baseSections[0];
+    const middle = ordered.filter(s => s.type !== 'hero' && s.type !== 'seo');
+    return [hero, ...middle];
+  }, [sections, formData?.home_sections_order, baseSections, catSections]);
+
+  
+  const renderHeroSection = () => (
+    <section className={`relative w-full ${
         viewportDevice === 'mobile' || viewportDevice === 'tablet'
           ? 'h-full min-h-[580px] shrink-0 flex flex-col'
           : 'min-h-[700px] lg:min-h-[760px] h-[calc(100vh-140px)] shrink-0 flex flex-col'
@@ -486,9 +537,10 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
           </>
         )}
       </section>
+  );
 
-      {/* ─── 2. ABOUT SECTION ─── */}
-      <section className="py-12 md:py-16 bg-white flex items-center">
+  const renderAboutSection = () => (
+    <section className="py-12 md:py-16 bg-white flex items-center">
         {viewportDevice === 'mobile' ? (
           <div className="px-6 flex flex-col items-center text-center w-full space-y-4">
             <h2 className="text-2xl font-serif font-extrabold text-stone-900 leading-tight">
@@ -556,35 +608,14 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
           </div>
         )}
       </section>
+  );
 
-      {/* ─── 2.5 TRATAMIENTOS DESTACADOS ─── */}
-      {formData?.featured_services_config?.enabled && (
-        <FeaturedServicesSection
-          config={formData.featured_services_config}
-          services={services}
-          categories={categories}
-          settings={settings}
-        />
-      )}
-
-      {/* ─── 2.8 MOSAICO / BENTO DE CATEGORÍAS ─── */}
-      {formData?.categories_catalog_config?.enabled && (
-        <CategoriesCatalogSection
-          config={formData.categories_catalog_config}
-          categories={categories}
-          services={services}
-        />
-      )}
-
-      {/* ─── 3. CATEGORÍAS INDIVIDUALES (DESPLEGADAS SI NO ESTÁN OCULTAS) ─── */}
-      {!formData?.categories_catalog_config?.hide_individual_sections && categories
-        .filter((c: any) => c.is_active !== false)
-        .map((category: any, index: number) => {
-        const isEven = index % 2 === 0;
-        const layoutStyle = category.layout_preferences?.layout_style || 'cards_slider';
-        const categoryServices = services.filter((s: any) => s.category_id === category.id);
-        return (
-          <section key={category.id} className={`w-full py-12 ${isEven ? 'bg-white' : 'bg-[#F7F7F5]'}`}>
+  const renderCategorySection = (category: any, index: number) => {
+    const isEven = index % 2 === 0;
+    const layoutStyle = category.layout_preferences?.layout_style || 'cards_slider';
+    const categoryServices = services.filter((s: any) => String(s?.category_id || '').trim() === String(category.id || '').trim());
+    return (
+      <section key={category.id} className={`w-full py-12 ${isEven ? 'bg-white' : 'bg-[#F7F7F5]'}`}>
             <div className="px-8 mb-6 flex justify-between items-end">
               <div>
                 <h2 className="text-2xl md:text-3xl font-serif font-extrabold text-stone-900 mb-2">
@@ -749,11 +780,11 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
               )}
             </div>
           </section>
-        );
-      })}
+    );
+  };
 
-      {/* ─── 4. CTA SECTION ─── */}
-      <section className="flex flex-col justify-center w-full py-16 bg-[#d4af37] text-stone-900 text-center px-6">
+  const renderCtaSection = () => (
+    <section className="flex flex-col justify-center w-full py-16 bg-[#d4af37] text-stone-900 text-center px-6">
         <div className="max-w-xl mx-auto space-y-4 w-full">
           <h2 className="text-3xl font-extrabold tracking-tight">
             {cleanTitle(translate(formData?.cta_title || 'Llamada a la Acción', formData?.translations, 'cta_title'))}
@@ -768,7 +799,58 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
           </div>
         </div>
       </section>
+  );
+
+  return (
+    <div 
+      className="w-full h-full flex flex-col overflow-y-auto bg-stone-50 select-none custom-scrollbar"
+      style={{
+        ['--font-heading' as any]: headingFontVal,
+        ['--font-playfair' as any]: headingFontVal,
+        ['--font-cormorant' as any]: headingFontVal,
+        ['--font-inter' as any]: bodyFontVal,
+      }}
+    >
       
+            {dynamicOrderedSections.map((section: any, index: number) => {
+        if (section.type === 'hero') {
+          return <React.Fragment key="hero">{renderHeroSection()}</React.Fragment>;
+        }
+        if (section.type === 'featured') {
+          if (!formData?.featured_services_config?.enabled) return null;
+          return (
+            <FeaturedServicesSection
+              key="featured"
+              config={formData.featured_services_config}
+              services={services}
+              categories={categories}
+              settings={settings}
+            />
+          );
+        }
+        if (section.type === 'categories_catalog') {
+          if (!formData?.categories_catalog_config?.enabled) return null;
+          return (
+            <CategoriesCatalogSection
+              key="categories_catalog"
+              config={formData.categories_catalog_config}
+              categories={activeCategories.length > 0 ? activeCategories : categories}
+              services={services}
+            />
+          );
+        }
+        if (section.type === 'about') {
+          return <React.Fragment key="about">{renderAboutSection()}</React.Fragment>;
+        }
+        if (section.type === 'category') {
+          return <React.Fragment key={`cat-${section.id}`}>{renderCategorySection(section.data, index)}</React.Fragment>;
+        }
+        if (section.type === 'cta') {
+          return <React.Fragment key="cta">{renderCtaSection()}</React.Fragment>;
+        }
+        return null;
+      })}
+
       <div className="h-32 bg-stone-900 w-full shrink-0 flex items-center justify-center">
          <div className="w-1/3 h-2 bg-stone-800 rounded-full"></div>
       </div>

@@ -18,21 +18,27 @@ interface CategoriesCatalogSectionProps {
   categories: any[];
   services?: any[];
   isDark?: boolean;
+  className?: string;
 }
 
 export default function CategoriesCatalogSection({
   config,
   categories = [],
   services = [],
-  isDark = false
+  isDark = false,
+  className = ''
 }: CategoriesCatalogSectionProps) {
   if (!config || config.enabled === false) return null;
 
-  const activeCategories = categories
+  // Filtrar categorías activas respetando orden
+  let activeCategories = categories
     .filter((c: any) => c.is_active !== false)
     .sort((a: any, b: any) => (a.order_index ?? 0) - (b.order_index ?? 0));
 
-  if (activeCategories.length === 0) return null;
+  // Fallback de seguridad: si todas tienen is_active=false o es primera carga en el editor, mostrar las disponibles
+  if (activeCategories.length === 0 && categories.length > 0) {
+    activeCategories = categories.slice(0, 4);
+  }
 
   const title = config.title || 'Nuestras Especialidades';
   const subtitle = config.subtitle || 'Explora todas las áreas de cuidado y tratamientos diseñados para tu bienestar integral.';
@@ -45,11 +51,11 @@ export default function CategoriesCatalogSection({
   };
 
   const getServiceCount = (categoryId: string) => {
-    return services.filter((s: any) => s.category_id === categoryId && s.is_active !== false).length;
+    return services.filter((s: any) => String(s?.category_id || '').trim() === String(categoryId || '').trim() && s.is_active !== false).length;
   };
 
   return (
-    <section className={`w-full py-16 md:py-24 ${isDark ? 'bg-stone-900 text-white' : 'bg-[#F7F7F5] text-stone-900'} relative overflow-hidden`}>
+    <section className={`w-full py-16 md:py-24 ${isDark ? 'bg-stone-900 text-white' : 'bg-[#F7F7F5] text-stone-900'} relative overflow-hidden ${className}`}>
       <div className="max-w-7xl mx-auto px-6 md:px-8">
         {/* Cabecera de la Sección */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
@@ -77,12 +83,38 @@ export default function CategoriesCatalogSection({
           </Link>
         </div>
 
-        {/* ─── FORMATO: BENTO GRID DE CATEGORÍAS ─── */}
-        {layout === 'bento' ? (
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
+        {/* ─── CASO VACÍO: MOCKUP SI NO HAY CATEGORÍAS ─── */}
+        {activeCategories.length === 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-6">
+            {[1, 2, 3].map((i) => (
+              <div 
+                key={i} 
+                className="h-[360px] rounded-3xl bg-gradient-to-br from-stone-900 via-stone-850 to-stone-950 border border-stone-800 flex flex-col justify-between p-8 text-white relative overflow-hidden shadow-lg"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#d4af37] bg-black/40 px-3 py-1 rounded-full border border-white/10 backdrop-blur-md">
+                    Especialidad {i}
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-2xl font-serif font-bold text-white mb-2">Categoría {i}</h3>
+                  <p className="text-stone-400 text-xs leading-relaxed">
+                    Gestiona y activa categorías en la pestaña de Categorías del panel.
+                  </p>
+                </div>
+                <div className="pt-4 border-t border-white/10 flex items-center justify-between text-[#d4af37] text-xs font-bold uppercase tracking-wider">
+                  <span>Explorar categoría →</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ─── FORMATO DE CATEGORÍAS ─── */}
+        {activeCategories.length > 0 && (
+          layout === 'bento' ? (
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
             {activeCategories.map((cat: any, idx: number) => {
-              // Distribución asimétrica tipo Bento:
-              // Primer elemento 8 columnas, segundo 4; o bien si son pares: 6 y 6
               let colSpan = 'md:col-span-4';
               if (idx === 0) {
                 colSpan = activeCategories.length > 2 ? 'md:col-span-8' : 'md:col-span-6';
@@ -105,8 +137,8 @@ export default function CategoriesCatalogSection({
                   href={targetUrl}
                   className={`${colSpan} h-[320px] sm:h-[380px] md:h-[420px] group relative rounded-3xl overflow-hidden shadow-sm border border-stone-200/60 dark:border-stone-800 flex flex-col justify-end p-6 md:p-8 transition-all duration-500 hover:shadow-2xl hover:border-[#d4af37]/60 active:scale-[0.99]`}
                 >
-                  {/* Imagen de fondo con zoom fluido */}
-                  <div className="absolute inset-0 bg-stone-200 dark:bg-stone-900 z-0 overflow-hidden">
+                  {/* Imagen de fondo con degradado de respaldo Quiet Luxury 2026 */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-stone-900 via-stone-850 to-stone-950 z-0 overflow-hidden">
                     {cat.image_url ? (
                       <img
                         src={getFullUrl(cat.image_url)}
@@ -114,10 +146,12 @@ export default function CategoriesCatalogSection({
                         className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                       />
                     ) : (
-                      <LuxuryTreatmentPlaceholder mode="auto" className="w-full h-full object-cover" alt={cat.name} />
+                      <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center opacity-70">
+                        <Layers className="w-12 h-12 text-[#d4af37]/50 mb-3" />
+                        <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#d4af37]/80">Especialidad</span>
+                      </div>
                     )}
-                    {/* Gradiente oscuro para legibilidad impecable */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/10 z-10" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/15 z-10" />
                   </div>
 
                   {/* Contenido */}
@@ -165,7 +199,7 @@ export default function CategoriesCatalogSection({
                   href={targetUrl}
                   className="h-[360px] group relative rounded-3xl overflow-hidden shadow-sm border border-stone-200/60 dark:border-stone-800 flex flex-col justify-end p-6 md:p-8 transition-all duration-500 hover:shadow-xl hover:border-[#d4af37]/60 active:scale-[0.99]"
                 >
-                  <div className="absolute inset-0 bg-stone-200 dark:bg-stone-900 z-0 overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-stone-900 via-stone-850 to-stone-950 z-0 overflow-hidden">
                     {cat.image_url ? (
                       <img
                         src={getFullUrl(cat.image_url)}
@@ -173,9 +207,12 @@ export default function CategoriesCatalogSection({
                         className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                       />
                     ) : (
-                      <LuxuryTreatmentPlaceholder mode="auto" className="w-full h-full object-cover" alt={cat.name} />
+                      <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center opacity-70">
+                        <Layers className="w-10 h-10 text-[#d4af37]/50 mb-2" />
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#d4af37]/80">Especialidad</span>
+                      </div>
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/10 z-10" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/15 z-10" />
                   </div>
 
                   <div className="relative z-20 text-white">
@@ -204,6 +241,7 @@ export default function CategoriesCatalogSection({
               );
             })}
           </div>
+          )
         )}
       </div>
     </section>

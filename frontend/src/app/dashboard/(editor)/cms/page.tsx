@@ -13,12 +13,13 @@ import FeaturedTab from './components/FeaturedTab';
 import CategoriesTab from './components/CategoriesTab';
 import CtaTab from './components/CtaTab';
 import SeoTab from './components/SeoTab';
+import OrderSectionsTab from './components/OrderSectionsTab';
 import CmsHub from './components/CmsHub';
 import NavigationEditorTab from './components/NavigationEditorTab';
 import MegamenuEditorTab from './components/MegamenuEditorTab';
 import NavigationLivePreview from './components/NavigationLivePreview';
 
-const TABS = ['HERO', 'DESTACADOS', 'SOBRE MÍ', 'CATEGORÍAS', 'CTA', 'SEO'];
+const TABS = ['HERO', 'DESTACADOS', 'SOBRE MÍ', 'CATEGORÍAS', 'CTA', 'ORDENAR', 'SEO'];
 
 export default function CMSPage() {
   const { showFeedback } = useFeedback();
@@ -94,10 +95,11 @@ export default function CMSPage() {
       formData={formData}
       categories={categories}
       services={services}
+      sections={sections}
       viewportDevice={viewportDevice}
       settings={settings}
     />
-  ), [formData, categories, services, viewportDevice, settings]);
+  ), [formData, categories, services, sections, viewportDevice, settings]);
 
   const fetchContent = async () => {
     try {
@@ -583,6 +585,15 @@ export default function CMSPage() {
           <CtaTab 
             formData={formData} 
             setFormData={setFormData} 
+          />
+        );
+      case 'ORDENAR':
+        return (
+          <OrderSectionsTab
+            sections={sections}
+            setSections={setSections}
+            formData={formData}
+            setFormData={setFormData}
           />
         );
       case 'SEO':

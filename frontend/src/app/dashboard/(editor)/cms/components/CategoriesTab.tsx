@@ -356,7 +356,9 @@ const CategoriesTab = memo(({
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleCategoryChange(cat.id, 'is_active', !cat.is_active);
+                        const nextVal = !cat.is_active;
+                        setLocalItems(prev => prev.map(c => c.id === cat.id ? { ...c, is_active: nextVal } : c));
+                        handleCategoryChange(cat.id, 'is_active', nextVal);
                       }}
                       className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none ${cat.is_active ? 'bg-emerald-500' : 'bg-stone-200'}`}
                     >
