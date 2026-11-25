@@ -56,6 +56,8 @@ class SiteContentBase(BaseModel):
     layout_style: Optional[str] = "cards_slider"  # 'cards_slider' | 'bento_grid'
     megamenu_layout: Optional[str] = "bento"
     megamenu_categories_json: Optional[List[str]] = None
+    featured_services_config: Optional[Dict[str, Any]] = None
+    categories_catalog_config: Optional[Dict[str, Any]] = None
     translations: Optional[Dict[str, Any]] = None
 
 class SiteContentUpdate(BaseModel):
@@ -112,6 +114,8 @@ class SiteContentUpdate(BaseModel):
     layout_style: Optional[str] = None  # 'cards_slider' | 'bento_grid'
     megamenu_layout: Optional[str] = None
     megamenu_categories_json: Optional[List[str]] = None
+    featured_services_config: Optional[Dict[str, Any]] = None
+    categories_catalog_config: Optional[Dict[str, Any]] = None
     translations: Optional[Dict[str, Any]] = None
 
 class SiteContentResponse(SiteContentBase):

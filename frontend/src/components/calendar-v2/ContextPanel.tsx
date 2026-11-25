@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, ChevronLeft, ChevronRight, CheckCircle2, Clock, PanelLeftClose, Calendar, Users } from 'lucide-react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { Badge } from '@/components/ui/badge';
@@ -51,6 +51,18 @@ export function ContextPanel({
     const { t, language } = useLanguage();
     // Estado para la vista del mes en el mini-calendario (independiente de la fecha seleccionada)
     const [viewDate, setViewDate] = useState(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1));
+
+    // Sincronizar mes si la fecha seleccionada cambia de mes
+    useEffect(() => {
+        if (selectedDate) {
+            setViewDate(prev => {
+                if (prev.getFullYear() !== selectedDate.getFullYear() || prev.getMonth() !== selectedDate.getMonth()) {
+                    return new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+                }
+                return prev;
+            });
+        }
+    }, [selectedDate]);
 
     // Navegación de meses
     const handlePrevMonth = () => {
@@ -181,14 +193,14 @@ export function ContextPanel({
                                         key={i}
                                         id={item.currentMonth ? `calendar-mini-day-btn-${item.day}` : undefined}
                                         onClick={() => item.currentMonth && onDateChange?.(item.date)}
-                                        className={`w-7 h-7 flex items-center justify-center text-xs rounded-xl transition-all
+                                        className={`w-7 h-7 flex items-center justify-center text-xs rounded-xl transition-all border-2
                                             ${isSelected 
-                                                ? 'bg-[#FF6B00] text-white font-black shadow-sm scale-105' 
+                                                ? 'bg-[#FF6B00] border-[#FF6B00] text-white font-black shadow-sm scale-105' 
                                                 : isToday
-                                                ? 'bg-[#FF6B00] text-white font-black shadow-sm'
+                                                ? 'bg-white border-[#FF6B00] text-[#FF6B00] font-black shadow-2xs'
                                                 : item.currentMonth 
-                                                ? 'text-stone-700 font-medium hover:bg-orange-50 hover:text-[#FF6B00]' 
-                                                : 'text-stone-200 pointer-events-none'
+                                                ? 'border-transparent text-stone-700 font-medium hover:bg-orange-50 hover:text-[#FF6B00]' 
+                                                : 'border-transparent text-stone-200 pointer-events-none'
                                             }
                                         `}
                                     >

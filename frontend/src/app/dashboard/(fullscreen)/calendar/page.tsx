@@ -281,21 +281,29 @@ function CalendarContent() {
               <div className="border-r border-stone-200/70" />
               {c.days.map((date, i) => {
                 const isToday = date.toDateString() === new Date().toDateString();
+                const isSelected = date.toDateString() === c.mobileSelectedDate.toDateString();
                 return (
                   <button
                     key={i}
                     type="button"
                     onClick={() => c.handleDayHeaderClick(date)}
-                    className={`py-3 px-2 text-center border-r border-stone-200/70 last:border-r-0 transition-all group hover:bg-orange-50/40 cursor-pointer flex flex-col items-center justify-center ${isToday ? 'bg-orange-50/20' : ''}`}
+                    className={`py-3 px-2 text-center border-r border-stone-200/70 last:border-r-0 transition-all group hover:bg-orange-50/40 cursor-pointer flex flex-col items-center justify-center ${
+                      isSelected ? 'bg-orange-50/30' : isToday ? 'bg-orange-50/15' : ''
+                    }`}
                     title="Ver día completo por especialistas"
                   >
-                    <p className={`text-[10px] font-bold uppercase tracking-[0.2em] mb-0.5 group-hover:text-[#FF6B00] transition-colors ${isToday ? 'text-[#FF6B00]' : 'text-stone-400'}`}>
+                    <p className={`text-[10px] font-bold uppercase tracking-[0.2em] mb-0.5 group-hover:text-[#FF6B00] transition-colors ${
+                      isSelected || isToday ? 'text-[#FF6B00]' : 'text-stone-400'
+                    }`}>
                       {date.toLocaleDateString(getLocaleString(), { weekday: 'short' })}
                     </p>
-                    <span className={`inline-flex items-center justify-center font-sans text-lg font-bold transition-all group-hover:scale-105 ${isToday
+                    <span className={`inline-flex items-center justify-center font-sans text-lg transition-all group-hover:scale-105 ${
+                      isSelected
                         ? 'w-8 h-8 rounded-xl bg-[#FF6B00] text-white shadow-sm font-black'
-                        : 'text-stone-900 group-hover:text-[#FF6B00]'
-                      }`}>
+                        : isToday
+                        ? 'w-8 h-8 rounded-xl border-2 border-[#FF6B00] text-[#FF6B00] bg-white font-black shadow-2xs'
+                        : 'text-stone-900 font-bold group-hover:text-[#FF6B00]'
+                    }`}>
                       {date.getDate()}
                     </span>
                     <span className="text-[9px] text-[#FF6B00] font-semibold opacity-0 group-hover:opacity-100 transition-opacity leading-none mt-0.5">
@@ -528,6 +536,7 @@ function CalendarContent() {
               >
                 {c.mobileDays.map((date, i) => {
                   const isSelected = date.toDateString() === c.mobileSelectedDate.toDateString();
+                  const isToday = date.toDateString() === new Date().toDateString();
                   return (
                     <button
                       key={i}
@@ -537,14 +546,20 @@ function CalendarContent() {
                       className={`snap-center flex-shrink-0 w-14 rounded-xl flex flex-col items-center justify-center py-2 transition-all border-2
                         ${isSelected
                           ? 'bg-[#FF6B00] border-[#FF6B00] text-white shadow-md shadow-orange-500/20 scale-105'
+                          : isToday
+                          ? 'bg-white border-[#FF6B00] text-[#FF6B00] shadow-2xs font-bold'
                           : 'bg-white border-stone-100 text-stone-400 hover:border-stone-200'
                         }
                       `}
                     >
-                      <span className={`text-[8px] font-bold uppercase tracking-wider ${isSelected ? 'text-white' : 'text-stone-300'}`}>
+                      <span className={`text-[8px] font-bold uppercase tracking-wider ${
+                        isSelected ? 'text-white' : isToday ? 'text-[#FF6B00]' : 'text-stone-300'
+                      }`}>
                         {date.toLocaleDateString(getLocaleString(), { weekday: 'short' }).replace('.', '')}
                       </span>
-                      <span className={`text-base font-serif italic font-black ${isSelected ? 'text-white' : 'text-stone-800'}`}>
+                      <span className={`text-base font-serif italic font-black ${
+                        isSelected ? 'text-white' : isToday ? 'text-[#FF6B00]' : 'text-stone-800'
+                      }`}>
                         {date.getDate()}
                       </span>
                     </button>

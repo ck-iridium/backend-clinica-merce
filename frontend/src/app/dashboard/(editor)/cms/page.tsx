@@ -9,6 +9,7 @@ import HomeBuilderLayout from '@/components/cms/HomeBuilderLayout';
 import HomeBuilderPreview from '@/components/cms/HomeBuilderPreview';
 import HeroTab from './components/HeroTab';
 import AboutTab from './components/AboutTab';
+import FeaturedTab from './components/FeaturedTab';
 import CategoriesTab from './components/CategoriesTab';
 import CtaTab from './components/CtaTab';
 import SeoTab from './components/SeoTab';
@@ -17,7 +18,7 @@ import NavigationEditorTab from './components/NavigationEditorTab';
 import MegamenuEditorTab from './components/MegamenuEditorTab';
 import NavigationLivePreview from './components/NavigationLivePreview';
 
-const TABS = ['HERO', 'SOBRE MÍ', 'CATEGORÍAS', 'CTA', 'SEO'];
+const TABS = ['HERO', 'DESTACADOS', 'SOBRE MÍ', 'CATEGORÍAS', 'CTA', 'SEO'];
 
 export default function CMSPage() {
   const { showFeedback } = useFeedback();
@@ -46,7 +47,24 @@ export default function CMSPage() {
     about_show_button: false, about_button_text: 'Saber Más', about_button_link: '/contacto',
     cta_title: '', cta_subtitle: '', cta_button_text: '', cta_button_link: '',
     seo_title: '', seo_description: '', seo_keywords: '',
-    home_sections_order: ''
+    home_sections_order: '',
+    featured_services_config: {
+      enabled: false,
+      title: 'Tratamientos Estrella',
+      subtitle: 'Nuestra selección más demandada para una experiencia de cuidado y bienestar excepcional.',
+      service_ids: [],
+      layout_style: 'bento',
+      show_price: true,
+      show_duration: true
+    },
+    categories_catalog_config: {
+      enabled: false,
+      title: 'Nuestras Especialidades',
+      subtitle: 'Explora todas las áreas de cuidado y tratamientos diseñados para tu bienestar.',
+      layout_style: 'bento',
+      show_services_count: true,
+      hide_individual_sections: false
+    }
   };
 
   const [formData, setFormData] = useState<any>(defaultContent);

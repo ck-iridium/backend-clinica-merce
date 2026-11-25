@@ -66,6 +66,32 @@ const CategoriesTab = memo(({
 
   const selectedCategory = localItems.find((c: any) => c.id === selectedCategoryId) || localItems[0];
 
+  const catalogConfig = formData.categories_catalog_config || {
+    enabled: false,
+    title: 'Nuestras Especialidades',
+    subtitle: 'Explora todas las áreas de cuidado y tratamientos diseñados para tu bienestar.',
+    layout_style: 'bento',
+    show_services_count: true,
+    hide_individual_sections: false
+  };
+
+  const updateCatalogConfig = (key: string, value: any) => {
+    setFormData((prev: any) => ({
+      ...prev,
+      categories_catalog_config: {
+        ...(prev.categories_catalog_config || {
+          enabled: false,
+          title: 'Nuestras Especialidades',
+          subtitle: 'Explora todas las áreas de cuidado y tratamientos diseñados para tu bienestar.',
+          layout_style: 'bento',
+          show_services_count: true,
+          hide_individual_sections: false
+        }),
+        [key]: value
+      }
+    }));
+  };
+
   const handleGenerateCategoryCopy = async () => {
     if (!selectedCategory) return;
     setIsGeneratingCategoryCopy(true);
@@ -105,6 +131,113 @@ const CategoriesTab = memo(({
          <p className="text-[10px] text-stone-400 uppercase tracking-widest font-medium">
            {t('cms.categories.subtitle')}
          </p>
+      </div>
+
+      {/* ─── BLOQUE DE MOSAICO GENERAL DE CATEGORÍAS ─── */}
+      <div className="p-5 border border-stone-100 rounded-3xl bg-white shadow-sm space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="text-sm font-bold text-stone-800 block">
+              Mosaico de Categorías en Portada
+            </span>
+            <span className="text-xs text-stone-400">
+              Unifica todas las categorías en un Bento/Grid interactivo para navegar.
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => updateCatalogConfig('enabled', !catalogConfig.enabled)}
+            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none ${
+              catalogConfig.enabled ? 'bg-emerald-500' : 'bg-stone-200'
+            }`}
+          >
+            <span
+              className={`pointer-events-none block h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${
+                catalogConfig.enabled ? 'translate-x-6' : 'translate-x-1'
+              }`}
+            />
+          </button>
+        </div>
+
+        {catalogConfig.enabled && (
+          <div className="pt-3 border-t border-stone-100 space-y-3.5 animate-in fade-in duration-200">
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400 mb-1.5">
+                Título de la Sección
+              </label>
+              <input
+                type="text"
+                value={catalogConfig.title || ''}
+                onChange={(e) => updateCatalogConfig('title', e.target.value)}
+                placeholder="Ej: Nuestras Especialidades"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50/50 focus:outline-none focus:ring-1 focus:ring-stone-400 text-xs font-bold"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400 mb-1.5">
+                Subtítulo
+              </label>
+              <input
+                type="text"
+                value={catalogConfig.subtitle || ''}
+                onChange={(e) => updateCatalogConfig('subtitle', e.target.value)}
+                placeholder="Breve frase introductoria..."
+                className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50/50 focus:outline-none focus:ring-1 focus:ring-stone-400 text-xs font-normal"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              {[
+                { value: 'bento', label: 'Bento Luxury', icon: '⊞' },
+                { value: 'grid', label: 'Grid Homogéneo', icon: '▦' }
+              ].map(opt => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => updateCatalogConfig('layout_style', opt.value)}
+                  className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                    (catalogConfig.layout_style || 'bento') === opt.value
+                      ? 'bg-stone-900 border-stone-900 text-white shadow-2xs'
+                      : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'
+                  }`}
+                >
+                  <span>{opt.icon}</span>
+                  <span>{opt.label}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Toggle Clave: Ocultar secciones individuales */}
+            <div className="pt-3 border-t border-stone-100 flex items-start justify-between gap-3 bg-amber-50/50 p-3 rounded-2xl border border-amber-200/50">
+              <div className="flex-1">
+                <span className="text-xs font-bold text-stone-800 block">
+                  Ocultar despliegue individual de categorías
+                </span>
+                <span className="text-[11px] text-stone-500 leading-snug block mt-0.5">
+                  Mantiene la portada limpia: solo mostrará el Mosaico sin desplegar todas las categorías una por una.
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => updateCatalogConfig('hide_individual_sections', !catalogConfig.hide_individual_sections)}
+                className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none mt-0.5 ${
+                  catalogConfig.hide_individual_sections ? 'bg-amber-500' : 'bg-stone-200'
+                }`}
+              >
+                <span className={`pointer-events-none block h-3.5 w-3.5 rounded-full bg-white shadow-sm transition-transform ${
+                  catalogConfig.hide_individual_sections ? 'translate-x-[20px]' : 'translate-x-1'
+                }`} />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="pt-2">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-stone-400 mb-2">
+          Detalle y Contenido por Categoría
+        </h3>
       </div>
       
       {selectedCategory && (

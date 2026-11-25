@@ -554,6 +554,10 @@ class SiteContent(Base):
     megamenu_layout = Column(String(20), default="bento", nullable=True)
     megamenu_categories_json = Column(JSONB, default=None, nullable=True)
 
+    # Nuevos bloques modulares de portada
+    featured_services_config = Column(JSONB, default=None, nullable=True)
+    categories_catalog_config = Column(JSONB, default=None, nullable=True)
+
     # SEO Dinámico
     seo_title = Column(String, nullable=True)
     seo_description = Column(Text, nullable=True)

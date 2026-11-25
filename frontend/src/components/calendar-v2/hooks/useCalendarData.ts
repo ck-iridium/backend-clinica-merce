@@ -259,12 +259,20 @@ export function useCalendarData() {
     const d = new Date(currentWeek);
     d.setDate(d.getDate() - 7);
     setCurrentWeek(d);
+    const m = new Date(mobileSelectedDate);
+    m.setDate(m.getDate() - 7);
+    setMobileSelectedDate(m);
+    setCarouselAnchor(m);
   };
 
   const handleNextWeek = () => {
     const d = new Date(currentWeek);
     d.setDate(d.getDate() + 7);
     setCurrentWeek(d);
+    const m = new Date(mobileSelectedDate);
+    m.setDate(m.getDate() + 7);
+    setMobileSelectedDate(m);
+    setCarouselAnchor(m);
   };
 
   const handlePrevDay = () => {
