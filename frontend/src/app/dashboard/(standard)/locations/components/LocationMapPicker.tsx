@@ -51,8 +51,8 @@ export default function LocationMapPicker({
       mapRef.current = null;
     }
 
-    const lat = latitude || 39.151;
-    const lon = longitude || -0.437;
+    const lat = latitude || 40.4168;
+    const lon = longitude || -3.7038;
 
     const map = L.map(mapContainerRef.current).setView([lat, lon], 15);
     mapRef.current = map;

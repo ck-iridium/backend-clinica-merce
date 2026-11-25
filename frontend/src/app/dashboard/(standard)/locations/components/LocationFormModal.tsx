@@ -40,8 +40,8 @@ export default function LocationFormModal({
     phone: '',
     email: '',
     is_active: true,
-    latitude: 39.151,
-    longitude: -0.437,
+    latitude: 40.4168,
+    longitude: -3.7038,
     max_concurrent_appointments: null,
   });
 
@@ -59,8 +59,8 @@ export default function LocationFormModal({
           phone: initialData.phone || '',
           email: initialData.email || '',
           is_active: initialData.is_active,
-          latitude: initialData.latitude || 39.151,
-          longitude: initialData.longitude || -0.437,
+          latitude: initialData.latitude || 40.4168,
+          longitude: initialData.longitude || -3.7038,
           max_concurrent_appointments: initialData.max_concurrent_appointments ?? null,
         });
       } else {
@@ -70,8 +70,8 @@ export default function LocationFormModal({
           phone: '',
           email: '',
           is_active: true,
-          latitude: 39.151,
-          longitude: -0.437,
+          latitude: 40.4168,
+          longitude: -3.7038,
           max_concurrent_appointments: null,
         });
       }
@@ -94,13 +94,40 @@ export default function LocationFormModal({
     setLoadingSuggestions(true);
     searchTimeoutRef.current = setTimeout(async () => {
       try {
-        const res = await fetch(
+        // Limpiar prefijos abreviados españoles que rompen Nominatim
+        const cleanQuery = value
+          .replace(/^[cC]\s*[\/\.]\s*/i, '')
+          .replace(/\b(carrer de|carrer|calle|avda\.?|avenida)\b/gi, '')
+          .trim();
+
+        let data: any[] = [];
+        const res1 = await fetch(
           `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-            value
+            cleanQuery || value
           )}&limit=5&addressdetails=1&countrycodes=es,fr`
         );
-        if (res.ok) {
-          const data = await res.json();
+        if (res1.ok) {
+          data = await res1.json();
+        }
+
+        // Si 0 resultados, fallback con código postal o población
+        if (!data || data.length === 0) {
+          const pcMatch = value.match(/\b\d{5}\b/);
+          const parts = value.split(/[,\s]+/).filter(p => p.length > 2);
+          const fallbackQuery = [pcMatch ? pcMatch[0] : '', parts.slice(-2).join(' ')].filter(Boolean).join(' ');
+          if (fallbackQuery) {
+            const res2 = await fetch(
+              `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+                fallbackQuery
+              )}&limit=5&addressdetails=1&countrycodes=es,fr`
+            );
+            if (res2.ok) {
+              data = await res2.json();
+            }
+          }
+        }
+
+        if (data && data.length > 0) {
           setSuggestions(
             data.map((item: any) => {
               const cleanAddress = formatCleanAddress(item, value);
@@ -119,6 +146,8 @@ export default function LocationFormModal({
               };
             })
           );
+        } else {
+          setSuggestions([]);
         }
       } catch (err) {
         console.error('Error al obtener sugerencias de dirección:', err);
@@ -126,6 +155,35 @@ export default function LocationFormModal({
         setLoadingSuggestions(false);
       }
     }, 450);
+  };
+
+  // Geocodificación automática al desenfocar el campo de dirección
+  const handleAddressBlur = async () => {
+    if (!formData.address || formData.address.trim().length < 3) return;
+    try {
+      const clean = formData.address
+        .replace(/^[cC]\s*[\/\.]\s*/i, '')
+        .replace(/\b(carrer de|carrer|calle|avda\.?|avenida)\b/gi, '')
+        .trim();
+      let res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(clean || formData.address)}&limit=1&countrycodes=es,fr`);
+      let data = res.ok ? await res.json() : [];
+      if (!data || data.length === 0) {
+        const pcMatch = formData.address.match(/\b\d{5}\b/);
+        const parts = formData.address.split(/[,\s]+/).filter(p => p.length > 2);
+        const fallback = [pcMatch ? pcMatch[0] : '', parts.slice(-2).join(' ')].filter(Boolean).join(' ');
+        if (fallback) {
+          const res2 = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fallback)}&limit=1&countrycodes=es,fr`);
+          data = res2.ok ? await res2.json() : [];
+        }
+      }
+      if (data && data.length > 0) {
+        setFormData(prev => ({
+          ...prev,
+          latitude: parseFloat(data[0].lat),
+          longitude: parseFloat(data[0].lon)
+        }));
+      }
+    } catch {}
   };
 
   const handleSelectSuggestion = (suggestion: LocationSuggestion) => {
@@ -192,6 +250,7 @@ export default function LocationFormModal({
                 type="text" 
                 value={formData.address} 
                 onChange={handleAddressChange}
+                onBlur={handleAddressBlur}
                 className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B00]/20 focus:border-[#FF6B00] transition-all"
                 placeholder={isEdit ? '' : t('dashboard.locations.address_placeholder')} 
                 required 

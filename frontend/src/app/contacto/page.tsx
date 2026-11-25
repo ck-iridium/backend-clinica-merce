@@ -112,11 +112,24 @@ export default function ContactoPage() {
   // Geocode address when active location changes
   useEffect(() => {
     const activeLocation = locations[selectedLocationIndex];
+    if (activeLocation?.latitude && activeLocation?.longitude) {
+      setLocationCoords({
+        lat: parseFloat(String(activeLocation.latitude)),
+        lon: parseFloat(String(activeLocation.longitude))
+      });
+      return;
+    }
+
     const addressToGeocode = activeLocation?.address || settings?.clinic_address;
     if (addressToGeocode && activeTab === 'clinics') {
       setGeocoding(true);
-      const query = encodeURIComponent(addressToGeocode);
-      fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`)
+      const cleanQuery = addressToGeocode
+        .replace(/^[cC]\s*[\/\.]\s*/i, '')
+        .replace(/\b(carrer de|carrer|calle|avda\.?|avenida)\b/gi, '')
+        .trim();
+      const query = encodeURIComponent(cleanQuery || addressToGeocode);
+
+      fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1&countrycodes=es,fr`)
         .then(res => res.json())
         .then(data => {
           if (data && data.length > 0) {
@@ -125,17 +138,17 @@ export default function ContactoPage() {
               lon: parseFloat(data[0].lon)
             });
           } else {
-            // Fallback to operation center coords or default Alzira
+            // Fallback a coordenadas de centro de operaciones o neutral
             setLocationCoords({
-              lat: settings?.operations_center_latitude || 39.151,
-              lon: settings?.operations_center_longitude || -0.437
+              lat: settings?.operations_center_latitude || 40.4168,
+              lon: settings?.operations_center_longitude || -3.7038
             });
           }
         })
         .catch(() => {
           setLocationCoords({
-            lat: settings?.operations_center_latitude || 39.151,
-            lon: settings?.operations_center_longitude || -0.437
+            lat: settings?.operations_center_latitude || 40.4168,
+            lon: settings?.operations_center_longitude || -3.7038
           });
         })
         .finally(() => {
