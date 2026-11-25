@@ -310,11 +310,13 @@ export default async function TreatmentDynamicPage({
     : (service.category_name || 'Tratamiento Especializado');
 
   const pageTranslations: Record<string, Record<string, string>> = {
-    es: { duration: 'Duración', price: 'Precio', book_now: 'Reservar Ahora', complementary: 'Tratamientos Complementarios', discover: 'Descubre otras experiencias diseñadas para potenciar tu bienestar.', see_catalog: 'Ver catálogo completo' },
-    en: { duration: 'Duration', price: 'Price', book_now: 'Book Now', complementary: 'Complementary Treatments', discover: 'Discover other experiences designed to enhance your well-being.', see_catalog: 'See full catalog' },
-    fr: { duration: 'Durée', price: 'Prix', book_now: 'Réserver Maintenant', complementary: 'Soins Complémentaires', discover: 'Découvrez d\'autres experiencias conçues pour améliorer votre bien-être.', see_catalog: 'Voir le catalogue complet' }
+    es: { duration: 'Duración', price: 'Precio', book_now: 'Reservar Ahora', phone_booking: 'Llamar para Reservar', complementary: 'Tratamientos Complementarios', discover: 'Descubre otras experiencias diseñadas para potenciar tu bienestar.', see_catalog: 'Ver catálogo completo' },
+    en: { duration: 'Duration', price: 'Price', book_now: 'Book Now', phone_booking: 'Call to Book', complementary: 'Complementary Treatments', discover: 'Discover other experiences designed to enhance your well-being.', see_catalog: 'See full catalog' },
+    fr: { duration: 'Durée', price: 'Prix', book_now: 'Réserver Maintenant', phone_booking: 'Appeler pour Réserver', complementary: 'Soins Complémentaires', discover: 'Découvrez d\'autres experiencias conçues pour améliorer votre bien-être.', see_catalog: 'Voir le catalogue complet' }
   };
   const pageT = pageTranslations[lang] || pageTranslations.es;
+  const isOnlineBookingAllowed = settings?.allow_online_booking !== false;
+  const targetPhone = settings?.clinic_phone || settings?.phone || '';
 
   const layoutPreferences = service.layout_preferences || {
     alignment: 'left',
@@ -454,9 +456,9 @@ export default async function TreatmentDynamicPage({
 
                 <div className="lg:ml-auto w-full lg:w-auto">
                   <BotonReservaPro
-                    texto={pageT.book_now}
+                    texto={isOnlineBookingAllowed ? pageT.book_now : (targetPhone ? `Llamar: ${targetPhone}` : pageT.phone_booking)}
                     color={layoutPreferences.accentColor}
-                    href={`/reservar?servicio=${service.id}&nombre=${encodeURIComponent(translatedName)}`}
+                    href={isOnlineBookingAllowed ? `/reservar?servicio=${service.id}&nombre=${encodeURIComponent(translatedName)}` : (targetPhone ? `tel:${targetPhone.replace(/\s+/g, '')}` : '/contacto')}
                     className="w-full lg:w-auto"
                   />
                 </div>

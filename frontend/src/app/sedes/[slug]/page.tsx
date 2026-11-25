@@ -161,8 +161,13 @@ export default async function LocationDetailPage({ params }: PageProps) {
   }
 
   const clinicName = settings?.clinic_name || 'Clínica';
-  const mapsUrl = formatMapsUrl(location.address || settings?.clinic_address || '');
+  const mapsUrl = formatMapsUrl(
+    location.google_maps_url || settings?.maps_url,
+    location.address || settings?.clinic_address || '',
+    { lat: location.latitude, lon: location.longitude }
+  );
   const locationPhone = location.phone || settings?.clinic_phone || '';
+  const isOnlineBookingAllowed = settings?.allow_online_booking !== false;
   const locationEmail = location.email || settings?.clinic_email || '';
   const openTime = settings?.open_time || '09:00';
   const closeTime = settings?.close_time || '19:30';
@@ -241,14 +246,25 @@ export default async function LocationDetailPage({ params }: PageProps) {
               </p>
 
               <div className="flex flex-wrap items-center gap-4">
-                <Link
-                  href={`/reservar?location_id=${location.id}`}
-                  className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-[#1c1917] hover:bg-[#d4af37] text-white font-medium text-sm transition-all duration-300 shadow-sm active:scale-95 group"
-                >
-                  <Calendar className="w-4 h-4 text-[#d4af37] group-hover:text-white transition-colors" />
-                  <span>Reservar cita en esta sede</span>
-                  <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-                </Link>
+                {isOnlineBookingAllowed ? (
+                  <Link
+                    href={`/reservar?location_id=${location.id}`}
+                    className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-[#1c1917] hover:bg-[#d4af37] text-white font-medium text-sm transition-all duration-300 shadow-sm active:scale-95 group"
+                  >
+                    <Calendar className="w-4 h-4 text-[#d4af37] group-hover:text-white transition-colors" />
+                    <span>Reservar cita en esta sede</span>
+                    <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                ) : (
+                  <a
+                    href={locationPhone ? `tel:${locationPhone.replace(/\s+/g, '')}` : '/contacto'}
+                    className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-[#1c1917] hover:bg-[#d4af37] text-white font-medium text-sm transition-all duration-300 shadow-sm active:scale-95 group"
+                  >
+                    <Phone className="w-4 h-4 text-[#d4af37] group-hover:text-white transition-colors" />
+                    <span>{locationPhone ? 'Llamar para reservar' : 'Contactar con la sede'}</span>
+                    <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                  </a>
+                )}
 
                 {mapsUrl && (
                   <a
@@ -373,16 +389,35 @@ export default async function LocationDetailPage({ params }: PageProps) {
               {/* Botón CTA dentro de la tarjeta */}
               <div className="mt-8 pt-6 border-t border-stone-100 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-2 text-xs text-stone-500">
-                  <ShieldCheck className="w-4 h-4 text-[#d4af37]" />
-                  <span>Confirmación inmediata por WhatsApp / Email</span>
+                  {isOnlineBookingAllowed ? (
+                    <>
+                      <ShieldCheck className="w-4 h-4 text-[#d4af37]" />
+                      <span>Confirmación inmediata por WhatsApp / Email</span>
+                    </>
+                  ) : (
+                    <>
+                      <Phone className="w-4 h-4 text-[#d4af37]" />
+                      <span>Atención y reserva de citas por teléfono</span>
+                    </>
+                  )}
                 </div>
-                <Link
-                  href={`/reservar?location_id=${location.id}`}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#1c1917] hover:bg-[#d4af37] text-white text-xs font-semibold tracking-wide uppercase transition-all duration-300 shadow-sm"
-                >
-                  <span>Pedir Cita Online</span>
-                  <ChevronRight className="w-4 h-4" />
-                </Link>
+                {isOnlineBookingAllowed ? (
+                  <Link
+                    href={`/reservar?location_id=${location.id}`}
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#1c1917] hover:bg-[#d4af37] text-white text-xs font-semibold tracking-wide uppercase transition-all duration-300 shadow-sm"
+                  >
+                    <span>Pedir Cita Online</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </Link>
+                ) : (
+                  <a
+                    href={locationPhone ? `tel:${locationPhone.replace(/\s+/g, '')}` : (settings?.whatsapp_number ? `https://wa.me/${settings.whatsapp_number.replace(/\D/g, '')}` : '/contacto')}
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#1c1917] hover:bg-[#d4af37] text-white text-xs font-semibold tracking-wide uppercase transition-all duration-300 shadow-sm"
+                  >
+                    <Phone className="w-4 h-4 text-[#d4af37]" />
+                    <span>{locationPhone ? `Llamar: ${locationPhone}` : 'Contactar'}</span>
+                  </a>
+                )}
               </div>
             </div>
 
@@ -461,12 +496,21 @@ export default async function LocationDetailPage({ params }: PageProps) {
                     <span className="text-xs text-[#b08e23] font-medium uppercase tracking-wider mb-4">
                       {spec.role === 'admin' ? 'Dirección Técnica' : 'Especialista en Cabina'}
                     </span>
-                    <Link
-                      href={`/reservar?location_id=${location.id}`}
-                      className="text-xs text-stone-600 hover:text-stone-900 font-semibold underline underline-offset-4 mt-auto"
-                    >
-                      Reservar con el equipo
-                    </Link>
+                    {isOnlineBookingAllowed ? (
+                      <Link
+                        href={`/reservar?location_id=${location.id}`}
+                        className="text-xs text-stone-600 hover:text-stone-900 font-semibold underline underline-offset-4 mt-auto"
+                      >
+                        Reservar con el equipo
+                      </Link>
+                    ) : (
+                      <a
+                        href={locationPhone ? `tel:${locationPhone.replace(/\s+/g, '')}` : '/contacto'}
+                        className="text-xs text-stone-600 hover:text-stone-900 font-semibold underline underline-offset-4 mt-auto"
+                      >
+                        Pedir cita por teléfono
+                      </a>
+                    )}
                   </div>
                 ))}
               </div>
@@ -537,13 +581,23 @@ export default async function LocationDetailPage({ params }: PageProps) {
                       </span>
                     </div>
 
-                    <Link
-                      href={`/reservar?servicio=${service.id}&location_id=${location.id}`}
-                      className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#1c1917] hover:bg-[#d4af37] text-white text-xs font-medium transition-all duration-300 shadow-sm"
-                    >
-                      <span>Reservar</span>
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </Link>
+                    {isOnlineBookingAllowed ? (
+                      <Link
+                        href={`/reservar?servicio=${service.id}&location_id=${location.id}`}
+                        className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#1c1917] hover:bg-[#d4af37] text-white text-xs font-medium transition-all duration-300 shadow-sm"
+                      >
+                        <span>Reservar</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </Link>
+                    ) : (
+                      <a
+                        href={locationPhone ? `tel:${locationPhone.replace(/\s+/g, '')}` : '/contacto'}
+                        className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#1c1917] hover:bg-[#d4af37] text-white text-xs font-medium transition-all duration-300 shadow-sm"
+                      >
+                        <span>{locationPhone ? 'Llamar' : 'Consultar'}</span>
+                        <Phone className="w-3.5 h-3.5 text-[#d4af37]" />
+                      </a>
+                    )}
                   </div>
                 </div>
               ))}

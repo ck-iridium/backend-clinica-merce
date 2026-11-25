@@ -675,8 +675,12 @@ export default function ContactoPage() {
                         <a 
                           href={
                             formatMapsUrl(
-                              settings?.maps_url,
-                              locations[selectedLocationIndex]?.address || settings?.clinic_address
+                              locations[selectedLocationIndex]?.google_maps_url || settings?.maps_url,
+                              locations[selectedLocationIndex]?.address || settings?.clinic_address,
+                              locations[selectedLocationIndex]?.latitude && locations[selectedLocationIndex]?.longitude ? {
+                                lat: locations[selectedLocationIndex].latitude,
+                                lon: locations[selectedLocationIndex].longitude
+                              } : null
                             ) || '#'
                           }
                           target="_blank" 

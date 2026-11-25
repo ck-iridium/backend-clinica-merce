@@ -84,6 +84,7 @@ export default async function SedesIndexPage() {
   const clinicName = settings?.clinic_name || 'Clínica';
   const openTime = settings?.open_time || '09:00';
   const closeTime = settings?.close_time || '19:30';
+  const isOnlineBookingAllowed = settings?.allow_online_booking !== false;
 
   // Schema.org ItemList de sedes para Google
   const itemListSchema = {
@@ -156,7 +157,11 @@ export default async function SedesIndexPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {locations.map((loc: any) => {
-              const mapsUrl = formatMapsUrl(loc.address);
+              const mapsUrl = formatMapsUrl(
+                loc.google_maps_url || settings?.maps_url,
+                loc.address || settings?.clinic_address,
+                { lat: loc.latitude, lon: loc.longitude }
+              );
               const targetSlug = loc.slug || loc.id;
               const phone = loc.phone || settings?.clinic_phone;
 
@@ -213,13 +218,23 @@ export default async function SedesIndexPage() {
                       <ArrowRight className="w-3.5 h-3.5 text-[#d4af37]" />
                     </Link>
 
-                    <Link
-                      href={`/reservar?location_id=${loc.id}`}
-                      className="w-full sm:w-1/2 inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#1c1917] hover:bg-[#d4af37] text-white text-xs font-semibold tracking-wide uppercase transition-all duration-300 shadow-sm"
-                    >
-                      <Calendar className="w-3.5 h-3.5 text-[#d4af37]" />
-                      <span>Pedir Cita</span>
-                    </Link>
+                    {isOnlineBookingAllowed ? (
+                      <Link
+                        href={`/reservar?location_id=${loc.id}`}
+                        className="w-full sm:w-1/2 inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#1c1917] hover:bg-[#d4af37] text-white text-xs font-semibold tracking-wide uppercase transition-all duration-300 shadow-sm"
+                      >
+                        <Calendar className="w-3.5 h-3.5 text-[#d4af37]" />
+                        <span>Pedir Cita</span>
+                      </Link>
+                    ) : (
+                      <a
+                        href={phone ? `tel:${phone.replace(/\s+/g, '')}` : `/sedes/${targetSlug}`}
+                        className="w-full sm:w-1/2 inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#1c1917] hover:bg-[#d4af37] text-white text-xs font-semibold tracking-wide uppercase transition-all duration-300 shadow-sm"
+                      >
+                        <Phone className="w-3.5 h-3.5 text-[#d4af37]" />
+                        <span>{phone ? 'Llamar para cita' : 'Ver Sede'}</span>
+                      </a>
+                    )}
                   </div>
                 </article>
               );
