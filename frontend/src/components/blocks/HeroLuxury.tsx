@@ -158,7 +158,7 @@ export default function HeroLuxury({ data, settings }: { data: any, settings?: a
             <span 
               style={{ 
                 fontSize: `clamp(${(3.4 * mobilePriceScale).toFixed(2)}rem, ${(5.0 * tabletPriceScale).toFixed(2)}rem, ${(7.5 * desktopPriceScale).toFixed(2)}rem)`,
-                fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif",
+                fontFamily: "var(--font-heading)",
                 ...(customAmountColor ? { color: customAmountColor } : {})
               }}
               className={`font-serif font-bold ${customAmountColor ? '' : priceConfig.amountClass} leading-[0.88] tracking-tight drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]`}
@@ -169,7 +169,7 @@ export default function HeroLuxury({ data, settings }: { data: any, settings?: a
               <span 
                 style={{ 
                   fontSize: `clamp(${(1.6 * mobilePriceScale).toFixed(2)}rem, ${(2.2 * tabletPriceScale).toFixed(2)}rem, ${(3.2 * desktopPriceScale).toFixed(2)}rem)`,
-                  fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif",
+                  fontFamily: "var(--font-heading)",
                   ...(customLabelColor ? { color: customLabelColor } : {})
                 }}
                 className={`font-serif font-bold ${customLabelColor ? '' : priceConfig.suffixClass} leading-none`}
@@ -279,7 +279,7 @@ export default function HeroLuxury({ data, settings }: { data: any, settings?: a
                   fontSize: isPriceActive 
                     ? `clamp(${(2.1 * mobileTitleScale).toFixed(2)}rem, ${(4.8 * tabletTitleScale).toFixed(2)}vw, ${(6.8 * desktopTitleScale).toFixed(2)}rem)`
                     : `clamp(${(2.4 * mobileTitleScale).toFixed(2)}rem, ${(5.5 * tabletTitleScale).toFixed(2)}vw, ${(7.2 * desktopTitleScale).toFixed(2)}rem)`,
-                  fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif"
+                  fontFamily: "var(--font-heading)"
                 }}
                 className={`leading-[1.05] font-serif font-extrabold text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] tracking-tight ${
                   desktopAlignX === 'center' ? 'md:mx-auto' : ''

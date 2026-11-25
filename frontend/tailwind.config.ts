@@ -19,8 +19,8 @@ const config = {
     },
     extend: {
       fontFamily: {
-        sans: ["var(--font-inter)", "sans-serif"],
-        serif: ["var(--font-heading, var(--font-playfair))", "var(--font-inter)", "sans-serif"],
+        sans: ["var(--font-inter, var(--font-inter-base))", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
+        serif: ["var(--font-heading, var(--font-playfair, var(--font-inter-base)))", "var(--font-inter, var(--font-inter-base))", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",

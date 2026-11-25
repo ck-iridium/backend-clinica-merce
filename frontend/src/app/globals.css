@@ -40,7 +40,8 @@
     --ring: 46 65% 52%; /* Dorado */
  
     --radius: var(--radius-base, 1rem); /* rounded-2xl base roughly */
-    --font-heading: var(--font-inter), sans-serif;
+    --font-inter: var(--font-inter-base), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-heading: var(--font-inter-base), sans-serif;
     --font-playfair: var(--font-playfair-base), 'Playfair', 'Playfair Display', Georgia, serif;
     --font-cormorant: var(--font-cormorant), Georgia, serif;
   }

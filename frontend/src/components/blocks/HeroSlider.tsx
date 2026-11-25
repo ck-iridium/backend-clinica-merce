@@ -248,7 +248,7 @@ export default function HeroSlider({ content }: HeroSliderProps) {
                   <div className="flex items-end gap-1.5 sm:gap-2.5">
                     <span 
                       style={{ 
-                        fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif",
+                        fontFamily: "var(--font-heading)",
                         ...(customAmountColor ? { color: customAmountColor } : {})
                       }}
                       className={`font-serif font-bold text-[length:var(--hero-price-size-mobile)] md:text-[length:var(--hero-price-size-tablet)] lg:text-[length:var(--hero-price-size-desktop)] leading-[0.88] ${customAmountColor ? '' : priceConfig.amountClass} tracking-tight drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]`}
@@ -258,7 +258,7 @@ export default function HeroSlider({ content }: HeroSliderProps) {
                     <div className="flex flex-col items-start justify-center leading-none pl-1">
                       <span 
                         style={{ 
-                          fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif",
+                          fontFamily: "var(--font-heading)",
                           ...(customLabelColor ? { color: customLabelColor } : {})
                         }}
                         className={`font-serif font-bold text-[length:var(--hero-suffix-size-mobile)] md:text-[length:var(--hero-suffix-size-tablet)] lg:text-[length:var(--hero-suffix-size-desktop)] leading-none ${customLabelColor ? '' : priceConfig.suffixClass}`}
@@ -395,7 +395,7 @@ export default function HeroSlider({ content }: HeroSliderProps) {
                   <div className="[grid-area:title] min-w-0">
                     <h1 
                       style={{ 
-                        fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif"
+                        fontFamily: "var(--font-heading)"
                       }}
                       className={`font-serif font-extrabold text-[length:var(--hero-title-size-mobile)] md:text-[length:var(--hero-title-size-tablet)] lg:text-[length:var(--hero-title-size-desktop)] text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] leading-[1.08] tracking-tight ${
                         horizontalAlignment === 'center' ? 'mx-auto' : ''

@@ -221,38 +221,6 @@ export default function ThemeStyleSection({
             </div>
           </div>
         </div>
-
-        {/* Vista previa tipográfica en vivo */}
-        <div className="mt-4 rounded-2xl border border-stone-200/80 bg-[#FAF9F6] p-5 md:p-6 space-y-2.5">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-black uppercase tracking-widest text-stone-400">
-              Vista previa tipográfica en vivo
-            </span>
-            <span className="text-[10px] font-semibold text-stone-500">
-              {settings.branding_font_headings === 'Playfair Display' ? 'Playfair' : (settings.branding_font_headings || 'Playfair')} + {settings.branding_font_body || 'Inter'}
-            </span>
-          </div>
-          <h3
-            className="text-2xl md:text-3xl font-bold tracking-tight text-stone-900"
-            style={{
-              fontFamily:
-                PREVIEW_FONT_CSS[settings.branding_font_headings || 'Playfair'] ||
-                "var(--font-playfair-base), serif",
-            }}
-          >
-            {settings.clinic_name || 'Tu Negocio'} — Belleza &amp; Bienestar
-          </h3>
-          <p
-            className="text-sm text-stone-600 leading-relaxed max-w-2xl"
-            style={{
-              fontFamily:
-                PREVIEW_FONT_CSS[settings.branding_font_body || 'Inter'] ||
-                'var(--font-inter-base), sans-serif',
-            }}
-          >
-            Más que un tratamiento, una experiencia de confianza. Reserva tu cita online en segundos y disfruta de una atención personalizada.
-          </p>
-        </div>
       </div>
 
       {/* 3. Tipografías Corporativas */}

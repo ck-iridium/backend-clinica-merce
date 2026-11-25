@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Image as ImageIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { LuxuryTreatmentPlaceholder } from '@/components/ui/LuxuryTreatmentPlaceholder';
+import { getFontVar } from '@/lib/fonts';
 
 interface PreviewProps {
   formData: any;
@@ -116,8 +117,21 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
   const heroAlignment = getResponsiveVal('hero_alignment', activeSlide?.hero_alignment || formData?.hero_alignment || 'center');
   const heroHorizontalAlignment = getResponsiveVal('hero_horizontal_alignment', activeSlide?.hero_horizontal_alignment || formData?.hero_horizontal_alignment || 'center');
 
+  const previewHeadingFont = settings?.branding_font_headings || 'Playfair';
+  const previewBodyFont = settings?.branding_font_body || 'Inter';
+  const headingFontVal = getFontVar(previewHeadingFont, "var(--font-playfair-base), 'Playfair', serif");
+  const bodyFontVal = getFontVar(previewBodyFont, 'var(--font-inter-base), sans-serif');
+
   return (
-    <div className="w-full h-full flex flex-col overflow-y-auto bg-stone-50 select-none custom-scrollbar">
+    <div 
+      className="w-full h-full flex flex-col overflow-y-auto bg-stone-50 select-none custom-scrollbar"
+      style={{
+        ['--font-heading' as any]: headingFontVal,
+        ['--font-playfair' as any]: headingFontVal,
+        ['--font-cormorant' as any]: headingFontVal,
+        ['--font-inter' as any]: bodyFontVal,
+      }}
+    >
       
       {/* ─── 1. HERO SECTION (Adaptativo según Viewport) ─── */}
       <section className={`relative w-full ${
@@ -143,7 +157,7 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
               />
             ) : (
               <span 
-                style={{ fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif" }}
+                style={{ fontFamily: "var(--font-heading)" }}
                 className="text-base text-white font-serif font-medium tracking-wide drop-shadow-md"
               >
                 {settings?.clinic_name || 'Clínica Mercè'}
@@ -167,7 +181,7 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
               />
             ) : (
               <span 
-                style={{ fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif" }}
+                style={{ fontFamily: "var(--font-heading)" }}
                 className="text-lg text-white font-serif font-medium tracking-wide drop-shadow-md"
               >
                 {settings?.clinic_name || 'Clínica Mercè'}
@@ -295,7 +309,7 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
                     <span 
                       style={{ 
                         fontSize: priceAmountFontSize,
-                        fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif",
+                        fontFamily: "var(--font-heading)",
                         ...(customAmountColor ? { color: customAmountColor } : {})
                       }}
                       className={`font-serif font-bold ${customAmountColor ? '' : priceConfig.amountClass} leading-[0.88] tracking-tight drop-shadow-md`}
@@ -306,7 +320,7 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
                       <span 
                         style={{ 
                           fontSize: priceSuffixFontSize,
-                          fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif",
+                          fontFamily: "var(--font-heading)",
                           ...(customLabelColor ? { color: customLabelColor } : {})
                         }}
                         className={`font-serif font-bold ${customLabelColor ? '' : priceConfig.suffixClass} leading-none`}
@@ -373,7 +387,7 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
                     <h1 
                       style={{ 
                         fontSize: titleFontSize,
-                        fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif"
+                        fontFamily: "var(--font-heading)"
                       }}
                       className={`font-serif font-extrabold text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] leading-[1.08] tracking-tight ${
                         heroHorizontalAlignment === 'center' ? 'mx-auto' : ''

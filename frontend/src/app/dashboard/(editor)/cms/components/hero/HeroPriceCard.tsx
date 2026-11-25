@@ -583,7 +583,7 @@ export default function HeroPriceCard({
               {/* Col 1: Textos */}
               <div className="space-y-1 min-w-0">
                 <div 
-                  style={{ fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif" }}
+                  style={{ fontFamily: "var(--font-heading)" }}
                   className="font-serif font-extrabold text-base text-white truncate"
                 >
                   {data.hero_title || 'Título Principal'}
@@ -616,7 +616,7 @@ export default function HeroPriceCard({
                     <span 
                       style={{ 
                         fontSize: `${(1.5 * (priceScale / 100)).toFixed(2)}rem`,
-                        fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif",
+                        fontFamily: "var(--font-heading)",
                         ...(data.hero_price_amount_color ? { color: data.hero_price_amount_color } : {})
                       }}
                       className={`font-serif font-bold ${
@@ -629,7 +629,7 @@ export default function HeroPriceCard({
                       <span 
                         style={{ 
                           fontSize: `${(0.85 * (priceScale / 100)).toFixed(2)}rem`,
-                          fontFamily: "var(--font-playfair-base), var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif",
+                          fontFamily: "var(--font-heading)",
                           ...(data.hero_price_label_color ? { color: data.hero_price_label_color } : {})
                         }}
                         className={`font-serif font-bold ${

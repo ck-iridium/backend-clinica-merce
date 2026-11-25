@@ -1,7 +1,8 @@
 "use client";
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useLanguage } from '@/app/contexts/LanguageContext';
-import { Type, Sliders, Sparkles, Loader2 } from 'lucide-react';
+import { Type, Sliders, Sparkles, Loader2, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import { HeroSubCardProps, parseSizeScale } from './types';
 
@@ -81,12 +82,26 @@ export default function HeroTypographyCard({
         </div>
         <div>
           <h4 className="font-serif font-bold text-sm text-stone-900 dark:text-stone-100">
-            {t('cms.hero.card_typography_title') || 'Tipografía y Textos'}
+            {t('cms.hero.card_typography_title') || 'Titulares y Proporciones'}
           </h4>
           <p className="text-xs text-stone-500 dark:text-stone-400">
-            {t('cms.hero.card_typography_desc') || 'Personaliza el titular de bienvenida, sus proporciones y el subtítulo.'}
+            {t('cms.hero.card_typography_desc') || 'Personaliza el titular de bienvenida, sus dimensiones y el subtítulo.'}
           </p>
         </div>
+      </div>
+
+      {/* Acceso directo a la fuente tipográfica global */}
+      <div className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-white dark:bg-stone-850 border border-stone-200/70 dark:border-stone-800 text-xs text-stone-600 dark:text-stone-300">
+        <div className="flex items-center gap-2 min-w-0">
+          <Info size={14} className="text-[#FF6B00] shrink-0" />
+          <span className="truncate">La tipografía global se configura en <strong>Branding</strong>.</span>
+        </div>
+        <Link
+          href="/dashboard/settings?tab=branding"
+          className="text-[11px] font-bold text-[#FF6B00] hover:underline shrink-0 whitespace-nowrap"
+        >
+          Ajustes Branding →
+        </Link>
       </div>
 
       {/* TÍTULO PRINCIPAL H1 */}

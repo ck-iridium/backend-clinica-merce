@@ -15,6 +15,7 @@ import {
   Lato,
   Syne,
 } from 'next/font/google';
+import { getFontVar } from '@/lib/fonts';
 
 const inter = Inter({ 
   subsets: ['latin'], 
@@ -103,40 +104,6 @@ const syne = Syne({
 });
 
 const fontClasses = `${inter.variable} ${cormorantGaramond.variable} ${playfair.variable} ${montserrat.variable} ${outfit.variable} ${fredoka.variable} ${cinzel.variable} ${dmSerifDisplay.variable} ${plusJakartaSans.variable} ${dmSans.variable} ${poppins.variable} ${lato.variable} ${syne.variable}`;
-
-function getFontVar(fontName: string, fallback: string): string {
-  switch (fontName) {
-    case 'Cormorant Garamond':
-      return 'var(--font-cormorant), serif';
-    case 'Playfair':
-    case 'Playfair Display':
-      return "var(--font-playfair-base), 'Playfair', 'Playfair Display', serif";
-    case 'Cinzel':
-      return 'var(--font-cinzel), serif';
-    case 'DM Serif Display':
-      return 'var(--font-dm-serif), serif';
-    case 'Montserrat':
-      return 'var(--font-montserrat), sans-serif';
-    case 'Outfit':
-      return 'var(--font-outfit), sans-serif';
-    case 'Plus Jakarta Sans':
-      return 'var(--font-plus-jakarta), sans-serif';
-    case 'DM Sans':
-      return 'var(--font-dm-sans), sans-serif';
-    case 'Poppins':
-      return 'var(--font-poppins), sans-serif';
-    case 'Lato':
-      return 'var(--font-lato), sans-serif';
-    case 'Syne':
-      return 'var(--font-syne), sans-serif';
-    case 'Fredoka':
-      return "var(--font-fredoka), 'Fredoka', cursive, sans-serif";
-    case 'Inter':
-      return 'var(--font-inter-base), sans-serif';
-    default:
-      return fallback;
-  }
-}
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -506,9 +473,10 @@ export default async function RootLayout({
             --radius-base: 0.75rem !important;
             --radius-card: 1.5rem !important;
             --radius-btn: 0.75rem !important;
-            --font-heading: var(--font-inter), sans-serif !important;
-            --font-playfair: var(--font-inter), sans-serif !important;
-            --font-cormorant: var(--font-inter), sans-serif !important;
+            --font-heading: var(--font-inter-base), sans-serif !important;
+            --font-playfair: var(--font-inter-base), sans-serif !important;
+            --font-cormorant: var(--font-inter-base), sans-serif !important;
+            --font-inter: var(--font-inter-base), sans-serif !important;
             ` : `
             --primary: ${primaryHsl} !important;
             --primary-foreground: ${primaryContrast.fgHsl} !important;
