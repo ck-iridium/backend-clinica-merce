@@ -17,18 +17,43 @@ interface ThemeStyleSectionProps {
 }
 
 export const PREMIUM_FONTS_HEADINGS = [
-  { value: 'Cormorant Garamond', label: 'Cormorant Garamond (Elegancia Suprema)' },
-  { value: 'Playfair', label: 'Playfair (Lujo Clásico)' },
-  { value: 'Inter', label: 'Inter (Modernidad SaaS)' },
-  { value: 'Montserrat', label: 'Montserrat (Impacto e Identidad)' },
-  { value: 'Outfit', label: 'Outfit (Minimalismo Sofisticado)' }
+  { value: 'Cormorant Garamond', label: 'Cormorant Garamond (Elegancia Suprema · Serif)' },
+  { value: 'Playfair', label: 'Playfair (Lujo Clásico · Serif)' },
+  { value: 'Cinzel', label: 'Cinzel (Editorial / Alta Costura · Serif)' },
+  { value: 'DM Serif Display', label: 'DM Serif Display (Sofisticado Moderno · Serif)' },
+  { value: 'Inter', label: 'Inter (Modernidad SaaS · Sans)' },
+  { value: 'Montserrat', label: 'Montserrat (Impacto e Identidad · Sans)' },
+  { value: 'Outfit', label: 'Outfit (Minimalismo Geométrico · Sans)' },
+  { value: 'Plus Jakarta Sans', label: 'Plus Jakarta Sans (Tech & Limpio · Sans)' },
+  { value: 'Poppins', label: 'Poppins (Amigable & Actual · Sans)' },
+  { value: 'Syne', label: 'Syne (Vanguardista / Estudio · Display)' },
 ];
 
 export const PREMIUM_FONTS_BODY = [
   { value: 'Inter', label: 'Inter (SaaS Limpio)' },
+  { value: 'Plus Jakarta Sans', label: 'Plus Jakarta Sans (Moderno & Legible)' },
+  { value: 'DM Sans', label: 'DM Sans (Geométrico Equilibrado)' },
   { value: 'Outfit', label: 'Outfit (Geométrico Suave)' },
-  { value: 'Montserrat', label: 'Montserrat (Corporativo Claro)' }
+  { value: 'Montserrat', label: 'Montserrat (Corporativo Claro)' },
+  { value: 'Lato', label: 'Lato (Humanista Cálido)' },
+  { value: 'Poppins', label: 'Poppins (Amigable & Redondeado)' },
 ];
+
+const PREVIEW_FONT_CSS: Record<string, string> = {
+  'Cormorant Garamond': 'var(--font-cormorant), serif',
+  'Playfair': "var(--font-playfair-base), 'Playfair', serif",
+  'Playfair Display': "var(--font-playfair-base), 'Playfair Display', serif",
+  'Cinzel': 'var(--font-cinzel), serif',
+  'DM Serif Display': 'var(--font-dm-serif), serif',
+  'Inter': 'var(--font-inter-base), sans-serif',
+  'Montserrat': 'var(--font-montserrat), sans-serif',
+  'Outfit': 'var(--font-outfit), sans-serif',
+  'Plus Jakarta Sans': 'var(--font-plus-jakarta), sans-serif',
+  'DM Sans': 'var(--font-dm-sans), sans-serif',
+  'Poppins': 'var(--font-poppins), sans-serif',
+  'Lato': 'var(--font-lato), sans-serif',
+  'Syne': 'var(--font-syne), sans-serif',
+};
 
 export default function ThemeStyleSection({
   settings,
@@ -196,6 +221,38 @@ export default function ThemeStyleSection({
             </div>
           </div>
         </div>
+
+        {/* Vista previa tipográfica en vivo */}
+        <div className="mt-4 rounded-2xl border border-stone-200/80 bg-[#FAF9F6] p-5 md:p-6 space-y-2.5">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-black uppercase tracking-widest text-stone-400">
+              Vista previa tipográfica en vivo
+            </span>
+            <span className="text-[10px] font-semibold text-stone-500">
+              {settings.branding_font_headings === 'Playfair Display' ? 'Playfair' : (settings.branding_font_headings || 'Playfair')} + {settings.branding_font_body || 'Inter'}
+            </span>
+          </div>
+          <h3
+            className="text-2xl md:text-3xl font-bold tracking-tight text-stone-900"
+            style={{
+              fontFamily:
+                PREVIEW_FONT_CSS[settings.branding_font_headings || 'Playfair'] ||
+                "var(--font-playfair-base), serif",
+            }}
+          >
+            {settings.clinic_name || 'Tu Negocio'} — Belleza &amp; Bienestar
+          </h3>
+          <p
+            className="text-sm text-stone-600 leading-relaxed max-w-2xl"
+            style={{
+              fontFamily:
+                PREVIEW_FONT_CSS[settings.branding_font_body || 'Inter'] ||
+                'var(--font-inter-base), sans-serif',
+            }}
+          >
+            Más que un tratamiento, una experiencia de confianza. Reserva tu cita online en segundos y disfruta de una atención personalizada.
+          </p>
+        </div>
       </div>
 
       {/* 3. Tipografías Corporativas */}
@@ -248,6 +305,38 @@ export default function ThemeStyleSection({
               </SelectContent>
             </Select>
           </div>
+        </div>
+
+        {/* Vista previa tipográfica en vivo */}
+        <div className="mt-4 rounded-2xl border border-stone-200/80 bg-[#FAF9F6] p-5 md:p-6 space-y-2.5">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-black uppercase tracking-widest text-stone-400">
+              Vista previa tipográfica en vivo
+            </span>
+            <span className="text-[10px] font-semibold text-stone-500">
+              {settings.branding_font_headings === 'Playfair Display' ? 'Playfair' : (settings.branding_font_headings || 'Playfair')} + {settings.branding_font_body || 'Inter'}
+            </span>
+          </div>
+          <h3
+            className="text-2xl md:text-3xl font-bold tracking-tight text-stone-900"
+            style={{
+              fontFamily:
+                PREVIEW_FONT_CSS[settings.branding_font_headings || 'Playfair'] ||
+                "var(--font-playfair-base), serif",
+            }}
+          >
+            {settings.clinic_name || 'Tu Negocio'} — Belleza &amp; Bienestar
+          </h3>
+          <p
+            className="text-sm text-stone-600 leading-relaxed max-w-2xl"
+            style={{
+              fontFamily:
+                PREVIEW_FONT_CSS[settings.branding_font_body || 'Inter'] ||
+                'var(--font-inter-base), sans-serif',
+            }}
+          >
+            Más que un tratamiento, una experiencia de confianza. Reserva tu cita online en segundos y disfruta de una atención personalizada.
+          </p>
         </div>
       </div>
 

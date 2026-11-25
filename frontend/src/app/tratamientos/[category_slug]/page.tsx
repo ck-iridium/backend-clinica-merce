@@ -486,7 +486,7 @@ export default async function CategoryDynamicPage({
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <LuxuryTreatmentPlaceholder mode="dark" className="w-full h-full object-cover" alt={other.name} />
+                          <LuxuryTreatmentPlaceholder mode="auto" className="w-full h-full object-cover" alt={other.name} />
                         )}
                       </div>
 

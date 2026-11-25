@@ -1,10 +1,24 @@
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
-import { Inter, Cormorant_Garamond, Playfair, Montserrat, Outfit, Fredoka } from 'next/font/google';
+import {
+  Inter,
+  Cormorant_Garamond,
+  Playfair,
+  Montserrat,
+  Outfit,
+  Fredoka,
+  Cinzel,
+  DM_Serif_Display,
+  Plus_Jakarta_Sans,
+  DM_Sans,
+  Poppins,
+  Lato,
+  Syne,
+} from 'next/font/google';
 
 const inter = Inter({ 
   subsets: ['latin'], 
-  variable: '--font-inter',
+  variable: '--font-inter-base',
   display: 'swap',
 });
 
@@ -41,7 +55,54 @@ const fredoka = Fredoka({
   display: 'swap',
 });
 
-const fontClasses = `${inter.variable} ${cormorantGaramond.variable} ${playfair.variable} ${montserrat.variable} ${outfit.variable} ${fredoka.variable}`;
+const cinzel = Cinzel({
+  weight: ['400', '500', '600', '700'],
+  subsets: ['latin'],
+  variable: '--font-cinzel',
+  display: 'swap',
+});
+
+const dmSerifDisplay = DM_Serif_Display({
+  weight: ['400'],
+  subsets: ['latin'],
+  variable: '--font-dm-serif',
+  display: 'swap',
+});
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  variable: '--font-plus-jakarta',
+  display: 'swap',
+});
+
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  variable: '--font-dm-sans',
+  display: 'swap',
+});
+
+const poppins = Poppins({
+  weight: ['300', '400', '500', '600', '700'],
+  subsets: ['latin'],
+  variable: '--font-poppins',
+  display: 'swap',
+});
+
+const lato = Lato({
+  weight: ['300', '400', '700', '900'],
+  subsets: ['latin'],
+  variable: '--font-lato',
+  display: 'swap',
+});
+
+const syne = Syne({
+  weight: ['400', '500', '600', '700', '800'],
+  subsets: ['latin'],
+  variable: '--font-syne',
+  display: 'swap',
+});
+
+const fontClasses = `${inter.variable} ${cormorantGaramond.variable} ${playfair.variable} ${montserrat.variable} ${outfit.variable} ${fredoka.variable} ${cinzel.variable} ${dmSerifDisplay.variable} ${plusJakartaSans.variable} ${dmSans.variable} ${poppins.variable} ${lato.variable} ${syne.variable}`;
 
 function getFontVar(fontName: string, fallback: string): string {
   switch (fontName) {
@@ -50,14 +111,28 @@ function getFontVar(fontName: string, fallback: string): string {
     case 'Playfair':
     case 'Playfair Display':
       return "var(--font-playfair-base), 'Playfair', 'Playfair Display', serif";
+    case 'Cinzel':
+      return 'var(--font-cinzel), serif';
+    case 'DM Serif Display':
+      return 'var(--font-dm-serif), serif';
     case 'Montserrat':
       return 'var(--font-montserrat), sans-serif';
     case 'Outfit':
       return 'var(--font-outfit), sans-serif';
+    case 'Plus Jakarta Sans':
+      return 'var(--font-plus-jakarta), sans-serif';
+    case 'DM Sans':
+      return 'var(--font-dm-sans), sans-serif';
+    case 'Poppins':
+      return 'var(--font-poppins), sans-serif';
+    case 'Lato':
+      return 'var(--font-lato), sans-serif';
+    case 'Syne':
+      return 'var(--font-syne), sans-serif';
     case 'Fredoka':
       return "var(--font-fredoka), 'Fredoka', cursive, sans-serif";
     case 'Inter':
-      return 'var(--font-inter), sans-serif';
+      return 'var(--font-inter-base), sans-serif';
     default:
       return fallback;
   }
@@ -446,7 +521,7 @@ export default async function RootLayout({
             --font-heading: ${getFontVar(headingsFont, "var(--font-playfair-base), 'Playfair', 'Playfair Display', serif")} !important;
             --font-cormorant: ${getFontVar(headingsFont, 'var(--font-cormorant), serif')} !important;
             --font-playfair: ${getFontVar(headingsFont, "var(--font-playfair-base), 'Playfair', 'Playfair Display', serif")} !important;
-            --font-inter: ${getFontVar(bodyFont, 'var(--font-inter), sans-serif')} !important;
+            --font-inter: ${getFontVar(bodyFont, 'var(--font-inter-base), sans-serif')} !important;
             `}
           }
         ` }} />
