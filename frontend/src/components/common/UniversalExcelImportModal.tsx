@@ -136,50 +136,110 @@ const SERVICE_FIELDS: FieldDefinition[] = [
     label: 'Nombre del Servicio o Producto', 
     required: true, 
     description: 'Nombre visible en tickets o catálogo',
-    hintSynonyms: ['nombre', 'servicio', 'artículo', 'articulo', 'tratamiento', 'producto', 'descripción'] 
+    hintSynonyms: ['nombre', 'servicio', 'tratamiento', 'producto', 'descripción'] 
   },
   { 
     key: 'price', 
     label: 'Precio de Venta al Público (€)', 
     required: true, 
     description: 'PVP final con IVA incluido',
-    hintSynonyms: ['precio venta', 'precio', 'pvp', 'tarifa', 'importe', 'price'] 
+    hintSynonyms: ['precio venta', 'pvp', 'precio', 'tarifa', 'importe', 'price'] 
   },
   { 
     key: 'is_product', 
     label: '¿Es Artículo / Producto de Venta?', 
-    description: 'Columna con "si"/"no" para distinguir servicios de mano de obra de productos de venta en TPV',
-    hintSynonyms: ['es artículo', 'es articulo', 'es producto', 'tipo', 'artículo', 'articulo'] 
+    description: 'Columna con "si"/"no" para distinguir servicios de productos de inventario',
+    hintSynonyms: ['es artículo', 'es articulo', 'es producto', 'tipo'] 
   },
   { 
     key: 'category', 
-    label: 'Sección / Categoría / Familia', 
-    description: 'Familia o sección para agrupar en el TPV (ej: Peluquería Servicios, Tintes...)',
-    hintSynonyms: ['sección', 'seccion', 'familia', 'categoría', 'categoria', 'grupo'] 
+    label: 'Familia / Categoría / Sección', 
+    description: 'Agrupación en catálogo y TPV (prioriza Familia sobre Sección)',
+    hintSynonyms: ['familia', 'categoría', 'categoria', 'sección', 'seccion', 'grupo'] 
+  },
+  { 
+    key: 'supplier', 
+    label: 'Proveedor / Marca', 
+    description: 'Distribuidor o marca comercial (ej: Lendan)',
+    hintSynonyms: ['proveedor', 'marca', 'fabricante', 'supplier'] 
+  },
+  { 
+    key: 'supplier_code', 
+    label: 'Código del Proveedor', 
+    description: 'Referencia interna del catálogo del distribuidor (ej: AB1)',
+    hintSynonyms: ['código del proveedor', 'codigo del proveedor', 'ref proveedor'] 
+  },
+  { 
+    key: 'sku', 
+    label: 'Código de Barras / EAN / SKU', 
+    description: 'Código de barras para lector láser o referencia única',
+    hintSynonyms: ['código barras', 'codigo barras', 'ean', 'barcode', 'sku'] 
   },
   { 
     key: 'cost_price', 
-    label: 'Precio de Coste / Compra (€)', 
+    label: 'Precio de Compra / Coste (€)', 
     description: 'Precio al que se compra al distribuidor',
     hintSynonyms: ['precio compra', 'coste', 'cost', 'compra'] 
   },
   { 
-    key: 'sku', 
-    label: 'Código de Barras / SKU', 
-    description: 'Código de barras para lector láser o referencia interna',
-    hintSynonyms: ['código barras', 'codigo barras', 'código', 'codigo', 'sku', 'barcode', 'referencia'] 
+    key: 'cost_discount', 
+    label: 'Dto. Precio Compra (%)', 
+    description: 'Descuento comercial del proveedor',
+    hintSynonyms: ['dto precio compra', 'descuento compra', 'dto'] 
   },
   { 
     key: 'stock', 
     label: 'Stock Actual', 
-    description: 'Cantidad de unidades en inventario',
+    description: 'Cantidad de unidades disponibles en almacén',
     hintSynonyms: ['stock actual', 'stock', 'existencias', 'unidades'] 
+  },
+  { 
+    key: 'min_stock', 
+    label: 'Stock Mínimo (Alerta)', 
+    description: 'Umbral para activar aviso de reposición',
+    hintSynonyms: ['stock mínimo', 'stock minimo', 'min stock', 'mínimo'] 
+  },
+  { 
+    key: 'stock_unit', 
+    label: 'Unidad de Stock', 
+    description: 'Tipo de unidad (uds, ml, gr, cajas)',
+    hintSynonyms: ['tipo stock', 'unidad', 'medida'] 
+  },
+  { 
+    key: 'unit_content', 
+    label: 'Contenido (ml / gr x ud)', 
+    description: 'Capacidad o gramaje por envase',
+    hintSynonyms: ['ml/gr x ud', 'ml/gr', 'contenido', 'gramos', 'ml'] 
   },
   { 
     key: 'duration', 
     label: 'Duración (Minutos)', 
     description: 'Tiempo estándar del servicio en agenda',
     hintSynonyms: ['duración', 'duracion', 'minutos', 'tiempo'] 
+  },
+  { 
+    key: 'exposure', 
+    label: 'Tiempo de Exposición (Minutos)', 
+    description: 'Se suma a la duración (ideal para tintes, mechas o mascarillas)',
+    hintSynonyms: ['exposición', 'exposicion', 'pose'] 
+  },
+  { 
+    key: 'ticket_name', 
+    label: 'Nombre en Ticket', 
+    description: 'Nombre abreviado para impresión de tickets',
+    hintSynonyms: ['nombre en ticket', 'ticket'] 
+  },
+  { 
+    key: 'status', 
+    label: 'Estado (Activado / Desactivado)', 
+    description: 'Controla si el ítem se importa activo o archivado',
+    hintSynonyms: ['estado', 'activo', 'status'] 
+  },
+  { 
+    key: 'description', 
+    label: 'Observaciones / Descripción', 
+    description: 'Notas internas o descripción comercial',
+    hintSynonyms: ['observaciones', 'descripción', 'descripcion', 'notas'] 
   },
 ];
 
@@ -203,7 +263,15 @@ export function UniversalExcelImportModal({
   const [previewRows, setPreviewRows] = useState<any[]>([]);
   const [mapping, setMapping] = useState<Record<string, string>>({});
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
-  const [visibilityMode, setVisibilityMode] = useState<'tpv_only' | 'web_and_tpv' | 'auto'>('tpv_only');
+  const [visibilityMode, setVisibilityMode] = useState<'tpv_only' | 'web_and_tpv' | 'auto'>('auto');
+  const [importProgress, setImportProgress] = useState<{
+    processed: number;
+    total_rows: number;
+    imported: number;
+    updated: number;
+    skipped: number;
+    current_item?: string;
+  }>({ processed: 0, total_rows: 0, imported: 0, updated: 0, skipped: 0 });
   const [importResult, setImportResult] = useState<{
     total_rows: number;
     imported: number;
@@ -224,7 +292,8 @@ export function UniversalExcelImportModal({
     setPreviewRows([]);
     setMapping({});
     setImportResult(null);
-    setVisibilityMode('tpv_only');
+    setImportProgress({ processed: 0, total_rows: 0, imported: 0, updated: 0, skipped: 0 });
+    setVisibilityMode('auto');
   };
 
   const processFile = async (selectedFile: File) => {
@@ -257,15 +326,28 @@ export function UniversalExcelImportModal({
       setHeaders(detectedHeaders);
       setPreviewRows(preview);
 
-      // Auto-mapeo inteligente por similitud
+      // Auto-mapeo inteligente respetando prioridad exacta de sinónimos
       const initialMapping: Record<string, string> = {};
       fieldDefinitions.forEach((field) => {
-        const match = detectedHeaders.find((h) => {
-          const normH = h.toLowerCase().trim();
-          return field.hintSynonyms.some((syn) => normH.includes(syn.toLowerCase()));
-        });
-        if (match) {
-          initialMapping[field.key] = match;
+        let matchedHeader: string | undefined;
+        for (const syn of field.hintSynonyms) {
+          const exact = detectedHeaders.find((h) => h.toLowerCase().trim() === syn.toLowerCase());
+          if (exact) {
+            matchedHeader = exact;
+            break;
+          }
+        }
+        if (!matchedHeader) {
+          for (const syn of field.hintSynonyms) {
+            const partial = detectedHeaders.find((h) => h.toLowerCase().trim().includes(syn.toLowerCase()));
+            if (partial) {
+              matchedHeader = partial;
+              break;
+            }
+          }
+        }
+        if (matchedHeader) {
+          initialMapping[field.key] = matchedHeader;
         }
       });
 
@@ -328,12 +410,14 @@ export function UniversalExcelImportModal({
       return;
     }
 
+    setImportProgress({ processed: 0, total_rows: 0, imported: 0, updated: 0, skipped: 0 });
     setStep('importing');
 
     try {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('mapping', JSON.stringify(mapping));
+      formData.append('stream', 'true');
       if (type === 'services') {
         formData.append('visibility_mode', visibilityMode);
       }
@@ -353,10 +437,56 @@ export function UniversalExcelImportModal({
         throw new Error(err.detail || 'Error en la importación');
       }
 
-      const result = await res.json();
-      setImportResult(result);
+      const contentType = res.headers.get('content-type') || '';
+      let finalResult: any = null;
+
+      if (contentType.includes('application/x-ndjson') && res.body) {
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed) continue;
+            try {
+              const evt = JSON.parse(trimmed);
+              if (evt.type === 'start') {
+                setImportProgress((prev) => ({ ...prev, total_rows: evt.total_rows || 0 }));
+              } else if (evt.type === 'progress') {
+                setImportProgress({
+                  processed: evt.processed || 0,
+                  total_rows: evt.total_rows || 0,
+                  imported: evt.imported || 0,
+                  updated: evt.updated || 0,
+                  skipped: evt.skipped || 0,
+                  current_item: evt.current_item || '',
+                });
+              } else if (evt.type === 'complete') {
+                finalResult = evt;
+              }
+            } catch {
+              // Ignorar líneas incompletas
+            }
+          }
+        }
+      } else {
+        finalResult = await res.json();
+      }
+
+      if (!finalResult) {
+        throw new Error('No se recibió el resumen final de la importación');
+      }
+
+      setImportResult(finalResult);
       setStep('completed');
-      toast.success(`¡Importación completada! ${result.imported} nuevos, ${result.updated} actualizados.`);
+      toast.success(`¡Importación completada! ${finalResult.imported} nuevos, ${finalResult.updated} actualizados.`);
     } catch (err: any) {
       console.error(err);
       toast.error(err.message || 'Error durante la importación');
@@ -610,18 +740,81 @@ export function UniversalExcelImportModal({
             </div>
           )}
 
-          {/* STEP 3: Importing in progress */}
-          {step === 'importing' && (
-            <div className="py-16 text-center space-y-4">
-              <div className="w-12 h-12 mx-auto border-3 border-stone-200 border-t-[#FF6B00] rounded-full animate-spin" />
-              <div>
-                <h3 className="text-base font-bold text-stone-900">Procesando e Importando Registros</h3>
-                <p className="text-xs text-stone-500 mt-1 max-w-sm mx-auto">
-                  Analizando fichas técnicas, normalizando teléfonos y sincronizando tu catálogo...
-                </p>
+          {/* STEP 3: Importing in real-time */}
+          {step === 'importing' && (() => {
+            const total = importProgress.total_rows || 1;
+            const pct = importProgress.total_rows > 0
+              ? Math.min(100, Math.round((importProgress.processed / total) * 100))
+              : 8;
+
+            return (
+              <div className="py-10 px-2 space-y-6 animate-in fade-in duration-300">
+                <div className="flex items-end justify-between gap-4">
+                  <div className="space-y-1">
+                    <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-[#FF6B00]">
+                      <Sparkles size={12} className="animate-pulse" />
+                      Sincronización en vivo
+                    </span>
+                    <h3 className="text-lg font-serif font-bold text-stone-900">
+                      Importando tu catálogo y registros
+                    </h3>
+                    <p className="text-xs text-stone-500 truncate max-w-md">
+                      {importProgress.current_item
+                        ? `Procesando: ${importProgress.current_item}`
+                        : 'Preparando lotes de datos y categorías...'}
+                    </p>
+                  </div>
+
+                  <div className="text-right shrink-0">
+                    <span className="text-3xl font-mono font-black text-stone-900 tracking-tight">
+                      {pct}%
+                    </span>
+                    <p className="text-[11px] font-mono font-semibold text-stone-400">
+                      {importProgress.total_rows > 0
+                        ? `${importProgress.processed} / ${importProgress.total_rows}`
+                        : 'Analizando...'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Barra de Progreso SaaS-Premium */}
+                <div className="w-full h-3.5 bg-stone-100 rounded-full overflow-hidden border border-stone-200/80 p-0.5 shadow-inner">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-[#FF6B00] via-amber-500 to-[#D4AF37] transition-all duration-300 ease-out"
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+
+                {/* Contadores en Tiempo Real */}
+                <div className="grid grid-cols-3 gap-3 text-center pt-1">
+                  <div className="p-3.5 bg-emerald-50/50 rounded-2xl border border-emerald-200/60">
+                    <span className="text-xl font-mono font-bold text-emerald-700 block">
+                      {importProgress.imported}
+                    </span>
+                    <span className="text-[10px] font-bold text-emerald-800/70 uppercase tracking-wider">
+                      Creados
+                    </span>
+                  </div>
+                  <div className="p-3.5 bg-orange-50/50 rounded-2xl border border-orange-200/60">
+                    <span className="text-xl font-mono font-bold text-[#FF6B00] block">
+                      {importProgress.updated}
+                    </span>
+                    <span className="text-[10px] font-bold text-orange-900/70 uppercase tracking-wider">
+                      Actualizados
+                    </span>
+                  </div>
+                  <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200/70">
+                    <span className="text-xl font-mono font-bold text-stone-500 block">
+                      {importProgress.skipped}
+                    </span>
+                    <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">
+                      Omitidos
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* STEP 4: Completed summary */}
           {step === 'completed' && importResult && (

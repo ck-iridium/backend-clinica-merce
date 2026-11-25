@@ -52,8 +52,15 @@ export interface ServiceFormData {
   is_product?: boolean;
   is_visible_on_web?: boolean;
   cost_price?: number | null;
+  cost_discount?: number | null;
   sku?: string | null;
   stock?: number | null;
+  min_stock?: number | null;
+  stock_unit?: string | null;
+  unit_content?: number | null;
+  supplier?: string | null;
+  supplier_code?: string | null;
+  ticket_name?: string | null;
 }
 
 const DEFAULT_FORM_DATA: ServiceFormData = {
@@ -67,8 +74,15 @@ const DEFAULT_FORM_DATA: ServiceFormData = {
   is_product: false,
   is_visible_on_web: true,
   cost_price: null,
+  cost_discount: null,
   sku: '',
   stock: null,
+  min_stock: null,
+  stock_unit: 'ud',
+  unit_content: null,
+  supplier: '',
+  supplier_code: '',
+  ticket_name: '',
   category_id: '',
   image_url: '',
   video_url: '',
@@ -299,9 +313,17 @@ export default function ServiceEditor({ initialData, serviceId }: { initialData?
         return;
       }
 
+      const toNullableNumber = (val: unknown) =>
+        typeof val === 'number' && !Number.isNaN(val) ? val : null;
+
       const payload = {
         ...data,
-        category_id: isNaN(Number(data.category_id)) ? data.category_id : Number(data.category_id)
+        category_id: isNaN(Number(data.category_id)) ? data.category_id : Number(data.category_id),
+        cost_price: toNullableNumber(data.cost_price),
+        cost_discount: toNullableNumber(data.cost_discount),
+        stock: toNullableNumber(data.stock),
+        min_stock: toNullableNumber(data.min_stock),
+        unit_content: toNullableNumber(data.unit_content),
       };
 
       const res = await fetch(url, {

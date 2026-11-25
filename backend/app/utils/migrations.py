@@ -257,6 +257,14 @@ $function$;
             "ALTER TABLE tenants ADD COLUMN billing_mode VARCHAR DEFAULT 'stripe' NOT NULL",
             "ALTER TABLE tenants ADD COLUMN billing_interval VARCHAR DEFAULT 'monthly' NOT NULL",
             "ALTER TABLE tenants ADD COLUMN billing_notes TEXT NULL",
+            # ── Control Profesional de Almacén en Productos TPV (Services) ──────────
+            "ALTER TABLE services ADD COLUMN supplier VARCHAR NULL",
+            "ALTER TABLE services ADD COLUMN supplier_code VARCHAR NULL",
+            "ALTER TABLE services ADD COLUMN min_stock INTEGER NULL",
+            "ALTER TABLE services ADD COLUMN stock_unit VARCHAR DEFAULT 'uds' NULL",
+            "ALTER TABLE services ADD COLUMN unit_content DOUBLE PRECISION NULL",
+            "ALTER TABLE services ADD COLUMN cost_discount DOUBLE PRECISION NULL",
+            "ALTER TABLE services ADD COLUMN ticket_name VARCHAR NULL",
             # ── Multi-Location & Rostering ──────────────────────────────────────────
             "ALTER TABLE appointments ADD COLUMN staff_id VARCHAR",
             "ALTER TABLE appointments ADD COLUMN location_id VARCHAR",

@@ -177,40 +177,133 @@ export default function GeneralTab({
       </div>
 
       {formValues.is_product && (
-        <div className="grid grid-cols-3 gap-3 p-4 bg-amber-50/40 border border-amber-200/60 rounded-2xl animate-in fade-in duration-300">
-          <div>
-            <label className="block text-[10px] font-bold text-stone-600 uppercase tracking-widest mb-1.5">
-              Precio Compra / Coste (€)
-            </label>
-            <input
-              type="number"
-              step="0.01"
-              {...register('cost_price', { valueAsNumber: true })}
-              className="w-full px-3 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-xs font-semibold outline-none focus:ring-2 focus:ring-[#FF6B00]"
-              placeholder="0.00"
-            />
+        <div className="p-4 sm:p-5 bg-amber-50/40 border border-amber-200/60 rounded-2xl animate-in fade-in duration-300 space-y-4">
+          <div className="flex items-center justify-between border-b border-amber-200/40 pb-2">
+            <span className="text-[10px] font-black uppercase tracking-widest text-amber-900">
+              Control de Almacén & Proveedor (TPV)
+            </span>
           </div>
-          <div>
-            <label className="block text-[10px] font-bold text-stone-600 uppercase tracking-widest mb-1.5">
-              Ref. / Código Barras
-            </label>
-            <input
-              type="text"
-              {...register('sku')}
-              className="w-full px-3 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-xs font-semibold outline-none focus:ring-2 focus:ring-[#FF6B00]"
-              placeholder="SKU-1234"
-            />
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label className="block text-[10px] font-bold text-stone-600 uppercase tracking-widest mb-1.5">
+                Proveedor / Marca
+              </label>
+              <input
+                type="text"
+                {...register('supplier')}
+                className="w-full px-3 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-xs font-semibold outline-none focus:ring-2 focus:ring-[#FF6B00]"
+                placeholder="Ej: Lendan"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-stone-600 uppercase tracking-widest mb-1.5">
+                Código Proveedor
+              </label>
+              <input
+                type="text"
+                {...register('supplier_code')}
+                className="w-full px-3 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-xs font-semibold outline-none focus:ring-2 focus:ring-[#FF6B00]"
+                placeholder="Ej: AB1"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-stone-600 uppercase tracking-widest mb-1.5">
+                Código Barras / EAN / SKU
+              </label>
+              <input
+                type="text"
+                {...register('sku')}
+                className="w-full px-3 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-xs font-semibold outline-none focus:ring-2 focus:ring-[#FF6B00]"
+                placeholder="842970..."
+              />
+            </div>
           </div>
-          <div>
-            <label className="block text-[10px] font-bold text-stone-600 uppercase tracking-widest mb-1.5">
-              Stock Inicial
-            </label>
-            <input
-              type="number"
-              {...register('stock', { valueAsNumber: true })}
-              className="w-full px-3 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-xs font-semibold outline-none focus:ring-2 focus:ring-[#FF6B00]"
-              placeholder="0"
-            />
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div>
+              <label className="block text-[10px] font-bold text-stone-600 uppercase tracking-widest mb-1.5">
+                Precio Compra (€)
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                {...register('cost_price', { valueAsNumber: true })}
+                className="w-full px-3 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-xs font-semibold outline-none focus:ring-2 focus:ring-[#FF6B00]"
+                placeholder="0.00"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-stone-600 uppercase tracking-widest mb-1.5">
+                Dto. Compra (%)
+              </label>
+              <input
+                type="number"
+                step="0.1"
+                {...register('cost_discount', { valueAsNumber: true })}
+                className="w-full px-3 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-xs font-semibold outline-none focus:ring-2 focus:ring-[#FF6B00]"
+                placeholder="0"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-stone-600 uppercase tracking-widest mb-1.5">
+                Stock Actual
+              </label>
+              <input
+                type="number"
+                {...register('stock', { valueAsNumber: true })}
+                className="w-full px-3 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-xs font-semibold outline-none focus:ring-2 focus:ring-[#FF6B00]"
+                placeholder="0"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-stone-600 uppercase tracking-widest mb-1.5">
+                Stock Mínimo (Alerta)
+              </label>
+              <input
+                type="number"
+                {...register('min_stock', { valueAsNumber: true })}
+                className="w-full px-3 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-xs font-semibold outline-none focus:ring-2 focus:ring-[#FF6B00]"
+                placeholder="2"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label className="block text-[10px] font-bold text-stone-600 uppercase tracking-widest mb-1.5">
+                Unidad de Stock
+              </label>
+              <input
+                type="text"
+                {...register('stock_unit')}
+                className="w-full px-3 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-xs font-semibold outline-none focus:ring-2 focus:ring-[#FF6B00]"
+                placeholder="uds / ml / gr"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-stone-600 uppercase tracking-widest mb-1.5">
+                Contenido (ml / gr)
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                {...register('unit_content', { valueAsNumber: true })}
+                className="w-full px-3 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-xs font-semibold outline-none focus:ring-2 focus:ring-[#FF6B00]"
+                placeholder="0"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-stone-600 uppercase tracking-widest mb-1.5">
+                Nombre en Ticket
+              </label>
+              <input
+                type="text"
+                {...register('ticket_name')}
+                className="w-full px-3 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-xs font-semibold outline-none focus:ring-2 focus:ring-[#FF6B00]"
+                placeholder="Nombre corto"
+              />
+            </div>
           </div>
         </div>
       )}

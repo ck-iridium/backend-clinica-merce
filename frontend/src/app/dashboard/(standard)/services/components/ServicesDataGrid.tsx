@@ -33,7 +33,7 @@ export default function ServicesDataGrid({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [itemTypeFilter, setItemTypeFilter] = useState<'all' | 'services' | 'products'>('all');
+  const [itemTypeFilter, setItemTypeFilter] = useState<'all' | 'services' | 'products' | 'low_stock'>('all');
 
   // Hook desacoplado de mutaciones y acciones rápidas
   const {
@@ -56,6 +56,7 @@ export default function ServicesDataGrid({
     bulkActionLoading,
     handleBulkStatusChange,
     handleBulkDelete,
+    handleQuickStockDelta,
   } = useServiceMutations({
     language,
     onRefresh,
@@ -70,6 +71,15 @@ export default function ServicesDataGrid({
     setSelectedIds(new Set());
   }, [selectedCategory, searchQuery, showArchived]);
 
+  const lowStockCount = useMemo(() => {
+    return services.filter(s => {
+      if (!s.is_active || !s.is_product) return false;
+      const st = Number(s.stock ?? 0);
+      const minSt = s.min_stock !== null && s.min_stock !== undefined ? Number(s.min_stock) : 0;
+      return st === 0 || (minSt > 0 && st <= minSt);
+    }).length;
+  }, [services]);
+
   // Filtrado de servicios
   const filteredServices = useMemo(() => {
     let result = services;
@@ -79,11 +89,18 @@ export default function ServicesDataGrid({
       result = result.filter(s => s.is_active);
     }
 
-    // A2. Filtrado por Tipo de Ítem (Servicios vs Productos)
+    // A2. Filtrado por Tipo de Ítem (Servicios vs Productos vs Reposición)
     if (itemTypeFilter === 'services') {
       result = result.filter(s => !s.is_product);
     } else if (itemTypeFilter === 'products') {
       result = result.filter(s => s.is_product);
+    } else if (itemTypeFilter === 'low_stock') {
+      result = result.filter(s => {
+        if (!s.is_product) return false;
+        const st = Number(s.stock ?? 0);
+        const minSt = s.min_stock !== null && s.min_stock !== undefined ? Number(s.min_stock) : 0;
+        return st === 0 || (minSt > 0 && st <= minSt);
+      });
     }
 
     // B. Filtrado por categoría seleccionada
@@ -91,18 +108,21 @@ export default function ServicesDataGrid({
       result = result.filter(s => s.category_id === selectedCategory);
     }
 
-    // C. Filtrado por término de búsqueda
+    // C. Filtrado por término de búsqueda (nombre, descripción, categoría, SKU o proveedor)
     if (searchQuery.trim() !== '') {
       const term = searchQuery.toLowerCase().trim();
       result = result.filter(s => 
         s.name.toLowerCase().includes(term) || 
         (s.description && s.description.toLowerCase().includes(term)) ||
+        (s.sku && s.sku.toLowerCase().includes(term)) ||
+        (s.supplier && s.supplier.toLowerCase().includes(term)) ||
+        (s.supplier_code && s.supplier_code.toLowerCase().includes(term)) ||
         getCategoryName(s.category_id).toLowerCase().includes(term)
       );
     }
 
     return result;
-  }, [services, selectedCategory, searchQuery, showArchived, categories]);
+  }, [services, selectedCategory, searchQuery, showArchived, categories, itemTypeFilter]);
 
   // Selección
   const isAllSelected = useMemo(() => {
@@ -148,6 +168,7 @@ export default function ServicesDataGrid({
         language={language}
         itemTypeFilter={itemTypeFilter}
         onItemTypeFilterChange={setItemTypeFilter}
+        lowStockCount={lowStockCount}
       />
 
       {/* ── BARRA FLOTANTE DE ACCIONES EN MASA ── */}
@@ -206,8 +227,8 @@ export default function ServicesDataGrid({
                   <th className="p-4 text-[11px] font-bold uppercase tracking-wider text-stone-400 w-44">
                     {language === 'fr' ? 'Catégorie' : language === 'en' ? 'Category' : 'Categoría'}
                   </th>
-                  <th className="p-4 text-[11px] font-bold uppercase tracking-wider text-stone-400 w-32">
-                    {language === 'fr' ? 'Durée' : language === 'en' ? 'Duration' : 'Duración'}
+                  <th className="p-4 text-[11px] font-bold uppercase tracking-wider text-stone-400 w-36">
+                    {language === 'fr' ? 'Durée / Stock' : language === 'en' ? 'Duration / Stock' : 'Duración / Stock'}
                   </th>
                   <th className="p-4 text-[11px] font-bold uppercase tracking-wider text-stone-400 w-36">
                     {language === 'fr' ? 'Prix (€)' : language === 'en' ? 'Price (€)' : 'Precio (€)'}
@@ -257,6 +278,7 @@ export default function ServicesDataGrid({
                       onCategorySave={(newCatId) => handleCategorySave(svc, newCatId)}
                       onEditClick={onEditClick}
                       onDeleteClick={() => handleDeleteIndividual(svc.id, svc.name)}
+                      onQuickStockDelta={(delta) => handleQuickStockDelta(svc, delta)}
                       language={language}
                     />
                   );

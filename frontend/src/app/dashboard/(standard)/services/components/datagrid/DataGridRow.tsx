@@ -30,6 +30,7 @@ interface DataGridRowProps {
   onCategorySave: (newCatId: string) => void;
   onEditClick: (svc: any) => void;
   onDeleteClick: () => void;
+  onQuickStockDelta?: (delta: number) => void;
   language: string;
 }
 
@@ -53,6 +54,7 @@ export function DataGridRow({
   onCategorySave,
   onEditClick,
   onDeleteClick,
+  onQuickStockDelta,
   language,
 }: DataGridRowProps) {
   return (
@@ -142,6 +144,21 @@ export function DataGridRow({
             </span>
           )}
         </div>
+        {svc.is_product && (svc.supplier || svc.sku || svc.supplier_code) && (
+          <div className="flex items-center gap-2 mt-1 flex-wrap text-[10px] font-mono text-stone-500">
+            {svc.supplier && (
+              <span className="px-1.5 py-0.5 rounded bg-stone-100 text-stone-700 font-sans font-semibold">
+                {svc.supplier}
+              </span>
+            )}
+            {(svc.sku || svc.supplier_code) && (
+              <span>Ref: {svc.sku || svc.supplier_code}</span>
+            )}
+            {svc.cost_price !== null && svc.cost_price !== undefined && (
+              <span className="text-stone-400">Coste: {Number(svc.cost_price).toFixed(2)}€</span>
+            )}
+          </div>
+        )}
         {svc.description && (
           <div className="text-stone-400 text-xs mt-0.5 line-clamp-1 max-w-xl font-medium">
             {svc.description}
@@ -182,28 +199,69 @@ export function DataGridRow({
         </div>
       </td>
 
-      {/* Duración (Entrada de Duración Directa con Auto-guardado) */}
+      {/* Duración o Control Rápido de Stock (Productos TPV) */}
       <td className="p-4">
-        <div className="relative flex items-center max-w-[110px]">
-          <input
-            id={`services-duration-input-${svc.id}`}
-            type="text"
-            value={inputDurationVal}
-            onChange={e => onDurationChange(e.target.value)}
-            onBlur={e => onDurationSave(e.target.value)}
-            onKeyDown={e => {
-              if (e.key === 'Enter') {
-                onDurationSave(inputDurationVal);
-                (e.target as HTMLInputElement).blur();
-              }
-            }}
-            className="w-full pr-10 pl-3 py-2 bg-stone-50/70 hover:bg-stone-100/70 focus:bg-white border border-stone-200 focus:border-[#FF6B00] rounded-xl text-xs font-bold text-stone-800 outline-none text-right transition-all focus:ring-1 focus:ring-[#FF6B00]"
-          />
-          <span className="absolute right-2.5 text-stone-400 text-[10px] font-bold pointer-events-none">min</span>
-          {isSavingDuration && (
-            <Loader2 size={12} className="absolute left-2 animate-spin text-[#FF6B00]" />
-          )}
-        </div>
+        {svc.is_product ? (() => {
+          const stockVal = Number(svc.stock ?? 0);
+          const minStockVal = svc.min_stock !== null && svc.min_stock !== undefined ? Number(svc.min_stock) : 0;
+          const isZero = stockVal <= 0;
+          const isLow = !isZero && minStockVal > 0 && stockVal <= minStockVal;
+          const badgeCls = isZero
+            ? 'bg-rose-50 text-rose-700 border-rose-200'
+            : isLow
+              ? 'bg-amber-50 text-amber-800 border-amber-200'
+              : 'bg-emerald-50 text-emerald-700 border-emerald-200';
+
+          return (
+            <div className="flex items-center gap-1.5">
+              {onQuickStockDelta && (
+                <button
+                  type="button"
+                  onClick={() => onQuickStockDelta(-1)}
+                  disabled={stockVal <= 0}
+                  className="w-6 h-6 rounded-lg border border-stone-200 bg-white hover:bg-stone-100 text-stone-600 text-xs font-bold flex items-center justify-center disabled:opacity-40 cursor-pointer"
+                  title="Restar 1 unidad"
+                >
+                  -
+                </button>
+              )}
+              <span className={`px-2 py-1 rounded-lg border text-[11px] font-mono font-bold whitespace-nowrap ${badgeCls}`}>
+                {stockVal} {svc.stock_unit || 'uds'}
+              </span>
+              {onQuickStockDelta && (
+                <button
+                  type="button"
+                  onClick={() => onQuickStockDelta(1)}
+                  className="w-6 h-6 rounded-lg border border-stone-200 bg-white hover:bg-stone-100 text-stone-600 text-xs font-bold flex items-center justify-center cursor-pointer"
+                  title="Sumar 1 unidad"
+                >
+                  +
+                </button>
+              )}
+            </div>
+          );
+        })() : (
+          <div className="relative flex items-center max-w-[110px]">
+            <input
+              id={`services-duration-input-${svc.id}`}
+              type="text"
+              value={inputDurationVal}
+              onChange={e => onDurationChange(e.target.value)}
+              onBlur={e => onDurationSave(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  onDurationSave(inputDurationVal);
+                  (e.target as HTMLInputElement).blur();
+                }
+              }}
+              className="w-full pr-10 pl-3 py-2 bg-stone-50/70 hover:bg-stone-100/70 focus:bg-white border border-stone-200 focus:border-[#FF6B00] rounded-xl text-xs font-bold text-stone-800 outline-none text-right transition-all focus:ring-1 focus:ring-[#FF6B00]"
+            />
+            <span className="absolute right-2.5 text-stone-400 text-[10px] font-bold pointer-events-none">min</span>
+            {isSavingDuration && (
+              <Loader2 size={12} className="absolute left-2 animate-spin text-[#FF6B00]" />
+            )}
+          </div>
+        )}
       </td>
 
       {/* Entrada de Precio Directa (Auto-guardado) */}

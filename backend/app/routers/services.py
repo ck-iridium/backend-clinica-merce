@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
 import json
@@ -33,6 +34,7 @@ async def import_services_excel(
     file: UploadFile = File(...),
     mapping: str = Form(...),
     visibility_mode: str = Form("auto"),
+    stream: bool = Form(False),
     db: Session = Depends(database.get_db)
 ):
     tenant_id = database.current_tenant_var.get()
@@ -68,167 +70,232 @@ async def import_services_excel(
         c = col_index_map[mapped_col]
         return ws.cell(row_idx, c).value
 
-    # Cache categories by name
+    def parse_float(val, default=None):
+        if val is None or str(val).strip() == "":
+            return default
+        try:
+            return float(str(val).replace(",", ".").strip())
+        except ValueError:
+            return default
+
+    def parse_int(val, default=None):
+        f = parse_float(val, None)
+        return int(f) if f is not None else default
+
+    def parse_str(val):
+        if val is None:
+            return None
+        s = str(val).strip()
+        if s.endswith(".0") and s[:-2].isdigit():
+            s = s[:-2]
+        return s or None
+
+    # Cache categories & services in memory for fast bulk upsert
     existing_categories = {
         c.name.strip().lower(): c for c in db.query(models.ServiceCategory).filter(
             models.ServiceCategory.tenant_id == tenant_id
         ).all()
     }
+    existing_by_sku = {}
+    existing_by_name = {}
+    for s_obj in db.query(models.Service).filter(models.Service.tenant_id == tenant_id).all():
+        if s_obj.sku:
+            existing_by_sku[s_obj.sku.strip().lower()] = s_obj
+        if s_obj.name:
+            existing_by_name[s_obj.name.strip().lower()] = s_obj
 
-    imported = 0
-    updated = 0
-    skipped = 0
-    errors = []
+    total_rows = max(0, ws.max_row - header_row_idx)
 
-    for r in range(header_row_idx + 1, ws.max_row + 1):
-        try:
-            name_val = get_val(r, "name")
-            if not name_val or not str(name_val).strip():
-                skipped += 1
-                continue
-            name_str = str(name_val).strip()
+    def run_import_generator():
+        imported = 0
+        updated = 0
+        skipped = 0
+        errors = []
+        processed = 0
 
-            # Parse Price
-            raw_price = get_val(r, "price")
-            price_val = 0.0
-            if raw_price is not None:
-                try:
-                    price_val = float(str(raw_price).replace(",", ".").strip())
-                except ValueError:
-                    price_val = 0.0
+        if stream:
+            yield json.dumps({"type": "start", "total_rows": total_rows}) + "\n"
 
-            # Parse Cost Price
-            raw_cost = get_val(r, "cost_price")
-            cost_val = None
-            if raw_cost is not None:
-                try:
-                    cost_val = float(str(raw_cost).replace(",", ".").strip())
-                except ValueError:
-                    cost_val = None
-
-            # Parse Is Product
-            raw_is_prod = get_val(r, "is_product")
-            is_product_val = False
-            if raw_is_prod is not None:
-                s = str(raw_is_prod).strip().lower()
-                if s in ["si", "yes", "true", "1", "articulo", "artículo", "producto"]:
-                    is_product_val = True
-
-            # Parse SKU
-            raw_sku = get_val(r, "sku")
-            sku_val = str(raw_sku).strip() if raw_sku is not None else None
-            if sku_val and sku_val.endswith(".0"):
-                sku_val = sku_val[:-2]
-
-            # Parse Stock
-            raw_stock = get_val(r, "stock")
-            stock_val = None
-            if raw_stock is not None:
-                try:
-                    stock_val = int(float(str(raw_stock).replace(",", ".").strip()))
-                except ValueError:
-                    stock_val = None
-
-            # Parse Duration
-            raw_dur = get_val(r, "duration")
-            duration_val = 30 if not is_product_val else 0
-            if raw_dur is not None:
-                try:
-                    parsed_d = int(float(str(raw_dur).replace(",", ".").strip()))
-                    if parsed_d > 0:
-                        duration_val = parsed_d
-                except ValueError:
-                    pass
-
-            # Category resolution
-            raw_cat = get_val(r, "category")
-            category_id = None
-            if raw_cat and str(raw_cat).strip():
-                cat_name = str(raw_cat).strip()
-                cat_key = cat_name.lower()
-                if cat_key in existing_categories:
-                    category_id = existing_categories[cat_key].id
+        for r in range(header_row_idx + 1, ws.max_row + 1):
+            processed += 1
+            current_name = ""
+            try:
+                name_val = get_val(r, "name")
+                if not name_val or not str(name_val).strip():
+                    skipped += 1
                 else:
-                    new_cat = models.ServiceCategory(
-                        id=str(uuid.uuid4()),
-                        tenant_id=tenant_id,
-                        name=cat_name,
-                        slug=re.sub(r"[^a-z0-9]+", "-", cat_name.lower()).strip("-") or "cat"
-                    )
-                    db.add(new_cat)
-                    db.flush()
-                    existing_categories[cat_key] = new_cat
-                    category_id = new_cat.id
+                    name_str = str(name_val).strip()
+                    current_name = name_str
 
-            # Determine web visibility according to selected mode
-            if visibility_mode == "tpv_only":
-                is_visible_web = False
-            elif visibility_mode == "web_and_tpv":
-                is_visible_web = True
-            else: # auto
-                is_visible_web = False if is_product_val else True
+                    price_val = parse_float(get_val(r, "price"), 0.0) or 0.0
+                    cost_val = parse_float(get_val(r, "cost_price"), None)
+                    cost_discount_val = parse_float(get_val(r, "cost_discount"), None)
 
-            # Search if service/article already exists by SKU or Name in tenant
-            existing = None
-            if sku_val:
-                existing = db.query(models.Service).filter(
-                    models.Service.sku == sku_val,
-                    models.Service.tenant_id == tenant_id
-                ).first()
-            if not existing:
-                existing = db.query(models.Service).filter(
-                    models.Service.name == name_str,
-                    models.Service.tenant_id == tenant_id
-                ).first()
+                    raw_is_prod = get_val(r, "is_product")
+                    is_product_val = False
+                    if raw_is_prod is not None:
+                        s_prod = str(raw_is_prod).strip().lower()
+                        if s_prod in ["si", "sí", "yes", "true", "1", "articulo", "artículo", "producto"]:
+                            is_product_val = True
 
-            if existing:
-                existing.price = price_val
-                if cost_val is not None:
-                    existing.cost_price = cost_val
-                existing.is_product = is_product_val
-                existing.is_visible_on_web = is_visible_web
-                if sku_val:
-                    existing.sku = sku_val
-                if stock_val is not None:
-                    existing.stock = stock_val
-                if category_id:
-                    existing.category_id = category_id
-                if duration_val > 0:
-                    existing.duration_minutes = duration_val
-                updated += 1
-            else:
-                base_slug = re.sub(r"[^a-z0-9]+", "-", name_str.lower()).strip("-") or "item"
-                unique_slug = f"{base_slug[:40]}-{str(uuid.uuid4())[:6]}"
+                    supplier_val = parse_str(get_val(r, "supplier"))
+                    supplier_code_val = parse_str(get_val(r, "supplier_code"))
+                    sku_val = parse_str(get_val(r, "sku")) or supplier_code_val
+                    stock_val = parse_int(get_val(r, "stock"), None)
+                    min_stock_val = parse_int(get_val(r, "min_stock"), None)
+                    stock_unit_val = parse_str(get_val(r, "stock_unit")) or "uds"
+                    unit_content_val = parse_float(get_val(r, "unit_content"), None)
+                    ticket_name_val = parse_str(get_val(r, "ticket_name"))
+                    description_val = parse_str(get_val(r, "description"))
 
-                new_service = models.Service(
-                    id=str(uuid.uuid4()),
-                    tenant_id=tenant_id,
-                    name=name_str,
-                    slug=unique_slug,
-                    price=price_val,
-                    cost_price=cost_val,
-                    is_product=is_product_val,
-                    is_visible_on_web=is_visible_web,
-                    sku=sku_val,
-                    stock=stock_val,
-                    duration_minutes=duration_val,
-                    category_id=category_id,
-                    is_active=True
-                )
-                db.add(new_service)
-                imported += 1
-        except Exception as err:
-            errors.append(f"Fila {r}: {str(err)}")
+                    # Estado activo/desactivado
+                    raw_status = get_val(r, "status")
+                    is_active_val = True
+                    if raw_status is not None:
+                        st = str(raw_status).strip().lower()
+                        if st in ["desactivado", "inactivo", "inactive", "no", "0", "false", "baja"]:
+                            is_active_val = False
 
-    db.commit()
-    return {
-        "status": "ok",
-        "total_rows": ws.max_row - header_row_idx,
-        "imported": imported,
-        "updated": updated,
-        "skipped": skipped,
-        "errors": errors[:10]
-    }
+                    # Duración inteligente: Duración + Exposición (si Duración=0, usa Exposición)
+                    dur_base = parse_int(get_val(r, "duration"), 0) or 0
+                    exp_val = parse_int(get_val(r, "exposure"), 0) or 0
+                    combined_dur = dur_base + exp_val
+                    if combined_dur > 0:
+                        duration_val = combined_dur
+                    else:
+                        duration_val = 0 if is_product_val else 30
+
+                    # Categoría inteligente: si es genérica "PRODUCTOS SIN FAMILIA", usar Proveedor si viene
+                    raw_cat = parse_str(get_val(r, "category"))
+                    if raw_cat and raw_cat.lower() in ["productos sin familia", "sin familia"] and supplier_val:
+                        raw_cat = supplier_val
+
+                    category_id = None
+                    if raw_cat:
+                        cat_key = raw_cat.lower()
+                        if cat_key in existing_categories:
+                            category_id = existing_categories[cat_key].id
+                        else:
+                            new_cat = models.ServiceCategory(
+                                id=str(uuid.uuid4()),
+                                tenant_id=tenant_id,
+                                name=raw_cat,
+                                slug=re.sub(r"[^a-z0-9]+", "-", cat_key).strip("-") or "cat"
+                            )
+                            db.add(new_cat)
+                            db.flush()
+                            existing_categories[cat_key] = new_cat
+                            category_id = new_cat.id
+
+                    if visibility_mode == "tpv_only":
+                        is_visible_web = False
+                    elif visibility_mode == "web_and_tpv":
+                        is_visible_web = True
+                    else:
+                        is_visible_web = False if is_product_val else True
+
+                    existing = None
+                    if sku_val and sku_val.lower() in existing_by_sku:
+                        existing = existing_by_sku[sku_val.lower()]
+                    elif name_str.lower() in existing_by_name:
+                        existing = existing_by_name[name_str.lower()]
+
+                    if existing:
+                        existing.price = price_val
+                        if cost_val is not None:
+                            existing.cost_price = cost_val
+                        if cost_discount_val is not None:
+                            existing.cost_discount = cost_discount_val
+                        existing.is_product = is_product_val
+                        existing.is_visible_on_web = is_visible_web
+                        existing.is_active = is_active_val
+                        if sku_val:
+                            existing.sku = sku_val
+                        if stock_val is not None:
+                            existing.stock = stock_val
+                        if min_stock_val is not None:
+                            existing.min_stock = min_stock_val
+                        if stock_unit_val:
+                            existing.stock_unit = stock_unit_val
+                        if unit_content_val is not None:
+                            existing.unit_content = unit_content_val
+                        if supplier_val:
+                            existing.supplier = supplier_val
+                        if supplier_code_val:
+                            existing.supplier_code = supplier_code_val
+                        if ticket_name_val:
+                            existing.ticket_name = ticket_name_val
+                        if description_val:
+                            existing.description = description_val
+                        if category_id:
+                            existing.category_id = category_id
+                        if duration_val > 0:
+                            existing.duration_minutes = duration_val
+                        updated += 1
+                    else:
+                        base_slug = re.sub(r"[^a-z0-9]+", "-", name_str.lower()).strip("-") or "item"
+                        unique_slug = f"{base_slug[:40]}-{str(uuid.uuid4())[:6]}"
+
+                        new_service = models.Service(
+                            id=str(uuid.uuid4()),
+                            tenant_id=tenant_id,
+                            name=name_str,
+                            slug=unique_slug,
+                            description=description_val,
+                            price=price_val,
+                            cost_price=cost_val,
+                            cost_discount=cost_discount_val,
+                            is_product=is_product_val,
+                            is_visible_on_web=is_visible_web,
+                            sku=sku_val,
+                            stock=stock_val,
+                            min_stock=min_stock_val,
+                            stock_unit=stock_unit_val,
+                            unit_content=unit_content_val,
+                            supplier=supplier_val,
+                            supplier_code=supplier_code_val,
+                            ticket_name=ticket_name_val,
+                            duration_minutes=duration_val,
+                            category_id=category_id,
+                            is_active=is_active_val
+                        )
+                        db.add(new_service)
+                        if sku_val:
+                            existing_by_sku[sku_val.lower()] = new_service
+                        existing_by_name[name_str.lower()] = new_service
+                        imported += 1
+            except Exception as err:
+                errors.append(f"Fila {r}: {str(err)}")
+
+            if stream and (processed % 10 == 0 or processed == total_rows):
+                yield json.dumps({
+                    "type": "progress",
+                    "processed": processed,
+                    "total_rows": total_rows,
+                    "imported": imported,
+                    "updated": updated,
+                    "skipped": skipped,
+                    "current_item": current_name
+                }) + "\n"
+
+        db.commit()
+        yield json.dumps({
+            "type": "complete",
+            "status": "ok",
+            "total_rows": total_rows,
+            "imported": imported,
+            "updated": updated,
+            "skipped": skipped,
+            "errors": errors[:10]
+        }) + "\n"
+
+    if stream:
+        return StreamingResponse(run_import_generator(), media_type="application/x-ndjson")
+
+    final_payload = {}
+    for chunk in run_import_generator():
+        final_payload = json.loads(chunk)
+    return final_payload
 
 @router.post("/", response_model=schemas.ServiceResponse)
 def create_service(service: schemas.ServiceCreate, db: Session = Depends(database.get_db)):

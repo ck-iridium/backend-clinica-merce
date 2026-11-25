@@ -342,6 +342,27 @@ export function useServiceMutations({
     });
   };
 
+  const handleQuickStockDelta = async (service: any, delta: number) => {
+    const currentStock = Number(service.stock ?? 0);
+    const nextStock = Math.max(0, currentStock + delta);
+    if (nextStock === currentStock) return;
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/${service.id}`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ stock: nextStock }),
+      });
+      if (res.ok) {
+        toast.success(`Stock de "${service.name}": ${nextStock} ${service.stock_unit || 'uds'}`);
+        if (onRefresh) onRefresh();
+      } else {
+        throw new Error();
+      }
+    } catch {
+      toast.error('Error al actualizar el stock.');
+    }
+  };
+
   return {
     updatingPrices,
     savingPriceId,
@@ -362,5 +383,6 @@ export function useServiceMutations({
     bulkActionLoading,
     handleBulkStatusChange,
     handleBulkDelete,
+    handleQuickStockDelta,
   };
 }

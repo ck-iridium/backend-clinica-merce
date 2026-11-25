@@ -1,6 +1,6 @@
 "use client"
 import React from 'react';
-import { Search, Sparkles, Package } from 'lucide-react';
+import { Search, Sparkles, Package, AlertTriangle } from 'lucide-react';
 
 interface DataGridFiltersProps {
   categories: any[];
@@ -9,8 +9,9 @@ interface DataGridFiltersProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
   language: string;
-  itemTypeFilter?: 'all' | 'services' | 'products';
-  onItemTypeFilterChange?: (filter: 'all' | 'services' | 'products') => void;
+  itemTypeFilter?: 'all' | 'services' | 'products' | 'low_stock';
+  onItemTypeFilterChange?: (filter: 'all' | 'services' | 'products' | 'low_stock') => void;
+  lowStockCount?: number;
 }
 
 export function DataGridFilters({
@@ -22,6 +23,7 @@ export function DataGridFilters({
   language,
   itemTypeFilter = 'all',
   onItemTypeFilterChange,
+  lowStockCount = 0,
 }: DataGridFiltersProps) {
   return (
     <div className="flex flex-col gap-3.5 bg-white/90 backdrop-blur-xl p-4 rounded-3xl border border-stone-200/80 shadow-xs">
@@ -63,6 +65,23 @@ export function DataGridFilters({
             >
               <Package size={13} className="text-stone-600" />
               <span>Productos (TPV)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => onItemTypeFilterChange('low_stock')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                itemTypeFilter === 'low_stock'
+                  ? 'bg-rose-50 text-rose-700 shadow-xs border border-rose-200/70'
+                  : 'text-stone-500 hover:text-rose-700'
+              }`}
+            >
+              <AlertTriangle size={13} className={lowStockCount > 0 ? 'text-rose-500' : 'text-stone-400'} />
+              <span>Reposición</span>
+              {lowStockCount > 0 && (
+                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono font-black bg-rose-500 text-white">
+                  {lowStockCount}
+                </span>
+              )}
             </button>
           </div>
         )}
