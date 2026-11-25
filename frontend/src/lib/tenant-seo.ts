@@ -166,9 +166,13 @@ export async function getTenantSeoData(): Promise<TenantSeoData> {
     if (parsed.length > 0) keywords = parsed;
   }
 
-  // 11. Favicon y OG Image (Favicon servido dinámicamente vía URL real para indexación en Google)
-  const favicon = '/api/favicon';
-  let ogImage = siteContent?.hero_image_url || `${canonical}/api/favicon`;
+  // 11. Favicon y OG Image (con cache-busting dinámico para que los navegadores no retengan el icono antiguo)
+  const faviconRaw = settings?.favicon_b64 || settings?.logo_app_b64 || '';
+  const faviconVersion = faviconRaw
+    ? Buffer.from(faviconRaw.slice(-24)).toString('hex').slice(0, 8)
+    : (settings?.updated_at ? new Date(settings.updated_at).getTime() : '');
+  const favicon = faviconVersion ? `/api/favicon?v=${faviconVersion}` : '/api/favicon';
+  let ogImage = siteContent?.hero_image_url || `${canonical}${favicon}`;
   if (ogImage && ogImage.startsWith('/') && !ogImage.startsWith('//')) {
     ogImage = `${canonical}${ogImage}`;
   }
@@ -253,9 +257,9 @@ export async function buildTenantMetadata(options?: TenantMetadataOptions): Prom
         }
       : undefined,
     icons: {
-      icon: [{ url: '/api/favicon', sizes: 'any' }],
-      shortcut: '/favicon.ico',
-      apple: '/api/favicon',
+      icon: [{ url: seo.favicon, sizes: 'any' }],
+      shortcut: seo.favicon,
+      apple: seo.favicon,
     },
     openGraph: {
       title: seo.title,

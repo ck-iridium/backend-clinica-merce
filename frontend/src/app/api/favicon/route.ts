@@ -1,5 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { resolveTenantContext } from '@/lib/tenant-resolver';
+import { getSupabaseAdmin, supabase } from '@/lib/supabase';
+
+function getSupabaseClient() {
+  try {
+    return getSupabaseAdmin();
+  } catch {
+    return supabase;
+  }
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -30,12 +39,14 @@ function parseDataUri(dataUri: string): { mimeType: string; buffer: Buffer } | n
   }
 }
 
-function serveImageResponse(buffer: Buffer, mimeType: string) {
+function serveImageResponse(buffer: Buffer, mimeType: string, isCustom = false) {
   return new Response(new Uint8Array(buffer), {
     status: 200,
     headers: {
       'Content-Type': mimeType,
-      'Cache-Control': 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800',
+      'Cache-Control': isCustom
+        ? 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400, must-revalidate'
+        : 'public, max-age=30, s-maxage=30, stale-while-revalidate=60',
       'Content-Length': buffer.length.toString(),
     },
   });
@@ -43,7 +54,7 @@ function serveImageResponse(buffer: Buffer, mimeType: string) {
 
 function serveDefaultProbookiaSvg() {
   const buf = Buffer.from(DEFAULT_PROBOOKIA_SVG, 'utf-8');
-  return serveImageResponse(buf, 'image/svg+xml');
+  return serveImageResponse(buf, 'image/svg+xml', false);
 }
 
 export async function GET(request: NextRequest) {
@@ -87,34 +98,57 @@ export async function GET(request: NextRequest) {
 
     // 2. CONTEXTO TENANT / CLÍNICA (ej. esteticamerce.com o [slug].probookia.com)
     if (tenantId) {
-      try {
-        const resSettings = await fetch(`${resolvedApiUrl}/settings/`, {
-          headers: { 'X-Tenant-ID': tenantId },
-          next: { revalidate: 300, tags: [`tenant-favicon-${tenantId}`] },
-        });
+      let candidate: string | null = null;
 
-        if (resSettings.ok) {
-          const s = await resSettings.json();
-          const candidate = s.favicon_b64 || s.logo_app_b64 || s.logo_pdf_b64;
+      // 2.1 Consulta directa a Supabase (ultrarrápida y sin problemas de caché server-side)
+      const client = getSupabaseClient();
+      if (client) {
+        try {
+          const { data: dbSettings } = await client
+            .from('clinic_settings')
+            .select('favicon_b64, logo_app_b64, logo_pdf_b64')
+            .eq('tenant_id', tenantId)
+            .maybeSingle();
 
-          if (candidate) {
-            if (candidate.startsWith('data:')) {
-              const parsed = parseDataUri(candidate);
-              if (parsed) {
-                return serveImageResponse(parsed.buffer, parsed.mimeType);
-              }
-            } else if (candidate.startsWith('http://') || candidate.startsWith('https://')) {
-              const imgRes = await fetch(candidate, { next: { revalidate: 86400 } });
-              if (imgRes.ok) {
-                const cType = imgRes.headers.get('content-type') || 'image/png';
-                const ab = await imgRes.arrayBuffer();
-                return serveImageResponse(Buffer.from(ab), cType);
-              }
-            }
+          if (dbSettings) {
+            candidate = dbSettings.favicon_b64 || dbSettings.logo_app_b64 || dbSettings.logo_pdf_b64 || null;
+          }
+        } catch (err) {
+          console.warn('[API FAVICON] Error al consultar Supabase:', err);
+        }
+      }
+
+      // 2.2 Fallback a API FastAPI solo si Supabase no devolvió candidate
+      if (!candidate) {
+        try {
+          const resSettings = await fetch(`${resolvedApiUrl}/settings/`, {
+            headers: { 'X-Tenant-ID': tenantId },
+            cache: 'no-store',
+          });
+
+          if (resSettings.ok) {
+            const s = await resSettings.json();
+            candidate = s.favicon_b64 || s.logo_app_b64 || s.logo_pdf_b64 || null;
+          }
+        } catch (err) {
+          console.error('[API FAVICON] Error al obtener favicon de tenant via API:', err);
+        }
+      }
+
+      if (candidate) {
+        if (candidate.startsWith('data:')) {
+          const parsed = parseDataUri(candidate);
+          if (parsed) {
+            return serveImageResponse(parsed.buffer, parsed.mimeType, true);
+          }
+        } else if (candidate.startsWith('http://') || candidate.startsWith('https://')) {
+          const imgRes = await fetch(candidate, { cache: 'no-store' });
+          if (imgRes.ok) {
+            const cType = imgRes.headers.get('content-type') || 'image/png';
+            const ab = await imgRes.arrayBuffer();
+            return serveImageResponse(Buffer.from(ab), cType, true);
           }
         }
-      } catch (err) {
-        console.error('[API FAVICON] Error al obtener favicon de tenant:', err);
       }
     }
 
