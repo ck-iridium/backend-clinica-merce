@@ -3,6 +3,8 @@ import { Image as ImageIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { LuxuryTreatmentPlaceholder } from '@/components/ui/LuxuryTreatmentPlaceholder';
 import { getFontVar } from '@/lib/fonts';
+import FeaturedServicesSection from '@/components/blocks/FeaturedServicesSection';
+import CategoriesCatalogSection from '@/components/blocks/CategoriesCatalogSection';
 
 interface PreviewProps {
   formData: any;
@@ -555,8 +557,27 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], vi
         )}
       </section>
 
-      {/* ─── 3. CATEGORÍAS ─── */}
-      {categories
+      {/* ─── 2.5 TRATAMIENTOS DESTACADOS ─── */}
+      {formData?.featured_services_config?.enabled && (
+        <FeaturedServicesSection
+          config={formData.featured_services_config}
+          services={services}
+          categories={categories}
+          settings={settings}
+        />
+      )}
+
+      {/* ─── 2.8 MOSAICO / BENTO DE CATEGORÍAS ─── */}
+      {formData?.categories_catalog_config?.enabled && (
+        <CategoriesCatalogSection
+          config={formData.categories_catalog_config}
+          categories={categories}
+          services={services}
+        />
+      )}
+
+      {/* ─── 3. CATEGORÍAS INDIVIDUALES (DESPLEGADAS SI NO ESTÁN OCULTAS) ─── */}
+      {!formData?.categories_catalog_config?.hide_individual_sections && categories
         .filter((c: any) => c.is_active !== false)
         .map((category: any, index: number) => {
         const isEven = index % 2 === 0;

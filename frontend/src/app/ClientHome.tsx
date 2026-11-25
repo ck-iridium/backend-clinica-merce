@@ -7,6 +7,8 @@ import TreatmentCarousel from '@/components/TreatmentCarousel';
 import Footer from '@/components/Footer';
 import PublicNavbar from '@/components/PublicNavbar';
 import HeroSlider from '@/components/blocks/HeroSlider';
+import FeaturedServicesSection from '@/components/blocks/FeaturedServicesSection';
+import CategoriesCatalogSection from '@/components/blocks/CategoriesCatalogSection';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { LuxuryTreatmentPlaceholder } from '@/components/ui/LuxuryTreatmentPlaceholder';
 
@@ -475,15 +477,21 @@ export default function ClientHome({ content, settings, services, categories }: 
   // Calcular orden final de secciones desde el JSON guardado
   const baseSections = [
     { id: 'hero', type: 'hero' },
+    { id: 'featured', type: 'featured' },
+    { id: 'categories_catalog', type: 'categories_catalog' },
     { id: 'about', type: 'about' },
     { id: 'cta', type: 'cta' },
   ];
 
-  const catSections = activeCategories.map((c: any) => ({
-    id: c.id,
-    type: 'category',
-    data: c,
-  }));
+  // Si el tenant activó ocultar secciones individuales, la lista de categorías individuales queda vacía
+  const hideIndividualSections = Boolean(content?.categories_catalog_config?.hide_individual_sections);
+  const catSections = hideIndividualSections
+    ? []
+    : activeCategories.map((c: any) => ({
+        id: c.id,
+        type: 'category',
+        data: c,
+      }));
 
   const allAvailable = [...baseSections, ...catSections];
   let orderedSections: any[] = [];
@@ -499,10 +507,10 @@ export default function ClientHome({ content, settings, services, categories }: 
         if (!orderedSections.find(o => o.id === s.id)) orderedSections.push(s);
       });
     } catch {
-      orderedSections = [...baseSections.slice(0, 2), ...catSections, baseSections[2]];
+      orderedSections = [...baseSections.slice(0, 3), ...catSections, baseSections[3], baseSections[4]];
     }
   } else {
-    orderedSections = [...baseSections.slice(0, 2), ...catSections, baseSections[2]];
+    orderedSections = [...baseSections.slice(0, 3), ...catSections, baseSections[3], baseSections[4]];
   }
 
   // Hero siempre primero
@@ -531,6 +539,33 @@ export default function ClientHome({ content, settings, services, categories }: 
           if (section.type === 'hero') {
             return (
               <HeroSlider key="hero" content={content} />
+            );
+          }
+
+          // ── TRATAMIENTOS DESTACADOS ────────────────────────────────────────
+          if (section.type === 'featured') {
+            if (!content.featured_services_config?.enabled) return null;
+            return (
+              <FeaturedServicesSection
+                key="featured"
+                config={content.featured_services_config}
+                services={translatedServices}
+                categories={translatedCategories}
+                settings={settings}
+              />
+            );
+          }
+
+          // ── MOSAICO / BENTO DE CATEGORÍAS ─────────────────────────────────
+          if (section.type === 'categories_catalog') {
+            if (!content.categories_catalog_config?.enabled) return null;
+            return (
+              <CategoriesCatalogSection
+                key="categories_catalog"
+                config={content.categories_catalog_config}
+                categories={activeCategories}
+                services={translatedServices}
+              />
             );
           }
 

@@ -133,6 +133,8 @@ export default function CMSPage() {
         // Configurar secciones para la preview visual
         const baseSections = [
           { id: 'hero', type: 'hero', label: 'Portada Principal (Hero)', locked: true },
+          { id: 'featured', type: 'featured', label: '⭐ Tratamientos Destacados', locked: false },
+          { id: 'categories_catalog', type: 'categories_catalog', label: '📂 Mosaico de Categorías', locked: false },
           { id: 'about', type: 'about', label: 'Sobre la Clínica', locked: false },
           { id: 'cta', type: 'cta', label: 'Llamada a la Acción', locked: false },
           { id: 'seo', type: 'seo', label: 'SEO', locked: true }
@@ -536,6 +538,15 @@ export default function CMSPage() {
               setAiImageTarget({ type: 'hero_slide' });
               setShowAIImageModal(true);
             }}
+          />
+        );
+      case 'DESTACADOS':
+        return (
+          <FeaturedTab
+            formData={formData}
+            setFormData={setFormData}
+            services={services}
+            categories={categories}
           />
         );
       case 'SOBRE MÍ':
