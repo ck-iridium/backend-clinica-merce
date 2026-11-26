@@ -60,7 +60,7 @@ export function useCmsHome() {
       const [resContent, resCats, resServices, resSettings] = await Promise.all([
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/site-content/`, { headers }),
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/service-categories/`, { headers }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/`, { headers }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/?is_visible_on_web=true&is_product=false`, { headers }),
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings/`, { headers })
       ]);
       
@@ -72,14 +72,21 @@ export function useCmsHome() {
         data = await resContent.json();
         setFormData(data);
       }
+      if (resServices.ok) {
+        const rawSvcs = await resServices.json();
+        svcs = Array.isArray(rawSvcs)
+          ? rawSvcs.filter((s: any) => s.is_active !== false && s.is_visible_on_web !== false && !s.is_product)
+          : [];
+        setServices(svcs);
+      }
       if (resCats.ok) {
-        cats = await resCats.json();
+        const rawCats = await resCats.json();
+        const visibleCatIds = new Set(svcs.map((s: any) => s.category_id).filter(Boolean));
+        cats = Array.isArray(rawCats)
+          ? rawCats.filter((c: any) => visibleCatIds.has(c.id))
+          : [];
         setCategories(cats);
         if (cats.length > 0) setSelectedCategoryId(cats[0].id);
-      }
-      if (resServices.ok) {
-        svcs = await resServices.json();
-        setServices(svcs);
       }
       if (resSettings && resSettings.ok) {
         const settingsData = await resSettings.json();
