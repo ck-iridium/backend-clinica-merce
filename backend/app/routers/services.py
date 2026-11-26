@@ -34,6 +34,7 @@ async def import_services_excel(
     file: UploadFile = File(...),
     mapping: str = Form(...),
     visibility_mode: str = Form("auto"),
+    stock_control_mode: str = Form("auto"),
     stream: bool = Form(False),
     db: Session = Depends(database.get_db)
 ):
@@ -194,6 +195,13 @@ async def import_services_excel(
                     else:
                         is_visible_web = False if is_product_val else True
 
+                    if stock_control_mode == "disabled":
+                        track_stock_val = False
+                    elif stock_control_mode == "enabled":
+                        track_stock_val = bool(is_product_val)
+                    else:
+                        track_stock_val = bool(is_product_val and (stock_val is not None or min_stock_val is not None))
+
                     existing = None
                     if sku_val and sku_val.lower() in existing_by_sku:
                         existing = existing_by_sku[sku_val.lower()]
@@ -208,6 +216,8 @@ async def import_services_excel(
                             existing.cost_discount = cost_discount_val
                         existing.is_product = is_product_val
                         existing.is_visible_on_web = is_visible_web
+                        if stock_control_mode in ("enabled", "disabled") or track_stock_val:
+                            existing.track_stock = track_stock_val
                         existing.is_active = is_active_val
                         if sku_val:
                             existing.sku = sku_val
@@ -247,6 +257,7 @@ async def import_services_excel(
                             cost_discount=cost_discount_val,
                             is_product=is_product_val,
                             is_visible_on_web=is_visible_web,
+                            track_stock=track_stock_val,
                             sku=sku_val,
                             stock=stock_val,
                             min_stock=min_stock_val,
@@ -305,7 +316,7 @@ def create_service(service: schemas.ServiceCreate, db: Session = Depends(databas
 @router.get("/", response_model=List[schemas.ServiceResponse])
 def read_services(
     skip: int = 0, 
-    limit: int = 100, 
+    limit: int = 1000, 
     is_visible_on_web: Optional[bool] = None,
     is_product: Optional[bool] = None,
     db: Session = Depends(database.get_db)

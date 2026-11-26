@@ -298,7 +298,7 @@ export function useCounterMode({
               const svcData = await svcRes.json();
               if (Array.isArray(svcData) && svcData.length > 0) {
                 const mapped = svcData
-                  .filter((s: any) => s.is_active !== false)
+                  .filter((s: any) => s.is_active !== false && s.is_product !== true && s.is_visible_on_web !== false)
                   .slice(0, 36)
                   .map((s: any) => ({
                     id: String(s.id),

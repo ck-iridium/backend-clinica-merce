@@ -51,6 +51,7 @@ export interface ServiceFormData {
   translations?: Record<string, any>;
   is_product?: boolean;
   is_visible_on_web?: boolean;
+  track_stock?: boolean;
   cost_price?: number | null;
   cost_discount?: number | null;
   sku?: string | null;
@@ -73,6 +74,7 @@ const DEFAULT_FORM_DATA: ServiceFormData = {
   is_featured: false,
   is_product: false,
   is_visible_on_web: true,
+  track_stock: false,
   cost_price: null,
   cost_discount: null,
   sku: '',

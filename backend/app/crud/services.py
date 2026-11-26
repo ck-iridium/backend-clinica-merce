@@ -67,7 +67,7 @@ def get_service_by_slug(db: Session, slug: str):
         service.category_slug = service.category.slug
     return service
 
-def get_services(db: Session, skip: int = 0, limit: int = 100, is_visible_on_web: bool = None, is_product: bool = None):
+def get_services(db: Session, skip: int = 0, limit: int = 1000, is_visible_on_web: bool = None, is_product: bool = None):
     tenant_id = current_tenant_var.get()
     query = (
         db.query(models.Service)

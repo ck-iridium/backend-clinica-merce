@@ -293,6 +293,7 @@ def create_direct_sale(db: Session, sale: schemas.DirectSaleRequest):
 
     # 2. Fetch services to get names / build concept
     concept_names = []
+    sold_services = []
     if sale.services:
         for item in sale.services:
             srv_id = item.get("service_id") if isinstance(item, dict) else getattr(item, "service_id", None)
@@ -302,6 +303,7 @@ def create_direct_sale(db: Session, sale: schemas.DirectSaleRequest):
                 models.Service.tenant_id == tenant_id
             ).first()
             if service:
+                sold_services.append(service)
                 if price_val is not None and float(price_val) != float(service.price):
                     concept_names.append(f"{service.name} ({float(price_val):.2f}€)")
                 else:
@@ -315,12 +317,21 @@ def create_direct_sale(db: Session, sale: schemas.DirectSaleRequest):
         ).first()
         if not service:
             raise ValueError("Servicio no encontrado")
+        sold_services.append(service)
         concept_names.append(service.name)
         
     concept_str = ", ".join(concept_names)
     
-    # 3. Get global settings for tax rate
+    # 3. Get global settings for tax rate and stock control
     settings = get_clinic_settings(db)
+
+    # 3.5 Automatic stock deduction for tracked products on checkout
+    if getattr(settings, "enable_stock_control", True) is not False:
+        for sold_srv in sold_services:
+            if getattr(sold_srv, "is_product", False) and getattr(sold_srv, "track_stock", False):
+                current_stock = int(sold_srv.stock or 0)
+                sold_srv.stock = max(0, current_stock - 1)
+                db.add(sold_srv)
     
     # 4. Resolve Date (use custom date if provided, fallback to today)
     sale_date = date.today()

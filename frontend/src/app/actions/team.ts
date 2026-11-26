@@ -943,16 +943,19 @@ export async function getCounterShowcaseServicesAction(explicitTenantId?: string
 
     const { data, error } = await supabaseAdmin
       .from('services')
-      .select('id, name, price, duration_minutes, image_url')
+      .select('id, name, price, duration_minutes, image_url, is_product, is_visible_on_web')
       .eq('tenant_id', resolvedId)
       .eq('is_active', true)
-      .limit(36);
+      .limit(60);
 
     if (error || !data) {
       return { success: false, data: [] };
     }
 
     const mapped = data
+      // Excluir productos de TPV y servicios ocultos de la web pública
+      .filter((s: any) => s.is_product !== true && s.is_visible_on_web !== false)
+      .slice(0, 36)
       .map((s: any) => ({
         id: s.id,
         name: s.name,

@@ -279,6 +279,50 @@ export default function BillingTab({
           </div>
         </div>
       </div>
+
+      {/* Control de Stock e Inventario Global */}
+      <div className="bg-white rounded-3xl border border-stone-200/80 shadow-sm p-6 sm:p-8 space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <h3 className="text-base font-bold text-stone-900">Control de Stock e Inventario</h3>
+            <p className="text-xs text-stone-500 max-w-2xl leading-relaxed">
+              Activa o desactiva de forma global el seguimiento de inventario, alertas de reposición y descuento automático de stock al cobrar productos en el TPV.
+            </p>
+          </div>
+          <button
+            id="billing-stock-control-toggle"
+            type="button"
+            role="switch"
+            aria-checked={settings.enable_stock_control !== false}
+            onClick={() => updateSetting('enable_stock_control', settings.enable_stock_control === false)}
+            className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/40 ${
+              settings.enable_stock_control !== false ? 'bg-emerald-500' : 'bg-stone-200'
+            }`}
+          >
+            <span
+              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ${
+                settings.enable_stock_control !== false ? 'translate-x-5' : 'translate-x-0.5'
+              }`}
+            />
+          </button>
+        </div>
+
+        <div className={`rounded-2xl px-4 py-3 text-xs border transition-colors ${
+          settings.enable_stock_control !== false
+            ? 'bg-emerald-50/60 border-emerald-200/70 text-emerald-900'
+            : 'bg-stone-50 border-stone-200/80 text-stone-600'
+        }`}>
+          {settings.enable_stock_control !== false ? (
+            <span>
+              <strong>Control global activado:</strong> los productos con seguimiento de stock activo mostrarán alertas de reposición y descontarán unidades automáticamente al cobrarse en TPV.
+            </span>
+          ) : (
+            <span>
+              <strong>Control global desactivado:</strong> no se descontará stock al cobrar en TPV ni se mostrarán alertas de reposición aunque algunos productos tengan stock configurado.
+            </span>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

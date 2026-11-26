@@ -194,6 +194,7 @@ class Service(Base):
     is_featured = Column(Boolean, default=False)
     is_product = Column(Boolean, default=False, nullable=True)
     is_visible_on_web = Column(Boolean, default=True, nullable=True)
+    track_stock = Column(Boolean, default=False, nullable=True)
     cost_price = Column(Numeric(10, 2), nullable=True)
     sku = Column(String, nullable=True)
     stock = Column(Integer, nullable=True)
@@ -462,6 +463,7 @@ class ClinicSettings(Base):
     enable_time_clock = Column(Boolean, default=True, nullable=True) # Activar Fichaje Legal de Jornada
     counter_autolock_minutes = Column(Integer, default=10, nullable=True) # 0=desactivado, 5, 10, 15
     require_authorized_device = Column(Boolean, default=False, nullable=True) # Si es True, restringe acceso al panel a terminales homologados
+    enable_stock_control = Column(Boolean, default=True, nullable=True) # Control global de inventario y alertas de reposición
 
 
 class Invoice(Base):

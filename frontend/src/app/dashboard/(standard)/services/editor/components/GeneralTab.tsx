@@ -178,10 +178,31 @@ export default function GeneralTab({
 
       {formValues.is_product && (
         <div className="p-4 sm:p-5 bg-amber-50/40 border border-amber-200/60 rounded-2xl animate-in fade-in duration-300 space-y-4">
-          <div className="flex items-center justify-between border-b border-amber-200/40 pb-2">
+          <div className="flex items-center justify-between border-b border-amber-200/40 pb-2 gap-3">
             <span className="text-[10px] font-black uppercase tracking-widest text-amber-900">
               Control de Almacén & Proveedor (TPV)
             </span>
+            <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+              <span className="text-[10px] font-bold text-amber-900/80">
+                {formValues.track_stock ? 'Controlar stock' : 'Sin control de stock'}
+              </span>
+              <button
+                id="service-editor-general-track-stock-toggle"
+                type="button"
+                role="switch"
+                aria-checked={Boolean(formValues.track_stock)}
+                onClick={() => setValue('track_stock', !Boolean(formValues.track_stock), { shouldDirty: true })}
+                className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full border-2 border-transparent transition-colors ${
+                  formValues.track_stock ? 'bg-emerald-500' : 'bg-stone-300'
+                }`}
+              >
+                <span
+                  className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
+                    formValues.track_stock ? 'translate-x-4' : 'translate-x-0.5'
+                  }`}
+                />
+              </button>
+            </label>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

@@ -264,6 +264,7 @@ export function UniversalExcelImportModal({
   const [mapping, setMapping] = useState<Record<string, string>>({});
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   const [visibilityMode, setVisibilityMode] = useState<'tpv_only' | 'web_and_tpv' | 'auto'>('auto');
+  const [stockControlMode, setStockControlMode] = useState<'auto' | 'enabled' | 'disabled'>('auto');
   const [importProgress, setImportProgress] = useState<{
     processed: number;
     total_rows: number;
@@ -294,6 +295,7 @@ export function UniversalExcelImportModal({
     setImportResult(null);
     setImportProgress({ processed: 0, total_rows: 0, imported: 0, updated: 0, skipped: 0 });
     setVisibilityMode('auto');
+    setStockControlMode('auto');
   };
 
   const processFile = async (selectedFile: File) => {
@@ -420,6 +422,7 @@ export function UniversalExcelImportModal({
       formData.append('stream', 'true');
       if (type === 'services') {
         formData.append('visibility_mode', visibilityMode);
+        formData.append('stock_control_mode', stockControlMode);
       }
 
       const endpoint = type === 'clients'
@@ -669,6 +672,53 @@ export function UniversalExcelImportModal({
                         Según columna 'Es artículo': artículos solo a TPV, servicios a web y TPV.
                       </p>
                     </button>
+                  </div>
+
+                  <div className="pt-3 border-t border-stone-200/70 space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <div>
+                        <p className="text-xs font-bold text-stone-800">Control de stock al importar</p>
+                        <p className="text-[11px] text-stone-500">Define si los productos importados activan el control de inventario y alertas.</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setStockControlMode('auto')}
+                        className={`text-left p-2.5 rounded-xl border transition-all ${
+                          stockControlMode === 'auto'
+                            ? 'bg-amber-50 border-amber-300 ring-1 ring-amber-300'
+                            : 'bg-white border-stone-200 hover:border-stone-300'
+                        }`}
+                      >
+                        <span className="block text-[11px] font-bold text-stone-900">Automático (si trae stock)</span>
+                        <span className="block text-[10px] text-stone-500 mt-0.5">Activa solo si el Excel incluye unidades &gt; 0.</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setStockControlMode('enabled')}
+                        className={`text-left p-2.5 rounded-xl border transition-all ${
+                          stockControlMode === 'enabled'
+                            ? 'bg-emerald-50 border-emerald-300 ring-1 ring-emerald-300'
+                            : 'bg-white border-stone-200 hover:border-stone-300'
+                        }`}
+                      >
+                        <span className="block text-[11px] font-bold text-stone-900">Activar en productos</span>
+                        <span className="block text-[10px] text-stone-500 mt-0.5">Marca control de stock en todos los productos.</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setStockControlMode('disabled')}
+                        className={`text-left p-2.5 rounded-xl border transition-all ${
+                          stockControlMode === 'disabled'
+                            ? 'bg-stone-100 border-stone-400 ring-1 ring-stone-300'
+                            : 'bg-white border-stone-200 hover:border-stone-300'
+                        }`}
+                      >
+                        <span className="block text-[11px] font-bold text-stone-900">Sin control de stock</span>
+                        <span className="block text-[10px] text-stone-500 mt-0.5">No alerta reposición ni descuenta al cobrar.</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
