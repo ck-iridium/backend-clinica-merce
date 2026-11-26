@@ -943,10 +943,10 @@ export async function getCounterShowcaseServicesAction(explicitTenantId?: string
 
     const { data, error } = await supabaseAdmin
       .from('services')
-      .select('id, name, price, duration_minutes, image_url, service_categories(name)')
+      .select('id, name, price, duration_minutes, image_url')
       .eq('tenant_id', resolvedId)
       .eq('is_active', true)
-      .limit(32);
+      .limit(36);
 
     if (error || !data) {
       return { success: false, data: [] };
@@ -959,9 +959,7 @@ export async function getCounterShowcaseServicesAction(explicitTenantId?: string
         price: s.price,
         duration_minutes: s.duration_minutes,
         image_url: s.image_url || null,
-        category_name: Array.isArray(s.service_categories)
-          ? s.service_categories[0]?.name || null
-          : s.service_categories?.name || null,
+        category_name: null,
       }))
       // Priorizar los que tienen imagen real para el muro 3D
       .sort((a, b) => Number(Boolean(b.image_url)) - Number(Boolean(a.image_url)));

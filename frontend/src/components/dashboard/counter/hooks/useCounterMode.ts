@@ -277,10 +277,42 @@ export function useCounterMode({
 
       fetchOperators();
       getCounterShowcaseServicesAction(resolved)
-        .then(res => {
-          if (res.success && Array.isArray(res.data)) {
+        .then(async res => {
+          if (res.success && Array.isArray(res.data) && res.data.length > 0) {
             setShowcaseServices(res.data);
+            return;
           }
+          // Fallback directo al backend API si la Server Action devuelve vacío
+          try {
+            const headers: Record<string, string> = { 'X-Tenant-ID': resolved };
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+              try {
+                const u = JSON.parse(userStr);
+                const token = u.access_token || u.token;
+                if (token) headers['Authorization'] = `Bearer ${token}`;
+              } catch (e) {}
+            }
+            const svcRes = await fetch(`${apiUrl}/services/`, { headers, cache: 'no-store' });
+            if (svcRes.ok) {
+              const svcData = await svcRes.json();
+              if (Array.isArray(svcData) && svcData.length > 0) {
+                const mapped = svcData
+                  .filter((s: any) => s.is_active !== false)
+                  .slice(0, 36)
+                  .map((s: any) => ({
+                    id: String(s.id),
+                    name: s.name,
+                    price: s.price,
+                    duration_minutes: s.duration_minutes,
+                    image_url: s.image_url || null,
+                    category_name: s.category?.name || null,
+                  }))
+                  .sort((a: any, b: any) => Number(Boolean(b.image_url)) - Number(Boolean(a.image_url)));
+                setShowcaseServices(mapped);
+              }
+            }
+          } catch (err) {}
         })
         .catch(() => {});
     }
