@@ -136,21 +136,33 @@ export default function FeaturedServicesSection({
 
         {/* ─── FORMATO: BENTO LUXURY ─── */}
         {layout === 'bento' && (
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
+          <div className="flex md:grid md:grid-cols-12 gap-4 md:gap-8 overflow-x-auto md:overflow-visible pb-4 md:pb-0 hide-scroll snap-x snap-mandatory md:snap-none">
             {featuredServices.map((svc: any, idx: number) => {
               const isLead = idx === 0;
               const isSecond = idx === 1;
-              const colSpan = isLead ? 'md:col-span-7' : isSecond ? 'md:col-span-5' : 'md:col-span-4';
-              const heightClass = isLead || isSecond ? 'h-[440px] md:h-[500px]' : 'h-[360px] md:h-[400px]';
+              let colSpan = 'md:col-span-4';
+              if (featuredServices.length === 1) {
+                colSpan = 'md:col-span-12';
+              } else if (featuredServices.length === 2) {
+                colSpan = 'md:col-span-6';
+              } else if (isLead) {
+                colSpan = 'md:col-span-7';
+              } else if (isSecond) {
+                colSpan = 'md:col-span-5';
+              }
+
+              const heightClass = (isLead || isSecond) && featuredServices.length > 2 
+                ? 'h-[360px] md:h-[480px]' 
+                : 'h-[340px] md:h-[420px]';
               const catSlug = getCategorySlug(svc);
 
               return (
                 <div
                   key={svc.id}
-                  className={`${colSpan} ${heightClass} group relative rounded-3xl overflow-hidden shadow-sm border border-stone-200/60 dark:border-stone-800 flex flex-col justify-end p-6 md:p-8 transition-all duration-500 hover:shadow-xl hover:border-[#d4af37]/50`}
+                  className={`${colSpan} ${heightClass} w-[280px] sm:w-[320px] md:w-auto shrink-0 md:shrink snap-start md:snap-none group relative rounded-3xl overflow-hidden shadow-sm border border-stone-200/60 dark:border-stone-800 flex flex-col justify-end p-6 md:p-8 transition-all duration-500 hover:shadow-xl hover:border-[#d4af37]/50`}
                 >
-                  {/* Imagen de fondo o Degradado Quiet Luxury 2026 */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-stone-900 via-stone-800 to-stone-950 z-0 overflow-hidden">
+                  {/* Imagen de fondo con respaldo LuxuryTreatmentPlaceholder */}
+                  <div className="absolute inset-0 bg-stone-900 z-0 overflow-hidden">
                     {svc.image_url ? (
                       <img
                         src={getFullUrl(svc.image_url)}
@@ -158,14 +170,13 @@ export default function FeaturedServicesSection({
                         className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                       />
                     ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center">
-                        <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-3 backdrop-blur-sm group-hover:scale-105 group-hover:border-[#d4af37]/40 transition-all duration-500">
-                          <Sparkles className="w-8 h-8 text-[#d4af37]" />
-                        </div>
-                        <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#d4af37]/90">Tratamiento Exclusivo</span>
-                      </div>
+                      <LuxuryTreatmentPlaceholder 
+                        mode="auto" 
+                        className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105" 
+                        alt={svc.name} 
+                      />
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/15 z-10" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/10 z-10" />
                   </div>
 
                   {/* Contenido en Overlay */}
@@ -236,15 +247,15 @@ export default function FeaturedServicesSection({
 
         {/* ─── FORMATO: GRID TRADICIONAL ─── */}
         {layout === 'grid' && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          <div className="flex md:grid md:grid-cols-2 lg:md:grid-cols-3 gap-4 md:gap-8 overflow-x-auto md:overflow-visible pb-4 md:pb-0 hide-scroll snap-x snap-mandatory md:snap-none">
             {featuredServices.map((svc: any) => {
               const catSlug = getCategorySlug(svc);
               return (
                 <div
                   key={svc.id}
-                  className="bg-white dark:bg-stone-900 rounded-3xl overflow-hidden shadow-sm border border-stone-200/70 dark:border-stone-800 flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-[#d4af37]/40 group"
+                  className="w-[280px] sm:w-[320px] md:w-auto shrink-0 md:shrink snap-start md:snap-none bg-white dark:bg-stone-900 rounded-3xl overflow-hidden shadow-sm border border-stone-200/70 dark:border-stone-800 flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-[#d4af37]/40 group"
                 >
-                  <div className="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-stone-900 via-stone-800 to-stone-950">
+                  <div className="relative aspect-[16/10] overflow-hidden bg-stone-900">
                     {svc.image_url ? (
                       <img
                         src={getFullUrl(svc.image_url)}
@@ -252,12 +263,11 @@ export default function FeaturedServicesSection({
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                       />
                     ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center">
-                        <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-2 backdrop-blur-sm group-hover:scale-105 group-hover:border-[#d4af37]/40 transition-all duration-500">
-                          <Sparkles className="w-7 h-7 text-[#d4af37]" />
-                        </div>
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#d4af37]/90">Tratamiento Exclusivo</span>
-                      </div>
+                      <LuxuryTreatmentPlaceholder 
+                        mode="auto" 
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                        alt={svc.name} 
+                      />
                     )}
                     {showDuration && svc.duration_minutes && (
                       <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-black/60 text-white text-[11px] font-medium backdrop-blur-md flex items-center gap-1">
@@ -331,7 +341,7 @@ export default function FeaturedServicesSection({
                   key={svc.id}
                   className="w-[280px] sm:w-[320px] shrink-0 snap-start bg-white dark:bg-stone-900 rounded-3xl overflow-hidden shadow-sm border border-stone-200/60 dark:border-stone-800 flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-[#d4af37]/40 group"
                 >
-                  <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-stone-900 via-stone-800 to-stone-950">
+                  <div className="relative aspect-[4/3] overflow-hidden bg-stone-900">
                     {svc.image_url ? (
                       <img
                         src={getFullUrl(svc.image_url)}
@@ -339,12 +349,11 @@ export default function FeaturedServicesSection({
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                       />
                     ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center">
-                        <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-2 backdrop-blur-sm group-hover:scale-105 group-hover:border-[#d4af37]/40 transition-all duration-500">
-                          <Sparkles className="w-7 h-7 text-[#d4af37]" />
-                        </div>
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#d4af37]/90">Tratamiento Exclusivo</span>
-                      </div>
+                      <LuxuryTreatmentPlaceholder 
+                        mode="auto" 
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                        alt={svc.name} 
+                      />
                     )}
                     {showDuration && svc.duration_minutes && (
                       <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-black/60 text-white text-[10px] font-medium backdrop-blur-md">

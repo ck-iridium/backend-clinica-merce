@@ -104,12 +104,16 @@ export default function HomeBuilderLayout({
             >
               {tab === 'HERO' 
                 ? t('cms.tabs.hero')
+                : tab === 'DESTACADOS'
+                ? 'DESTACADOS'
                 : tab === 'SOBRE MÍ' 
                 ? t('cms.tabs.about') 
                 : tab === 'CATEGORÍAS' 
                 ? t('cms.tabs.categories') 
                 : tab === 'CTA'
                 ? t('cms.tabs.cta')
+                : tab === 'ORDENAR'
+                ? 'ORDENAR'
                 : tab === 'SEO'
                 ? t('cms.tabs.seo')
                 : tab}

@@ -546,7 +546,7 @@ export default function ClientHome({ content, settings, services, categories }: 
           if (section.type === 'featured') {
             if (!content.featured_services_config?.enabled) return null;
             return (
-              <div key="featured" className="w-full snap-start md:snap-none min-h-[100dvh] h-auto flex flex-col justify-center">
+              <div key="featured" className="w-full snap-start snap-stop-always md:snap-none min-h-[100dvh] md:min-h-0 h-auto flex flex-col justify-center">
                 <FeaturedServicesSection
                   config={content.featured_services_config}
                   services={translatedServices}
@@ -561,7 +561,7 @@ export default function ClientHome({ content, settings, services, categories }: 
           if (section.type === 'categories_catalog') {
             if (!content.categories_catalog_config?.enabled) return null;
             return (
-              <div key="categories_catalog" className="w-full snap-start md:snap-none min-h-[100dvh] h-auto flex flex-col justify-center">
+              <div key="categories_catalog" className="w-full snap-start snap-stop-always md:snap-none min-h-[100dvh] md:min-h-0 h-auto flex flex-col justify-center">
                 <CategoriesCatalogSection
                   config={content.categories_catalog_config}
                   categories={activeCategories}
@@ -576,7 +576,7 @@ export default function ClientHome({ content, settings, services, categories }: 
           // ── ABOUT ─────────────────────────────────────────────────────────
           if (section.type === 'about') {
             return (
-              <section key="about" className="bg-[#F5F2EE] dark:bg-stone-950 relative flex items-center min-h-[100dvh] h-auto md:h-auto snap-start md:snap-none py-16 md:py-24">
+              <section key="about" className="bg-[#F5F2EE] dark:bg-stone-950 relative flex items-center min-h-[100dvh] md:min-h-0 h-auto snap-start snap-stop-always md:snap-none py-16 md:py-24">
                   <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-center w-full">
                     {/* Columna Izquierda (Texto e Imagen en móvil) */}
                     <div className="space-y-6 md:space-y-8 flex flex-col items-center text-center md:items-start md:text-left">
