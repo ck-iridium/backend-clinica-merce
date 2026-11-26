@@ -26,7 +26,6 @@ const FALLBACK_EDITORIAL_TITLES = [
   'Esencia & Diseño',
 ];
 
-// Paletas editoriales "Quiet Luxury" para tarjetas sin fotografía
 const EDITORIAL_PALETTES_LIGHT = [
   'from-[#F5EFE6] via-[#E8DCCB] to-[#D6C2A5]',
   'from-[#EFECE6] via-[#DFD8CC] to-[#C8B9A6]',
@@ -79,7 +78,7 @@ function ShowcaseCard({
   return (
     <div
       style={{ backfaceVisibility: 'hidden', transform: 'translateZ(0)' }}
-      className={`group relative aspect-[4/3] w-full shrink-0 rounded-2xl overflow-hidden border transition-colors ${
+      className={`group relative aspect-[4/3] w-full shrink-0 rounded-2xl overflow-hidden border ${
         isDarkMode
           ? 'bg-stone-900 border-white/10 shadow-[0_12px_32px_rgba(0,0,0,0.45)]'
           : 'bg-white border-stone-200/80 shadow-[0_12px_32px_rgba(28,25,23,0.08)]'
@@ -119,10 +118,8 @@ function ShowcaseCard({
         </div>
       )}
 
-      {/* Sutil línea superior dorada */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D4AF37]/50 to-transparent" />
 
-      {/* Etiqueta de categoría o marca */}
       <div
         className={`absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full backdrop-blur-md border ${
           hasValidImage || isDarkCard
@@ -136,7 +133,6 @@ function ShowcaseCard({
         </span>
       </div>
 
-      {/* Título y detalles del servicio */}
       <div className="absolute inset-x-0 bottom-0 p-3.5 flex flex-col gap-0.5">
         <p
           className={`font-serif text-sm sm:text-base font-semibold leading-tight line-clamp-1 ${
@@ -168,8 +164,8 @@ function ShowcaseCard({
 /**
  * CounterDiagonalBackground
  * Muro 3D en perspectiva diagonal con 6 columnas en marquee infinito.
- * Cada columna tiene una altura fija menor que el 50% de su contenido duplicado,
- * garantizando un loop 100% continuo sin huecos ni apariciones repentinas.
+ * Sobredimensionado fuera del viewport para que ningún borde de recorte sea visible,
+ * con desenfoque gaussiano leve (efecto profundidad de campo) para dar protagonismo al centro.
  */
 export function CounterDiagonalBackground({
   services,
@@ -178,8 +174,8 @@ export function CounterDiagonalBackground({
 }: CounterDiagonalBackgroundProps) {
   const NUM_COLUMNS = 6;
 
-  // Pool de al menos 48 tarjetas (8 por columna x 2 duplicado = 16 por columna)
-  // para asegurar que 1x bloque siempre supere la altura del contenedor visible.
+  // 72 tarjetas mínimo (12 por columna x 2 duplicado = 24 por columna)
+  // para cubrir sobradamente un contenedor de 280vh sin cortes visibles en las esquinas.
   const columns = useMemo(() => {
     const basePool: ShowcaseService[] =
       services.length > 0
@@ -191,7 +187,7 @@ export function CounterDiagonalBackground({
             category_name: clinicName,
           }));
 
-    const minTotal = 48;
+    const minTotal = 72;
     const expanded: ShowcaseService[] = [];
     while (expanded.length < minTotal) {
       for (const item of basePool) {
@@ -208,22 +204,26 @@ export function CounterDiagonalBackground({
     return cols;
   }, [services, clinicName]);
 
-  const durations = [72, 84, 76, 88, 80, 90];
+  const durations = [95, 112, 102, 118, 106, 122];
 
   return (
     <div
       aria-hidden="true"
       className="fixed inset-0 overflow-hidden pointer-events-none select-none z-0"
     >
-      {/* Plano 3D inclinado sobredimensionado */}
+      {/* Plano 3D muy amplio centrado y desenfocado suavemente (profundidad de campo) */}
       <div
-        className="absolute -inset-[45%] flex items-center justify-center"
+        className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center transition-[filter] duration-500 ${
+          isDarkMode
+            ? 'blur-[4px] brightness-[0.72] saturate-[0.88]'
+            : 'blur-[3.5px] brightness-[0.95] saturate-[0.92]'
+        }`}
         style={{
-          transform: 'perspective(1200px) rotateX(16deg) rotateY(-6deg) rotateZ(-12deg)',
+          transform: 'translate(-50%, -50%) perspective(1200px) rotateX(16deg) rotateY(-6deg) rotateZ(-12deg)',
           transformStyle: 'preserve-3d',
         }}
       >
-        <div className="grid grid-cols-3 md:grid-cols-6 gap-4 sm:gap-5 w-[185vw] min-w-[2100px] h-[175vh] min-h-[1450px]">
+        <div className="grid grid-cols-3 md:grid-cols-6 gap-4 sm:gap-5 w-[195vw] min-w-[2300px] h-[270vh] min-h-[2400px]">
           {columns.map((colItems, colIdx) => {
             const isReverse = colIdx % 2 === 1;
             const duplicated = [...colItems, ...colItems];
@@ -258,27 +258,20 @@ export function CounterDiagonalBackground({
         </div>
       </div>
 
-      {/* Overlay blanco/marfil suave para dar protagonismo al pedestal central */}
-      <div
-        className={`absolute inset-0 backdrop-blur-[1.5px] ${
-          isDarkMode ? 'bg-stone-950/35' : 'bg-white/30'
-        }`}
-      />
-
-      {/* Viñeta radial suave para enfocar la atención en el centro */}
+      {/* Sutil tinte de contraste cinematográfico sin lavar las imágenes */}
       <div
         className="absolute inset-0"
         style={{
           background: isDarkMode
-            ? 'radial-gradient(ellipse 50% 56% at 50% 50%, rgba(12,10,9,0.84) 0%, rgba(12,10,9,0.45) 55%, rgba(12,10,9,0.22) 100%)'
-            : 'radial-gradient(ellipse 50% 56% at 50% 50%, rgba(255,255,255,0.78) 0%, rgba(250,249,246,0.38) 55%, rgba(250,249,246,0.18) 100%)',
+            ? 'radial-gradient(ellipse 65% 65% at 50% 50%, rgba(12,10,9,0.28) 0%, rgba(12,10,9,0.52) 100%)'
+            : 'radial-gradient(ellipse 65% 65% at 50% 50%, rgba(250,249,246,0.12) 0%, rgba(28,25,23,0.18) 100%)',
         }}
       />
 
       {/* Halo dorado ambiental sutil detrás del pedestal central */}
       <div
-        className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[540px] h-[540px] rounded-full blur-[130px] ${
-          isDarkMode ? 'bg-[#D4AF37]/15' : 'bg-[#D4AF37]/20'
+        className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[520px] h-[520px] rounded-full blur-[120px] ${
+          isDarkMode ? 'bg-[#D4AF37]/15' : 'bg-[#D4AF37]/18'
         }`}
       />
     </div>

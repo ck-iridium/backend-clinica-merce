@@ -120,8 +120,8 @@ export function CounterLockScreen({
       {/* Centro: Pedestal Glassmorphism con Selección de Empleada o Numpad de PIN */}
       <div className={`relative z-10 max-w-md w-full mx-auto my-auto rounded-[2rem] p-6 sm:p-8 backdrop-blur-2xl border transition-all ${
         isDarkMode
-          ? 'bg-stone-900/65 border-white/10 shadow-[0_25px_70px_-15px_rgba(0,0,0,0.65)]'
-          : 'bg-white/78 border-white/80 shadow-[0_25px_70px_-15px_rgba(28,25,23,0.12)]'
+          ? 'bg-stone-900/75 border-white/15 shadow-[0_30px_80px_-15px_rgba(0,0,0,0.75)]'
+          : 'bg-white/85 border-white/90 shadow-[0_30px_80px_-15px_rgba(28,25,23,0.22)]'
       }`}>
         <div className="space-y-6">
           {!selectedOperator ? (

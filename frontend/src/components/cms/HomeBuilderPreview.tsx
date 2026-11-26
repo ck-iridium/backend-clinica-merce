@@ -1,8 +1,14 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Image as ImageIcon, ChevronLeft, ChevronRight, Sparkles, Layers, Clock, ArrowRight } from 'lucide-react';
-import { useLanguage } from '@/app/contexts/LanguageContext';
-import { LuxuryTreatmentPlaceholder } from '@/components/ui/LuxuryTreatmentPlaceholder';
+"use client";
+import React, { useMemo } from 'react';
 import { getFontVar } from '@/lib/fonts';
+import {
+  PreviewHeroSection,
+  PreviewFeaturedSection,
+  PreviewCategoriesCatalogSection,
+  PreviewAboutSection,
+  PreviewCategorySection,
+  PreviewCtaSection
+} from './preview';
 
 interface PreviewProps {
   formData: any;
@@ -13,117 +19,21 @@ interface PreviewProps {
   settings?: any;
 }
 
-const cleanTitle = (text: string) => {
-  if (!text) return '';
-  return text
-    .replace(/\s*\(?\s*con v[ií]deo\s*\)?/gi, '')
-    .replace(/\s+con v[ií]deo/gi, '')
-    .trim();
-};
-
-const parseSizeScale = (val: any, fallback: number = 100): number => {
-  if (typeof val === 'number') return val;
-  if (!val) return fallback;
-  if (val === 'small') return 80;
-  if (val === 'medium') return 90;
-  if (val === 'large') return 100;
-  if (val === 'xl') return 125;
-  const parsed = parseInt(val, 10);
-  return isNaN(parsed) ? fallback : parsed;
-};
-
-const getPriceStyleConfig = (style?: string) => {
-  switch (style) {
-    case 'outline':
-      return {
-        boxClass: 'bg-transparent border-2 border-white/40 rounded-2xl px-4 py-2 sm:px-5 sm:py-3 text-white backdrop-blur-xs',
-        prefixClass: 'text-white/80',
-        amountClass: 'text-white drop-shadow-md',
-        suffixClass: 'text-white/80'
-      };
-    case 'minimal':
-      return {
-        boxClass: 'bg-transparent border-0 p-0 text-white shadow-none',
-        prefixClass: 'text-white/80',
-        amountClass: 'text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]',
-        suffixClass: 'text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]'
-      };
-    case 'solid_white':
-      return {
-        boxClass: 'bg-white/95 dark:bg-stone-900/95 backdrop-blur-md border border-white/50 dark:border-stone-800 rounded-2xl px-4 py-2 sm:px-5 sm:py-3 text-stone-900 dark:text-white shadow-md',
-        prefixClass: 'text-stone-500 dark:text-stone-400',
-        amountClass: 'text-stone-900 dark:text-white',
-        suffixClass: 'text-stone-500 dark:text-stone-400'
-      };
-    case 'capsule_dark':
-    default:
-      return {
-        boxClass: 'backdrop-blur-xl bg-black/45 dark:bg-stone-950/60 border border-white/25 rounded-2xl px-4 py-2.5 sm:px-5 sm:py-3.5 text-white',
-        prefixClass: 'text-white/80',
-        amountClass: 'text-white drop-shadow-md',
-        suffixClass: 'text-white/80'
-      };
-  }
-};
-
-// Memoizar el componente para que no se re-renderice si sus props no cambian (fundamental para el drag & drop)
-const HomeBuilderPreview = React.memo(({ formData, categories, services = [], sections = [], viewportDevice = 'desktop', settings }: PreviewProps) => {
-  const { translate, t } = useLanguage();
-  
-  // Lista normalizada de diapositivas
-  const slides: any[] = useMemo(() => {
-    if (Array.isArray(formData?.hero_slides) && formData.hero_slides.length > 0) {
-      return formData.hero_slides;
-    }
-    return [formData];
-  }, [formData?.hero_slides, formData]);
-
-  const [previewSlideIdx, setPreviewSlideIdx] = useState<number>(0);
-
-  // Sincronizar automáticamente con la diapositiva seleccionada en el editor
-  useEffect(() => {
-    if (typeof formData?._activeSlideIndex === 'number') {
-      setPreviewSlideIdx(formData._activeSlideIndex);
-    }
-  }, [formData?._activeSlideIndex]);
-
-  const activeIndex = Math.min(Math.max(0, previewSlideIdx), Math.max(0, slides.length - 1));
-  const activeSlide = slides[activeIndex] || slides[0] || formData;
-
-  // Función auxiliar para forzar la ruta de la imagen si es relativa
-  const getImageUrl = (url: string) => {
-    if (!url) return '';
-    return url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL}${url}` : url;
-  };
-
-  // Helper para resolver propiedades responsivas según la resolución activa
-  const getResponsiveVal = (field: string, fallback: any) => {
-    const resp = activeSlide?.hero_responsive_config || formData?.hero_responsive_config;
-    if (viewportDevice === 'mobile') {
-      return resp?.mobile?.[field] 
-        ?? resp?.tablet?.[field] 
-        ?? activeSlide?.[field]
-        ?? formData?.[field] 
-        ?? fallback;
-    }
-    if (viewportDevice === 'tablet') {
-      return resp?.tablet?.[field] 
-        ?? activeSlide?.[field]
-        ?? formData?.[field] 
-        ?? fallback;
-    }
-    return activeSlide?.[field] ?? formData?.[field] ?? fallback;
-  };
-
-  const heroAlignment = getResponsiveVal('hero_alignment', activeSlide?.hero_alignment || formData?.hero_alignment || 'center');
-  const heroHorizontalAlignment = getResponsiveVal('hero_horizontal_alignment', activeSlide?.hero_horizontal_alignment || formData?.hero_horizontal_alignment || 'center');
-
+// Orquestador maestro de la vista previa en vivo del CMS
+const HomeBuilderPreview = React.memo(function HomeBuilderPreview({
+  formData,
+  categories = [],
+  services = [],
+  sections = [],
+  viewportDevice = 'desktop',
+  settings
+}: PreviewProps) {
   const previewHeadingFont = settings?.branding_font_headings || 'Playfair';
   const previewBodyFont = settings?.branding_font_body || 'Inter';
   const headingFontVal = getFontVar(previewHeadingFont, "var(--font-playfair-base), 'Playfair', serif");
   const bodyFontVal = getFontVar(previewBodyFont, 'var(--font-inter-base), sans-serif');
 
-  // Lista de secciones disponibles y su orden dinámico para la previsualización
+  // Secciones estáticas base de la portada
   const baseSections = useMemo(() => [
     { id: 'hero', type: 'hero' },
     { id: 'featured', type: 'featured' },
@@ -133,12 +43,14 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], se
   ], []);
 
   const hideIndividualSections = Boolean(formData?.categories_catalog_config?.hide_individual_sections);
+
   const activeCategories = useMemo(() => {
     return categories
       .filter((c: any) => c.is_active !== false)
       .sort((a: any, b: any) => (a.order_index ?? 0) - (b.order_index ?? 0));
   }, [categories]);
 
+  // Secciones dinámicas por cada categoría activa
   const catSections = useMemo(() => {
     return hideIndividualSections
       ? []
@@ -149,6 +61,7 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], se
         }));
   }, [hideIndividualSections, activeCategories, categories]);
 
+  // Ordenamiento dinámico reactivo sincronizado con formData o el estado del gestor de secciones
   const dynamicOrderedSections = useMemo(() => {
     const allAvailable = [...baseSections, ...catSections];
     let ordered: any[] = [];
@@ -183,1134 +96,6 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], se
     return [hero, ...middle];
   }, [sections, formData?.home_sections_order, baseSections, catSections]);
 
-  
-  const renderHeroSection = () => (
-    <section className={`relative w-full ${
-        viewportDevice === 'mobile' || viewportDevice === 'tablet'
-          ? 'h-full min-h-[580px] shrink-0 flex flex-col'
-          : 'min-h-[700px] lg:min-h-[760px] h-[calc(100vh-140px)] shrink-0 flex flex-col'
-      } ${
-        heroAlignment === 'top'
-          ? (viewportDevice === 'mobile' ? 'justify-start pt-20 pb-8' : viewportDevice === 'tablet' ? 'justify-start pt-24 pb-10' : 'justify-start pt-28 pb-12')
-          : heroAlignment === 'bottom'
-          ? (viewportDevice === 'mobile' ? 'justify-end pb-12 pt-8' : viewportDevice === 'tablet' ? 'justify-end pb-16 pt-10' : 'justify-end pb-20 pt-12')
-          : 'justify-center py-12'
-      } overflow-hidden`}>
-        
-        {/* Navbar Simulado para Vista Móvil y Tablet (con Logo Real de la Clínica) */}
-        {(viewportDevice === 'mobile' || viewportDevice === 'tablet') && (
-          <div className="absolute top-0 left-0 right-0 z-20 w-full px-6 pt-5 pb-3 flex items-center justify-between pointer-events-none select-none">
-            {settings?.logo_mobile_b64 || settings?.logo_app_b64 ? (
-              <img 
-                src={settings.logo_mobile_b64 || settings.logo_app_b64}
-                alt={settings?.clinic_name || 'Logo'}
-                className="h-7 max-h-7 w-auto max-w-[150px] object-contain brightness-0 invert drop-shadow-md"
-              />
-            ) : (
-              <span 
-                style={{ fontFamily: "var(--font-heading)" }}
-                className="text-base text-white font-serif font-medium tracking-wide drop-shadow-md"
-              >
-                {settings?.clinic_name || 'Clínica Mercè'}
-              </span>
-            )}
-            <div className="flex flex-col gap-1.5 items-end justify-center w-6 h-6">
-              <span className="w-5 h-0.5 bg-white/90 rounded-full drop-shadow"></span>
-              <span className="w-3.5 h-0.5 bg-white/90 rounded-full drop-shadow"></span>
-            </div>
-          </div>
-        )}
-
-        {/* Navbar Simulado para Vista Desktop (con Logo Real de la Clínica y Enlaces) */}
-        {viewportDevice === 'desktop' && (
-          <div className="absolute top-0 left-0 right-0 z-20 w-full px-10 pt-6 pb-4 flex items-center justify-between pointer-events-none select-none">
-            {settings?.logo_app_b64 || settings?.logo_mobile_b64 ? (
-              <img 
-                src={settings.logo_app_b64 || settings.logo_mobile_b64}
-                alt={settings?.clinic_name || 'Logo'}
-                className="h-8 max-h-8 w-auto max-w-[180px] object-contain brightness-0 invert drop-shadow-md"
-              />
-            ) : (
-              <span 
-                style={{ fontFamily: "var(--font-heading)" }}
-                className="text-lg text-white font-serif font-medium tracking-wide drop-shadow-md"
-              >
-                {settings?.clinic_name || 'Clínica Mercè'}
-              </span>
-            )}
-            <div className="flex items-center gap-7 text-xs text-white/90 font-medium drop-shadow">
-              <span>Tratamientos</span>
-              <span>Sobre Mí</span>
-              <span>Contacto</span>
-              <span className="px-4 py-2 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-bold tracking-wide">
-                Reservar Cita
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* Fondo Multimedia */}
-        {activeSlide?.hero_video_url ? (
-          <div className="absolute inset-0 z-0 bg-stone-900">
-            <video autoPlay loop muted playsInline className="w-full h-full object-cover">
-              <source src={getImageUrl(activeSlide.hero_video_url)} type="video/mp4" />
-            </video>
-            <div className="absolute inset-0 bg-gradient-to-t from-stone-900/60 via-stone-900/20 to-stone-900/60 mix-blend-multiply"></div>
-          </div>
-        ) : activeSlide?.hero_image_url ? (
-          <div className="absolute inset-0 z-0 bg-stone-900">
-            <img src={getImageUrl(activeSlide.hero_image_url)} alt="Hero" className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-stone-900/60 via-stone-900/20 to-stone-900/60 mix-blend-multiply"></div>
-          </div>
-        ) : (
-          <div className="absolute inset-0 z-0 bg-stone-900 text-stone-700 flex items-center justify-center font-bold text-xs uppercase tracking-[0.3em]">
-             {t('cms.no_background_defined')}
-          </div>
-        )}
-
-        {(() => {
-          const titleMaxWidth = getResponsiveVal('hero_title_max_width', activeSlide?.hero_title_max_width || formData?.hero_title_max_width || 100);
-          const isPriceActive = !!(activeSlide?.hero_price_enabled ?? formData?.hero_price_enabled) && (activeSlide?.hero_price_amount || activeSlide?.hero_price_prefix || formData?.hero_price_amount || formData?.hero_price_prefix);
-          const titleScale = parseSizeScale(getResponsiveVal('hero_title_size', activeSlide?.hero_title_size || formData?.hero_title_size || 100), 100) / 100;
-          const subtitleScale = parseSizeScale(getResponsiveVal('hero_subtitle_size', activeSlide?.hero_subtitle_size || formData?.hero_subtitle_size || 100), 100) / 100;
-          const priceScale = parseSizeScale(getResponsiveVal('hero_price_size', activeSlide?.hero_price_size || formData?.hero_price_size || 100), 100) / 100;
-          const priceOffsetY = getResponsiveVal('hero_price_offset_y', activeSlide?.hero_price_offset_y ?? formData?.hero_price_offset_y ?? 0);
-          const periodScale = parseSizeScale(getResponsiveVal('hero_price_period_size', activeSlide?.hero_price_period_size || formData?.hero_price_period_size || 100), 100) / 100;
-          const periodOffsetY = getResponsiveVal('hero_price_period_offset_y', activeSlide?.hero_price_period_offset_y ?? formData?.hero_price_period_offset_y ?? 0);
-          const priceConfig = getPriceStyleConfig(activeSlide?.hero_price_style || formData?.hero_price_style);
-
-          // Cálculo tipográfico adaptativo para el canvas de preview (sin usar vw que deformarían con el monitor del editor)
-          let titleFontSize = '';
-          let subtitleFontSize = '';
-          let priceAmountFontSize = '';
-          let priceSuffixFontSize = '';
-          let pricePeriodFontSize = '';
-
-          if (viewportDevice === 'mobile') {
-            titleFontSize = isPriceActive 
-              ? `${(2.2 * titleScale).toFixed(2)}rem` 
-              : `${(2.5 * titleScale).toFixed(2)}rem`;
-            subtitleFontSize = `${(1.15 * subtitleScale).toFixed(2)}rem`;
-            priceAmountFontSize = `${(3.4 * priceScale).toFixed(2)}rem`;
-            priceSuffixFontSize = `${(1.6 * priceScale).toFixed(2)}rem`;
-          } else if (viewportDevice === 'tablet') {
-            titleFontSize = isPriceActive 
-              ? `${(3.2 * titleScale).toFixed(2)}rem` 
-              : `${(3.8 * titleScale).toFixed(2)}rem`;
-            subtitleFontSize = `${(1.35 * subtitleScale).toFixed(2)}rem`;
-            priceAmountFontSize = `${(5.0 * priceScale).toFixed(2)}rem`;
-            priceSuffixFontSize = `${(2.2 * priceScale).toFixed(2)}rem`;
-          } else {
-            titleFontSize = isPriceActive 
-              ? `${(5.2 * titleScale).toFixed(2)}rem` 
-              : `${(6.0 * titleScale).toFixed(2)}rem`;
-            subtitleFontSize = `${(1.55 * subtitleScale).toFixed(2)}rem`;
-            priceAmountFontSize = `${(7.5 * priceScale).toFixed(2)}rem`;
-            priceSuffixFontSize = `${(3.2 * priceScale).toFixed(2)}rem`;
-          }
-
-          const getButtonStyle = (style?: string) => {
-            switch (style) {
-              case 'gold_solid':
-                return 'bg-[#d4af37] text-white border border-[#b8952b]';
-              case 'outline':
-                return 'bg-transparent border-2 border-white/90 text-white';
-              case 'solid_white':
-                return 'bg-white text-stone-900 border border-stone-200';
-              case 'glass':
-              default:
-                return 'bg-white/10 backdrop-blur-md border border-white/20 text-white';
-            }
-          };
-
-          const periodFontSize = viewportDevice === 'mobile'
-            ? `${(0.55 * periodScale).toFixed(2)}rem`
-            : viewportDevice === 'tablet'
-            ? `${(0.62 * periodScale).toFixed(2)}rem`
-            : `${(0.70 * periodScale).toFixed(2)}rem`;
-
-          const desdeMarginBottom = viewportDevice === 'mobile'
-            ? -6 + priceOffsetY
-            : viewportDevice === 'tablet'
-            ? -12 + priceOffsetY
-            : -20 + priceOffsetY;
-
-          const renderPriceCapsule = () => {
-            if (!isPriceActive) return null;
-            const prefixText = translate(activeSlide?.hero_price_prefix ?? formData?.hero_price_prefix, activeSlide?.translations || formData?.translations, 'hero_price_prefix');
-            const periodText = translate(activeSlide?.hero_price_period ?? formData?.hero_price_period, activeSlide?.translations || formData?.translations, 'hero_price_period');
-            const customLabelColor = activeSlide?.hero_price_label_color || formData?.hero_price_label_color || '';
-            const customAmountColor = activeSlide?.hero_price_amount_color || formData?.hero_price_amount_color || '';
-
-            return (
-              <div className={`relative group ${priceConfig.boxClass} select-none`}>
-                <div className="relative flex flex-col items-start text-left">
-                  {prefixText && (
-                    <span 
-                      style={{
-                        marginBottom: `${desdeMarginBottom}px`,
-                        ...(customLabelColor ? { color: customLabelColor } : {})
-                      }}
-                      className={`text-[10px] sm:text-xs md:text-sm font-black uppercase tracking-[0.22em] ${customLabelColor ? '' : priceConfig.prefixClass} block leading-none pl-0.5 select-none relative z-10 transition-all`}
-                    >
-                      {prefixText}
-                    </span>
-                  )}
-                  <div className="flex items-end gap-1.5 sm:gap-2.5">
-                    <span 
-                      style={{ 
-                        fontSize: priceAmountFontSize,
-                        fontFamily: "var(--font-heading)",
-                        ...(customAmountColor ? { color: customAmountColor } : {})
-                      }}
-                      className={`font-serif font-bold ${customAmountColor ? '' : priceConfig.amountClass} leading-[0.88] tracking-tight drop-shadow-md`}
-                    >
-                      {activeSlide?.hero_price_amount || formData?.hero_price_amount || '15'}
-                    </span>
-                    <div className="flex flex-col items-start justify-center leading-none pl-1">
-                      <span 
-                        style={{ 
-                          fontSize: priceSuffixFontSize,
-                          fontFamily: "var(--font-heading)",
-                          ...(customLabelColor ? { color: customLabelColor } : {})
-                        }}
-                        className={`font-serif font-bold ${customLabelColor ? '' : priceConfig.suffixClass} leading-none`}
-                      >
-                        {activeSlide?.hero_price_suffix || formData?.hero_price_suffix || '€'}
-                      </span>
-                      {periodText && (
-                        <span 
-                          style={{
-                            fontSize: periodFontSize,
-                            marginTop: `${3 + periodOffsetY}px`,
-                            ...(customLabelColor ? { color: customLabelColor } : {})
-                          }}
-                          className={`font-black uppercase tracking-[0.18em] ${customLabelColor ? '' : priceConfig.suffixClass} opacity-90 leading-tight block transition-all`}
-                        >
-                          {periodText}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          };
-
-          return (
-            <div className={`relative z-10 w-full ${
-              viewportDevice === 'mobile' 
-                ? 'px-5'
-                : viewportDevice === 'tablet'
-                ? 'px-8'
-                : `px-0 ${
-                    (activeSlide?.hero_content_fullwidth ?? formData?.hero_content_fullwidth)
-                      ? `max-w-7xl ${heroHorizontalAlignment === 'left' ? 'text-left ml-0 mr-auto' : heroHorizontalAlignment === 'right' ? 'text-right mr-0 ml-auto' : 'text-center mx-auto'}`
-                      : `max-w-7xl mx-auto ${heroHorizontalAlignment === 'left' ? 'text-left' : heroHorizontalAlignment === 'right' ? 'text-right' : 'text-center'}`
-                  }`
-            }`}>
-              <div className={`w-full flex flex-col ${
-                heroHorizontalAlignment === 'center' ? 'items-center' :
-                heroHorizontalAlignment === 'right' ? 'items-end' : 'items-start'
-              }`}>
-                {/* Contenedor Grid con Distribución Especial: Móvil (H1 100% + Subtítulo/Botón | Precio) vs Desktop/Tablet (3 filas | Precio) */}
-                <div 
-                  style={{ '--hero-title-max-w': `${titleMaxWidth}%` } as React.CSSProperties}
-                  className={`w-full ${
-                    isPriceActive
-                      ? `grid grid-cols-[1fr_auto] gap-x-3.5 sm:gap-x-6 md:gap-x-8 gap-y-2 sm:gap-y-3.5 items-center ${
-                          viewportDevice === 'mobile'
-                            ? `[grid-template-areas:'title_title'_'subtitle_price'_'button_price']`
-                            : `[grid-template-areas:'title_price'_'subtitle_price'_'button_price']`
-                        } ${
-                          (activeSlide?.hero_content_fullwidth ?? formData?.hero_content_fullwidth) ? '' : 'sm:max-w-[var(--hero-title-max-w)]'
-                        }`
-                      : `flex flex-col gap-2.5 sm:gap-4 ${
-                          (activeSlide?.hero_content_fullwidth ?? formData?.hero_content_fullwidth) ? '' : 'sm:max-w-[var(--hero-title-max-w)]'
-                        }`
-                  } ${
-                    heroHorizontalAlignment === 'center' ? 'text-center' :
-                    heroHorizontalAlignment === 'right' ? 'text-right' : 'text-left'
-                  }`}
-                >
-                  {/* Título H1 (Fila 1 completa al 100% de ancho en móvil) */}
-                  <div className="[grid-area:title] min-w-0">
-                    <h1 
-                      style={{ 
-                        fontSize: titleFontSize,
-                        fontFamily: "var(--font-heading)"
-                      }}
-                      className={`font-serif font-extrabold text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] leading-[1.08] tracking-tight ${
-                        heroHorizontalAlignment === 'center' ? 'mx-auto' : ''
-                      }`}
-                    >
-                      {cleanTitle(translate(activeSlide?.hero_title || formData?.hero_title || 'Título Principal', activeSlide?.translations || formData?.translations, 'hero_title'))}
-                    </h1>
-                  </div>
-
-                  {/* Subtítulo (Fila 2 en móvil, inmediatamente debajo del H1 a la izquierda) */}
-                  <div className="[grid-area:subtitle] min-w-0">
-                    <p 
-                      style={{ fontSize: subtitleFontSize }}
-                      className={`text-white/90 font-medium font-sans drop-shadow-md leading-relaxed ${
-                        heroHorizontalAlignment === 'center' ? 'max-w-xl mx-auto' : 'max-w-xl'
-                      }`}
-                    >
-                      {translate(activeSlide?.hero_subtitle || formData?.hero_subtitle || 'Subtítulo descriptivo que acompaña a la imagen principal.', activeSlide?.translations || formData?.translations, 'hero_subtitle')}
-                    </p>
-                  </div>
-
-                  {/* Botón de Acción CTA (Fila 3 en móvil, debajo del subtítulo en la columna izquierda) */}
-                  {(activeSlide?.hero_show_button !== false && formData?.hero_show_button !== false) && (
-                    <div className={`[grid-area:button] pt-1 md:pt-2 w-full ${
-                      heroHorizontalAlignment === 'center' ? 'flex justify-center' :
-                      heroHorizontalAlignment === 'right' ? 'flex justify-end' : 'flex justify-start'
-                    }`}>
-                      <div className={`inline-flex items-center justify-center px-6 py-2.5 sm:px-8 sm:py-3 rounded-full font-bold text-xs sm:text-sm transition-all duration-300 shadow-md text-center whitespace-nowrap w-fit ${getButtonStyle(activeSlide?.hero_button_style || formData?.hero_button_style)}`}>
-                        <span>{translate(activeSlide?.hero_button_text || formData?.hero_button_text || 'Reservar Ahora', activeSlide?.translations || formData?.translations, 'hero_button_text')}</span>
-                        <span className="ml-2">→</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Bloque de Precio (Columna derecha centrado verticalmente frente a subtítulo + botón en móvil, o frente a H1 + subtítulo + botón en desktop) */}
-                  {isPriceActive && (
-                    <div className="[grid-area:price] self-center shrink-0">
-                      {renderPriceCapsule()}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          );
-        })()}
-
-        {/* ─── NAVEGACIÓN DEL CARRUSEL EN PREVIEW (Solo si hay múltiples diapositivas) ─── */}
-        {slides.length > 1 && (
-          <>
-            {formData?.hero_slider_show_arrows !== false && viewportDevice !== 'mobile' && (
-              <div className="hidden md:flex absolute inset-y-0 inset-x-2 sm:inset-x-4 items-center justify-between pointer-events-none z-30">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setPreviewSlideIdx((prev) => (prev - 1 + slides.length) % slides.length);
-                  }}
-                  className="pointer-events-auto p-2 rounded-full bg-stone-900/50 hover:bg-stone-900/80 backdrop-blur-md border border-white/20 text-white transition-all hover:scale-105 shadow-lg"
-                  title="Anterior diapositiva"
-                >
-                  <ChevronLeft size={18} />
-                </button>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setPreviewSlideIdx((prev) => (prev + 1) % slides.length);
-                  }}
-                  className="pointer-events-auto p-2 rounded-full bg-stone-900/50 hover:bg-stone-900/80 backdrop-blur-md border border-white/20 text-white transition-all hover:scale-105 shadow-lg"
-                  title="Siguiente diapositiva"
-                >
-                  <ChevronRight size={18} />
-                </button>
-              </div>
-            )}
-
-            {formData?.hero_slider_show_dots !== false && (
-              <div className="absolute bottom-4 left-0 right-0 z-30 flex items-center justify-center gap-2 pointer-events-auto">
-                {slides.map((_: any, i: number) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => setPreviewSlideIdx(i)}
-                    className={`transition-all duration-300 rounded-full ${
-                      i === activeIndex 
-                        ? 'w-6 h-2 bg-[#d4af37] shadow-sm' 
-                        : 'w-2 h-2 bg-white/50 hover:bg-white/80'
-                    }`}
-                    title={`Diapositiva ${i + 1}`}
-                  />
-                ))}
-              </div>
-            )}
-          </>
-        )}
-      </section>
-  );
-
-  const renderFeaturedServicesSection = () => {
-    if (!formData?.featured_services_config?.enabled) return null;
-    const config = formData.featured_services_config;
-    const title = cleanTitle(translate(config.title || 'Tratamientos Estrella', formData?.translations, 'featured_title'));
-    const subtitle = translate(config.subtitle || 'Nuestra selección más demandada para una experiencia de cuidado y bienestar excepcional.', formData?.translations, 'featured_subtitle');
-    const layout = (config.layout_style === 'grid' || config.layout_style === 'slider') ? config.layout_style : 'bento';
-    const showPrice = config.show_price !== false;
-    const showDuration = config.show_duration !== false;
-
-    // Obtener IDs seleccionados con trim y casing seguro
-    const rawIds = Array.isArray(config.service_ids) && config.service_ids.length > 0
-      ? config.service_ids
-      : (Array.isArray(config.selected_services_ids) ? config.selected_services_ids : []);
-    const targetIds = rawIds.map((id: any) => String(id).trim().toLowerCase());
-
-    let featured = targetIds.length > 0
-      ? targetIds
-          .map((id: string) => services.find((s: any) => String(s?.id || '').trim().toLowerCase() === id))
-          .filter(Boolean)
-      : services.slice(0, 4);
-
-    if (featured.length === 0 && services.length > 0) {
-      featured = services.slice(0, 4);
-    }
-
-    // Fallback garantizado para vista previa si la clínica aún no tiene tratamientos creados
-    if (featured.length === 0) {
-      featured = [
-        {
-          id: 'mock-1',
-          name: 'Corte de Autor & Peinado',
-          description: 'Diagnóstico capilar personalizado y estilismo de vanguardia adaptado a tus facciones.',
-          price: '35.00',
-          duration_minutes: 45,
-          image_url: null,
-          is_active: true
-        },
-        {
-          id: 'mock-2',
-          name: 'Tratamiento Hidratación Profunda',
-          description: 'Nutrición intensa con activos botánicos para devolver el brillo y sedosidad natural.',
-          price: '55.00',
-          duration_minutes: 60,
-          image_url: null,
-          is_active: true
-        },
-        {
-          id: 'mock-3',
-          name: 'Coloración & Balayage Sublime',
-          description: 'Técnica artesanal de iluminación natural con reflejos dorados y matices cálidos.',
-          price: '85.00',
-          duration_minutes: 90,
-          image_url: null,
-          is_active: true
-        }
-      ];
-    }
-
-    return (
-      <section className="w-full py-12 md:py-16 bg-[#FAF9F6] border-b border-stone-100 select-none">
-        {/* Cabecera del Bloque */}
-        <div className="px-8 mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#d4af37]/10 border border-[#d4af37]/20 text-[#b08e23] text-[10px] font-semibold uppercase tracking-wider mb-2.5">
-              <Sparkles className="w-3 h-3 text-[#d4af37]" />
-              <span>Selección Exclusiva</span>
-            </div>
-            <h2 className="text-2xl md:text-4xl font-serif font-extrabold text-stone-900 tracking-tight leading-tight">
-              {title}
-            </h2>
-            {subtitle && (
-              <p className="text-stone-500 text-xs md:text-sm mt-2 font-light leading-relaxed max-w-xl">
-                {subtitle}
-              </p>
-            )}
-          </div>
-
-          <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-stone-600 shrink-0">
-            <span>Ver toda la carta</span>
-            <ArrowRight className="w-3.5 h-3.5 text-[#d4af37]" />
-          </div>
-        </div>
-
-        {/* ─── DISEÑO 1: BENTO LUXURY ─── */}
-        {layout === 'bento' && (
-          <div className={
-            viewportDevice === 'mobile'
-              ? 'px-6 flex gap-4 overflow-x-auto pb-4 hide-scroll pointer-events-none opacity-95 snap-x snap-mandatory'
-              : 'px-8 grid grid-cols-12 gap-5 pointer-events-none opacity-95'
-          }>
-            {featured.map((svc: any, idx: number) => {
-              const isLead = idx === 0;
-              const isSecond = idx === 1;
-              let colSpan = 'col-span-12 md:col-span-4';
-              if (featured.length === 1) {
-                colSpan = 'col-span-12';
-              } else if (featured.length === 2) {
-                colSpan = 'col-span-12 md:col-span-6';
-              } else if (isLead) {
-                colSpan = 'col-span-12 md:col-span-7';
-              } else if (isSecond) {
-                colSpan = 'col-span-12 md:col-span-5';
-              }
-
-              const heightClass = viewportDevice === 'mobile'
-                ? 'w-[280px] h-[340px] shrink-0 snap-start'
-                : (isLead || isSecond) && featured.length > 2
-                ? `${colSpan} h-[380px] md:h-[440px]`
-                : `${colSpan} h-[340px] md:h-[380px]`;
-
-              return (
-                <div
-                  key={svc.id}
-                  className={`${heightClass} group relative rounded-3xl overflow-hidden shadow-sm border border-stone-200/70 flex flex-col justify-end p-6 md:p-8 transition-all`}
-                >
-                  {/* Imagen de fondo con LuxuryTreatmentPlaceholder */}
-                  <div className="absolute inset-0 bg-stone-900 z-0 overflow-hidden">
-                    {svc.image_url ? (
-                      <img
-                        src={getImageUrl(svc.image_url)}
-                        alt={cleanTitle(translate(svc.name, svc.translations, 'name'))}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <LuxuryTreatmentPlaceholder 
-                        mode="auto" 
-                        className="w-full h-full object-cover" 
-                        alt={cleanTitle(translate(svc.name, svc.translations, 'name'))} 
-                      />
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/10 z-10" />
-                  </div>
-
-                  {/* Contenido en Overlay */}
-                  <div className="relative z-20 text-white">
-                    <div className="flex items-center gap-2 mb-2 flex-wrap">
-                      <span className="text-[9px] font-black uppercase tracking-wider text-[#d4af37] bg-black/40 px-2.5 py-0.5 rounded-full border border-white/10 backdrop-blur-sm">
-                        {isLead ? 'Tratamiento Estrella' : 'Destacado'}
-                      </span>
-                      {showDuration && svc.duration_minutes && (
-                        <span className="text-white/80 text-[11px] flex items-center gap-1 font-medium bg-black/30 px-2 py-0.5 rounded-full backdrop-blur-sm">
-                          <Clock className="w-3 h-3 text-[#d4af37]" />
-                          {svc.duration_minutes} min
-                        </span>
-                      )}
-                    </div>
-
-                    <h3 className="text-xl md:text-2xl font-serif font-bold text-white mb-1.5 leading-snug drop-shadow-sm truncate">
-                      {cleanTitle(translate(svc.name, svc.translations, 'name'))}
-                    </h3>
-
-                    {svc.description && (
-                      <p className="text-white/80 text-xs line-clamp-2 font-light leading-relaxed mb-3">
-                        {translate(svc.description, svc.translations, 'description')}
-                      </p>
-                    )}
-
-                    <div className="flex items-center justify-between pt-3 border-t border-white/15">
-                      {showPrice ? (
-                        <div>
-                          <span className="text-[9px] uppercase tracking-wider text-white/60 block leading-tight">Precio</span>
-                          <span className="text-base md:text-lg font-bold text-white">
-                            {svc.price ? `${parseFloat(svc.price).toFixed(2)} €` : 'Consultar'}
-                          </span>
-                        </div>
-                      ) : <div />}
-
-                      <div className="flex items-center gap-2">
-                        <span className="px-3.5 py-1.5 rounded-xl bg-white/15 text-white text-xs font-semibold backdrop-blur-md">
-                          Ver Detalle
-                        </span>
-                        <span className="px-3.5 py-1.5 rounded-xl bg-[#d4af37] text-stone-950 text-xs font-bold shadow-sm">
-                          Reservar
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* ─── DISEÑO 2: GRID LIMPIO ─── */}
-        {layout === 'grid' && (
-          <div className={
-            viewportDevice === 'mobile'
-              ? 'px-6 flex gap-4 overflow-x-auto pb-4 hide-scroll pointer-events-none opacity-95 snap-x snap-mandatory'
-              : 'px-8 grid grid-cols-2 md:grid-cols-3 gap-5 pointer-events-none opacity-95'
-          }>
-            {featured.map((svc: any) => (
-              <div
-                key={svc.id}
-                className={
-                  viewportDevice === 'mobile'
-                    ? 'w-[280px] shrink-0 snap-start bg-white rounded-3xl overflow-hidden shadow-sm border border-stone-200/70 flex flex-col justify-between'
-                    : 'bg-white rounded-3xl overflow-hidden shadow-sm border border-stone-200/70 flex flex-col justify-between'
-                }
-              >
-                <div className="relative aspect-[16/10] overflow-hidden bg-stone-900">
-                  {svc.image_url ? (
-                    <img src={getImageUrl(svc.image_url)} alt={svc.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <LuxuryTreatmentPlaceholder mode="auto" className="w-full h-full object-cover" alt={svc.name} />
-                  )}
-                  {showDuration && svc.duration_minutes && (
-                    <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-black/60 text-white text-[11px] font-medium backdrop-blur-md flex items-center gap-1">
-                      <Clock className="w-3 h-3 text-[#d4af37]" />
-                      <span>{svc.duration_minutes} min</span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="p-5 flex-1 flex flex-col justify-between">
-                  <div>
-                    <h3 className="text-lg font-serif font-bold text-stone-900 mb-1.5 truncate">
-                      {cleanTitle(translate(svc.name, svc.translations, 'name'))}
-                    </h3>
-                    {svc.description && (
-                      <p className="text-xs text-stone-500 line-clamp-2 leading-relaxed font-light mb-3">
-                        {translate(svc.description, svc.translations, 'description')}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="pt-3 border-t border-stone-100 flex items-center justify-between">
-                    {showPrice ? (
-                      <div>
-                        <span className="text-[9px] text-stone-400 block uppercase">Precio</span>
-                        <span className="text-base font-bold text-stone-900">
-                          {svc.price ? `${parseFloat(svc.price).toFixed(2)} €` : 'Consultar'}
-                        </span>
-                      </div>
-                    ) : <div />}
-
-                    <span className="px-3.5 py-1.5 rounded-xl bg-stone-900 text-white text-xs font-semibold">
-                      Reservar
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* ─── DISEÑO 3: CARRUSEL / SLIDER ─── */}
-        {layout === 'slider' && (
-          <div className="px-8 flex gap-4 overflow-x-auto pb-4 hide-scroll pointer-events-none opacity-95 snap-x snap-mandatory">
-            {featured.map((svc: any) => (
-              <div
-                key={svc.id}
-                className="w-[280px] shrink-0 snap-start bg-white rounded-3xl overflow-hidden shadow-sm border border-stone-200/60 flex flex-col justify-between"
-              >
-                <div className="relative aspect-[4/3] overflow-hidden bg-stone-900">
-                  {svc.image_url ? (
-                    <img src={getImageUrl(svc.image_url)} alt={svc.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <LuxuryTreatmentPlaceholder mode="auto" className="w-full h-full object-cover" alt={svc.name} />
-                  )}
-                  {showDuration && svc.duration_minutes && (
-                    <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-black/60 text-white text-[10px] font-medium backdrop-blur-md">
-                      {svc.duration_minutes} min
-                    </div>
-                  )}
-                </div>
-
-                <div className="p-4 flex-1 flex flex-col justify-between">
-                  <h3 className="text-base font-serif font-bold text-stone-900 mb-1 truncate">
-                    {cleanTitle(translate(svc.name, svc.translations, 'name'))}
-                  </h3>
-                  <div className="pt-2 border-t border-stone-100 flex items-center justify-between">
-                    {showPrice ? (
-                      <span className="text-sm font-bold text-stone-900">
-                        {svc.price ? `${parseFloat(svc.price).toFixed(2)} €` : 'Consultar'}
-                      </span>
-                    ) : <div />}
-                    <span className="px-3 py-1 rounded-xl bg-stone-900 text-white text-[11px] font-semibold">
-                      Ver Ficha
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-    );
-  };
-
-  const renderCategoriesCatalogSection = () => {
-    if (!formData?.categories_catalog_config?.enabled) return null;
-    const config = formData.categories_catalog_config;
-    const title = cleanTitle(translate(config.title || 'Nuestras Especialidades', formData?.translations, 'catalog_title'));
-    const subtitle = translate(config.subtitle || 'Explora todas las áreas de cuidado y tratamientos diseñados para tu bienestar.', formData?.translations, 'catalog_subtitle');
-    const layout = config.layout_style === 'grid' ? 'grid' : 'bento';
-    const showCount = config.show_services_count !== false;
-
-    let activeCats = categories
-      .filter((c: any) => c.is_active !== false)
-      .sort((a: any, b: any) => (a.order_index ?? 0) - (b.order_index ?? 0));
-
-    if (activeCats.length === 0 && categories.length > 0) {
-      activeCats = categories.slice(0, 4);
-    }
-
-    if (activeCats.length === 0) {
-      activeCats = [
-        {
-          id: 'mock-cat-1',
-          name: 'Peluquería & Estilismo',
-          description: 'Cortes vanguardistas, peinados de autor y estilismo profesional de máxima precisión.',
-          image_url: null,
-          slug: 'peluqueria-estilismo'
-        },
-        {
-          id: 'mock-cat-2',
-          name: 'Tratamientos Capilares',
-          description: 'Hidratación profunda, nutrición botánica y reconstrucción para un cabello sublime.',
-          image_url: null,
-          slug: 'tratamientos-capilares'
-        },
-        {
-          id: 'mock-cat-3',
-          name: 'Coloración & Mechas',
-          description: 'Técnicas de balayage, iluminación natural y matices cálidos de máxima fijación.',
-          image_url: null,
-          slug: 'coloracion-mechas'
-        }
-      ];
-    }
-
-    const getCount = (catId: string) => {
-      return services.filter((s: any) => String(s?.category_id || '').trim() === String(catId || '').trim() && s.is_active !== false).length;
-    };
-
-    return (
-      <section className="w-full py-12 md:py-16 bg-[#F7F7F5] border-b border-stone-200/60 select-none">
-        {/* Cabecera del Bloque */}
-        <div className="px-8 mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#d4af37]/10 border border-[#d4af37]/20 text-[#b08e23] text-[10px] font-semibold uppercase tracking-wider mb-2.5">
-              <Layers className="w-3 h-3 text-[#d4af37]" />
-              <span>Directorio de Servicios</span>
-            </div>
-            <h2 className="text-2xl md:text-4xl font-serif font-extrabold text-stone-900 tracking-tight leading-tight">
-              {title}
-            </h2>
-            {subtitle && (
-              <p className="text-stone-500 text-xs md:text-sm mt-2 font-light leading-relaxed max-w-xl">
-                {subtitle}
-              </p>
-            )}
-          </div>
-
-          <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-stone-600 shrink-0">
-            <span>Ver menú completo</span>
-            <ArrowRight className="w-3.5 h-3.5 text-[#d4af37]" />
-          </div>
-        </div>
-
-        {/* ─── DISEÑO 1: BENTO LUXURY ─── */}
-        {layout === 'bento' ? (
-          <div className={
-            viewportDevice === 'mobile'
-              ? 'px-6 flex gap-4 overflow-x-auto pb-4 hide-scroll pointer-events-none opacity-95 snap-x snap-mandatory'
-              : 'px-8 grid grid-cols-12 gap-5 pointer-events-none opacity-95'
-          }>
-            {activeCats.map((cat: any, idx: number) => {
-              let colSpan = 'col-span-12 md:col-span-4';
-              if (activeCats.length === 1) {
-                colSpan = 'col-span-12';
-              } else if (activeCats.length === 2) {
-                colSpan = 'col-span-12 md:col-span-6';
-              } else if (idx === 0) {
-                colSpan = activeCats.length > 2 ? 'col-span-12 md:col-span-8' : 'col-span-12 md:col-span-6';
-              } else if (idx === 1 && activeCats.length === 2) {
-                colSpan = 'col-span-12 md:col-span-6';
-              } else if (idx === 1 && activeCats.length > 2) {
-                colSpan = 'col-span-12 md:col-span-4';
-              } else if (idx === 2 && activeCats.length === 3) {
-                colSpan = 'col-span-12';
-              } else if (idx % 5 === 2 || idx % 5 === 3) {
-                colSpan = 'col-span-12 md:col-span-6';
-              }
-
-              const heightClass = viewportDevice === 'mobile'
-                ? 'w-[280px] h-[340px] shrink-0 snap-start'
-                : 'h-[340px] md:h-[400px]';
-
-              const count = getCount(cat.id);
-
-              return (
-                <div
-                  key={cat.id}
-                  className={`${colSpan} ${heightClass} group relative rounded-3xl overflow-hidden shadow-sm border border-stone-200/70 flex flex-col justify-end p-6 md:p-8 transition-all`}
-                >
-                  {/* Fondo con LuxuryTreatmentPlaceholder */}
-                  <div className="absolute inset-0 bg-stone-900 z-0 overflow-hidden">
-                    {cat.image_url ? (
-                      <img
-                        src={getImageUrl(cat.image_url)}
-                        alt={cleanTitle(translate(cat.name, cat.translations, 'name'))}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <LuxuryTreatmentPlaceholder 
-                        mode="auto" 
-                        className="w-full h-full object-cover" 
-                        alt={cleanTitle(translate(cat.name, cat.translations, 'name'))} 
-                      />
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/15 z-10" />
-                  </div>
-
-                  {/* Contenido */}
-                  <div className="relative z-20 text-white">
-                    <div className="flex items-center justify-between gap-4 mb-2">
-                      <span className="text-[9px] font-black uppercase tracking-wider text-[#d4af37] bg-black/40 px-2.5 py-0.5 rounded-full border border-white/10 backdrop-blur-sm">
-                        Especialidad
-                      </span>
-                      {showCount && count > 0 && (
-                        <span className="text-white/80 text-xs font-medium bg-black/30 px-2.5 py-0.5 rounded-full backdrop-blur-sm">
-                          {count} {count === 1 ? 'tratamiento' : 'tratamientos'}
-                        </span>
-                      )}
-                    </div>
-
-                    <h3 className="text-xl md:text-2xl font-serif font-bold text-white mb-1.5 leading-tight drop-shadow-sm truncate">
-                      {cleanTitle(translate(cat.name, cat.translations, 'name'))}
-                    </h3>
-
-                    {cat.description && (
-                      <p className="text-white/80 text-xs line-clamp-2 font-light leading-relaxed mb-3 max-w-xl">
-                        {translate(cat.description, cat.translations, 'description')}
-                      </p>
-                    )}
-
-                    <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#d4af37] pt-2 border-t border-white/15 w-full">
-                      <span>Explorar categoría</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          /* ─── DISEÑO 2: GRID UNIFORME ─── */
-          <div className={
-            viewportDevice === 'mobile'
-              ? 'px-6 flex gap-4 overflow-x-auto pb-4 hide-scroll pointer-events-none opacity-95 snap-x snap-mandatory'
-              : 'px-8 grid grid-cols-2 md:grid-cols-3 gap-5 pointer-events-none opacity-95'
-          }>
-            {activeCats.map((cat: any) => {
-              const count = getCount(cat.id);
-              return (
-                <div
-                  key={cat.id}
-                  className={
-                    viewportDevice === 'mobile'
-                      ? 'w-[280px] h-[320px] shrink-0 snap-start group relative rounded-3xl overflow-hidden shadow-sm border border-stone-200/70 flex flex-col justify-end p-6'
-                      : 'h-[340px] md:h-[360px] group relative rounded-3xl overflow-hidden shadow-sm border border-stone-200/70 flex flex-col justify-end p-6 md:p-8'
-                  }
-                >
-                  <div className="absolute inset-0 bg-stone-900 z-0 overflow-hidden">
-                    {cat.image_url ? (
-                      <img
-                        src={getImageUrl(cat.image_url)}
-                        alt={cleanTitle(translate(cat.name, cat.translations, 'name'))}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <LuxuryTreatmentPlaceholder 
-                        mode="auto" 
-                        className="w-full h-full object-cover" 
-                        alt={cleanTitle(translate(cat.name, cat.translations, 'name'))} 
-                      />
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/15 z-10" />
-                  </div>
-
-                  <div className="relative z-20 text-white">
-                    {showCount && count > 0 && (
-                      <span className="inline-block text-white/80 text-[10px] font-medium bg-black/40 px-2 py-0.5 rounded-full backdrop-blur-sm mb-1.5">
-                        {count} tratamientos
-                      </span>
-                    )}
-
-                    <h3 className="text-xl font-serif font-bold text-white mb-1.5 leading-tight truncate">
-                      {cleanTitle(translate(cat.name, cat.translations, 'name'))}
-                    </h3>
-
-                    {cat.description && (
-                      <p className="text-white/80 text-xs line-clamp-2 font-light leading-relaxed mb-3">
-                        {translate(cat.description, cat.translations, 'description')}
-                      </p>
-                    )}
-
-                    <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#d4af37] pt-2 border-t border-white/15 w-full">
-                      <span>Ver tratamientos</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </section>
-    );
-  };
-
-  const renderAboutSection = () => (
-    <section className="py-12 md:py-16 bg-white flex items-center">
-        {viewportDevice === 'mobile' ? (
-          <div className="px-6 flex flex-col items-center text-center w-full space-y-4">
-            <h2 className="text-2xl font-serif font-extrabold text-stone-900 leading-tight">
-              {cleanTitle(translate(formData?.about_title || 'Sobre Nosotros', formData?.translations, 'about_title'))}
-            </h2>
-
-            {formData?.about_image_url ? (
-              <div className="rounded-[2.5rem] overflow-hidden shadow-2xl aspect-[4/5] w-full max-w-[280px] mx-auto relative group shrink-0">
-                <img src={getImageUrl(formData.about_image_url)} alt="Sobre Mí" className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-stone-900/5 mix-blend-multiply"></div>
-              </div>
-            ) : (
-              <div className="rounded-[2.5rem] bg-stone-50 aspect-[4/5] w-full max-w-[280px] mx-auto flex flex-col items-center justify-center text-stone-300 border-2 border-dashed border-stone-200">
-                <ImageIcon size={40} strokeWidth={1} />
-                <p className="font-bold text-[9px] uppercase tracking-widest mt-3">
-                  {t('cms.section_image')}
-                </p>
-              </div>
-            )}
-
-            <div className="text-xs text-stone-600 leading-relaxed whitespace-pre-wrap font-medium max-w-sm px-2">
-              {translate(formData?.about_text || 'Texto introductorio sobre la filosofía de la clínica...', formData?.translations, 'about_text')}
-            </div>
-
-            {formData?.about_show_button && (
-              <div className="pt-2">
-                <div className="inline-block border border-stone-200 text-stone-800 px-7 py-2.5 rounded-full font-bold text-[11px] uppercase tracking-widest">
-                  {translate(formData?.about_button_text || 'Saber Más', formData?.translations, 'about_button_text')}
-                </div>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className={`px-12 grid grid-cols-1 md:grid-cols-2 gap-12 items-center w-full ${formData?.about_layout === 'left' ? 'md:flex-row-reverse' : ''}`}>
-            <div className={`space-y-6 ${formData?.about_layout === 'left' ? 'order-2' : 'order-1'}`}>
-              <h2 className="text-3xl font-serif font-extrabold text-stone-900 leading-tight">
-                {cleanTitle(translate(formData?.about_title || 'Sobre Nosotros', formData?.translations, 'about_title'))}
-              </h2>
-              <div className="text-sm text-stone-500 leading-relaxed whitespace-pre-wrap font-medium">
-                {translate(formData?.about_text || 'Texto introductorio sobre la filosofía de la clínica...', formData?.translations, 'about_text')}
-              </div>
-              {formData?.about_show_button && (
-                <div className="pt-2">
-                  <div className="inline-block border border-stone-200 text-stone-800 px-8 py-3 rounded-full font-bold text-xs uppercase tracking-widest">
-                    {translate(formData?.about_button_text || 'Saber Más', formData?.translations, 'about_button_text')}
-                  </div>
-                </div>
-              )}
-            </div>
-            <div className={`${formData?.about_layout === 'left' ? 'order-1' : 'order-2'}`}>
-              {formData?.about_image_url ? (
-                <div className="rounded-3xl overflow-hidden shadow-luxury aspect-[4/5] w-full max-w-[400px] mx-auto relative group transition-transform hover:scale-[1.02] duration-500">
-                  <img src={getImageUrl(formData.about_image_url)} alt="Sobre Mí" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-stone-900/5 mix-blend-multiply"></div>
-                </div>
-              ) : (
-                <div className="rounded-3xl bg-stone-50 aspect-[4/5] w-full max-w-[400px] mx-auto flex flex-col items-center justify-center text-stone-300 border-2 border-dashed border-stone-200">
-                  <ImageIcon size={48} strokeWidth={1} />
-                  <p className="font-bold text-[10px] uppercase tracking-widest mt-4">
-                    {t('cms.section_image')}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </section>
-  );
-
-  const renderCategorySection = (category: any, index: number) => {
-    const isEven = index % 2 === 0;
-    const layoutStyle = category.layout_preferences?.layout_style || 'cards_slider';
-    const categoryServices = services.filter((s: any) => String(s?.category_id || '').trim() === String(category.id || '').trim());
-    return (
-      <section key={category.id} className={`w-full py-12 ${isEven ? 'bg-white' : 'bg-[#F7F7F5]'}`}>
-            <div className="px-8 mb-6 flex justify-between items-end">
-              <div>
-                <h2 className="text-2xl md:text-3xl font-serif font-extrabold text-stone-900 mb-2">
-                  {cleanTitle(translate(category.name, category.translations, 'name'))}
-                </h2>
-                <p className="text-xs md:text-sm text-stone-500">
-                  {translate(category.description || 'Descubre nuestros tratamientos.', category.translations, 'description')}
-                </p>
-              </div>
-            </div>
-            
-            <div className="w-full">
-              {layoutStyle === 'cards_slider' && (
-                <div className="px-8 flex gap-4 overflow-x-auto pb-4 pointer-events-none opacity-90 hide-scroll">
-                  {categoryServices.map((service: any) => (
-                    <div key={service.id} className="w-[180px] shrink-0 aspect-[3/4] bg-stone-100 rounded-2xl overflow-hidden shadow-sm border border-stone-100 relative group">
-                      {service.image_url ? (
-                        <img 
-                          src={getImageUrl(service.image_url)} 
-                          alt={cleanTitle(translate(service.name, service.translations, 'name'))} 
-                          className="w-full h-full object-cover" 
-                        />
-                      ) : (
-                        <LuxuryTreatmentPlaceholder mode="auto" className="w-full h-full object-cover" />
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
-                      <div className="absolute bottom-4 left-4 right-4">
-                        <p className="text-[11px] font-bold text-white truncate leading-tight uppercase tracking-wide">
-                          {cleanTitle(translate(service.name, service.translations, 'name'))}
-                        </p>
-                        <p className="text-[9px] text-white/60 font-medium">{service.duration_minutes} min</p>
-                      </div>
-                    </div>
-                  ))}
-                  
-                  {categoryServices.length === 0 && (
-                    <>
-                      {[1, 2, 3].map(i => (
-                        <div key={i} className="w-[180px] shrink-0 aspect-[3/4] bg-stone-50 rounded-2xl border border-stone-100 flex items-center justify-center p-4">
-                           <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-200">
-                             {t('cms.treatment').replace('{i}', i.toString())}
-                           </span>
-                        </div>
-                      ))}
-                    </>
-                  )}
-                </div>
-              )}
-
-              {layoutStyle === 'bento_grid' && (
-                <div className={`px-8 grid w-full gap-3 pointer-events-none opacity-90 ${
-                  categoryServices.length === 4 ? 'grid-cols-2 auto-rows-[120px]' :
-                  categoryServices.length === 2 ? 'grid-cols-2 auto-rows-[150px]' :
-                  categoryServices.length === 1 ? 'grid-cols-1 auto-rows-[200px]' :
-                  'grid-cols-2 md:grid-cols-3 auto-rows-[100px]'
-                }`}>
-                  {categoryServices.map((service: any, idx: number) => {
-                    const totalCount = categoryServices.length;
-                    let gridClass = 'col-span-1 row-span-1 h-full';
-                    if (totalCount === 3) {
-                      if (idx === 0) gridClass = 'col-span-2 row-span-2 h-full';
-                    } else if (totalCount >= 5 && idx === 0) {
-                      gridClass = 'col-span-2 row-span-2 h-full';
-                    }
-                    
-                    return (
-                      <div key={service.id} className={`${gridClass} bg-stone-100 rounded-2xl overflow-hidden shadow-sm border border-stone-100 relative group`}>
-                        {service.image_url ? (
-                          <img 
-                            src={getImageUrl(service.image_url)} 
-                            alt={cleanTitle(translate(service.name, service.translations, 'name'))} 
-                            className="w-full h-full object-cover" 
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-stone-50 p-4 text-center">
-                             <span className="text-[10px] font-bold uppercase tracking-widest text-stone-300 leading-tight">
-                               {cleanTitle(translate(service.name, service.translations, 'name'))}
-                             </span>
-                          </div>
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
-                        <div className="absolute bottom-4 left-4 right-4">
-                          <p className="text-[11px] font-bold text-white truncate leading-tight uppercase tracking-wide">
-                            {cleanTitle(translate(service.name, service.translations, 'name'))}
-                          </p>
-                          <p className="text-[9px] text-white/60 font-medium">{service.duration_minutes} min</p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                  
-                  {categoryServices.length === 0 && (
-                    <div className="col-span-full h-24 rounded-2xl bg-stone-50 border border-stone-100 flex items-center justify-center">
-                      <span className="text-xs text-stone-400 font-medium font-sans">Sin tratamientos disponibles</span>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {layoutStyle === 'traditional_grid' && (
-                <div className="px-8 grid grid-cols-2 md:grid-cols-3 gap-4 pointer-events-none opacity-90">
-                  {categoryServices.map((service: any) => (
-                    <div key={service.id} className="aspect-[3/4] bg-stone-100 rounded-2xl overflow-hidden shadow-sm border border-stone-100 relative group">
-                      {service.image_url ? (
-                        <img 
-                          src={getImageUrl(service.image_url)} 
-                          alt={cleanTitle(translate(service.name, service.translations, 'name'))} 
-                          className="w-full h-full object-cover" 
-                        />
-                      ) : (
-                        <LuxuryTreatmentPlaceholder mode="auto" className="w-full h-full object-cover" />
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
-                      <div className="absolute bottom-4 left-4 right-4">
-                        <p className="text-[11px] font-bold text-white truncate leading-tight uppercase tracking-wide">
-                          {cleanTitle(translate(service.name, service.translations, 'name'))}
-                        </p>
-                        <p className="text-[9px] text-white/60 font-medium">{service.duration_minutes} min</p>
-                      </div>
-                    </div>
-                  ))}
-                  
-                  {categoryServices.length === 0 && (
-                    <>
-                      {[1, 2, 3].map(i => (
-                        <div key={i} className="aspect-[3/4] bg-stone-50 rounded-2xl border border-stone-100 flex items-center justify-center p-4">
-                           <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-200">
-                             {t('cms.treatment').replace('{i}', i.toString())}
-                           </span>
-                        </div>
-                      ))}
-                    </>
-                  )}
-                </div>
-              )}
-
-              {layoutStyle === 'minimalist_list' && (
-                <div className="px-8 flex flex-col divide-y divide-stone-100 pointer-events-none opacity-90">
-                  {categoryServices.map((service: any, idx: number) => (
-                    <div key={service.id} className="flex items-center justify-between py-4">
-                      <div>
-                        <span className="text-[#d4af37] text-[9px] font-bold uppercase tracking-wider block mb-1">
-                          0{idx + 1} · {service.duration_minutes} min
-                        </span>
-                        <h4 className="text-sm font-serif font-bold text-stone-800">
-                          {cleanTitle(translate(service.name, service.translations, 'name'))}
-                        </h4>
-                        <p className="text-[10px] text-stone-400 mt-1 max-w-xl truncate leading-normal">
-                          {service.description}
-                        </p>
-                      </div>
-                      <span className="text-stone-600 text-xs font-bold shrink-0">{service.price} €</span>
-                    </div>
-                  ))}
-                  
-                  {categoryServices.length === 0 && (
-                    <div className="py-4 text-center">
-                      <span className="text-xs text-stone-400 font-medium font-sans">Sin tratamientos disponibles</span>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </section>
-    );
-  };
-
-  const renderCtaSection = () => (
-    <section className="flex flex-col justify-center w-full py-16 bg-[#d4af37] text-stone-900 text-center px-6">
-        <div className="max-w-xl mx-auto space-y-4 w-full">
-          <h2 className="text-3xl font-extrabold tracking-tight">
-            {cleanTitle(translate(formData?.cta_title || 'Llamada a la Acción', formData?.translations, 'cta_title'))}
-          </h2>
-          <p className="text-sm font-medium opacity-90">
-            {translate(formData?.cta_subtitle || 'Subtítulo persuasivo para el final.', formData?.translations, 'cta_subtitle')}
-          </p>
-          <div className="pt-4">
-            <div className="inline-block bg-stone-900 text-white px-8 py-3 rounded-full font-bold text-sm">
-              {translate(formData?.cta_button_text || 'Botón CTA', formData?.translations, 'cta_button_text')}
-            </div>
-          </div>
-        </div>
-      </section>
-  );
-
   return (
     <div 
       className="w-full h-full flex flex-col overflow-y-auto bg-stone-50 select-none custom-scrollbar"
@@ -1321,31 +106,79 @@ const HomeBuilderPreview = React.memo(({ formData, categories, services = [], se
         ['--font-inter' as any]: bodyFontVal,
       }}
     >
-      
-            {dynamicOrderedSections.map((section: any, index: number) => {
+      {dynamicOrderedSections.map((section: any, index: number) => {
         if (section.type === 'hero') {
-          return <React.Fragment key="hero">{renderHeroSection()}</React.Fragment>;
+          return (
+            <PreviewHeroSection
+              key="hero"
+              formData={formData}
+              viewportDevice={viewportDevice}
+              settings={settings}
+            />
+          );
         }
+
         if (section.type === 'featured') {
-          return <React.Fragment key="featured">{renderFeaturedServicesSection()}</React.Fragment>;
+          return (
+            <PreviewFeaturedSection
+              key="featured"
+              config={formData?.featured_services_config}
+              services={services}
+              viewportDevice={viewportDevice}
+              translations={formData?.translations}
+            />
+          );
         }
+
         if (section.type === 'categories_catalog') {
-          return <React.Fragment key="categories_catalog">{renderCategoriesCatalogSection()}</React.Fragment>;
+          return (
+            <PreviewCategoriesCatalogSection
+              key="categories_catalog"
+              config={formData?.categories_catalog_config}
+              categories={activeCategories.length > 0 ? activeCategories : categories}
+              services={services}
+              viewportDevice={viewportDevice}
+              translations={formData?.translations}
+            />
+          );
         }
+
         if (section.type === 'about') {
-          return <React.Fragment key="about">{renderAboutSection()}</React.Fragment>;
+          return (
+            <PreviewAboutSection
+              key="about"
+              formData={formData}
+              viewportDevice={viewportDevice}
+            />
+          );
         }
+
         if (section.type === 'category') {
-          return <React.Fragment key={`cat-${section.id}`}>{renderCategorySection(section.data, index)}</React.Fragment>;
+          return (
+            <PreviewCategorySection
+              key={`cat-${section.id}`}
+              category={section.data}
+              index={index}
+              services={services}
+            />
+          );
         }
+
         if (section.type === 'cta') {
-          return <React.Fragment key="cta">{renderCtaSection()}</React.Fragment>;
+          return (
+            <PreviewCtaSection
+              key="cta"
+              formData={formData}
+            />
+          );
         }
+
         return null;
       })}
 
+      {/* Indicador de final de página */}
       <div className="h-32 bg-stone-900 w-full shrink-0 flex items-center justify-center">
-         <div className="w-1/3 h-2 bg-stone-800 rounded-full"></div>
+        <div className="w-1/3 h-2 bg-stone-800 rounded-full"></div>
       </div>
     </div>
   );
