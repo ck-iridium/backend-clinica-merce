@@ -154,10 +154,10 @@ Catálogo central de tratamientos y productos de venta de la clínica. Permite a
 - **Edición Inline en Fila de Tabla (por servicio con `[id]`):**
   - **Filtros, Visibilidad Web, Paginación y Control de Stock en el Catálogo:**
     - Filtros superiores con conteo real: `Todos`, `Servicios`, `Productos (TPV)` y `Reposición` (solo cuenta productos activos con `Controlar stock` activado y stock bajo o a cero, siempre que el control global de stock esté activo en Ajustes > Facturación).
-    - Filtro rápido de visibilidad web (`Web: Todos` / `En Web` / `Oculto en Web`) y badge `Oculto en Web` para ítems internos de TPV/Agenda que no se muestran en la web pública.
+    - Filtro rápido de visibilidad web (`Web: Todos` / `En Web` / `Solo Web` / `Oculto en Web`) y badges `Oculto en Web` (solo TPV/Agenda) o `Solo Web` (visible en web/reservas, oculto en venta rápida del TPV).
     - Categorías/familias dinámicas según la pestaña activa y paginación en el pie de tabla con selector `15 / 25 / 50 / Todos` (por defecto 25 por página).
-    - Acciones masivas al seleccionar ítems: Activar/Desactivar, `Mostrar en Web`, `Ocultar de Web`, `Controlar Stock`, `Sin Control Stock` y Eliminar lote.
-    - Al importar desde Excel (`Importar Excel / Tarifas`), puedes elegir tanto la visibilidad (`visibility_mode`) como el control de stock (`stock_control_mode`: Automático si trae stock, Activar en productos, o Sin control de stock).
+    - Acciones masivas al seleccionar ítems: Activar/Desactivar, `Solo Web`, `Web y TPV`, `Solo TPV`, `Controlar Stock`, `Sin Control Stock` y Eliminar lote.
+    - Al importar desde Excel (`Importar Excel / Tarifas`), puedes descargar una **Plantilla Excel (.xlsx)** oficial desde el Paso 1, elegir entre 4 destinos (**Solo Web**, **Web y TPV**, **Solo TPV** o **Auto-detectar** leyendo columnas `Mostrar en Web` y `Mostrar en TPV`), y elegir el control de stock (`stock_control_mode`: Automático si trae stock, Activar en productos, o Sin control de stock).
     - Al cobrar un producto en el TPV con control global y `track_stock` activos, el stock se descuenta automáticamente.
   - Checkbox selección de lote: `id="services-select-checkbox-[id]"`
   - Selector de categoría: `id="services-category-select-[id]"`
@@ -199,6 +199,7 @@ Catálogo central de tratamientos y productos de venta de la clínica. Permite a
   - Importe fianza: `id="service-editor-general-deposit-amount-input"`
   - Autogenerar descripción con IA: `id="service-editor-general-ai-desc-btn"`
   - Descripción corta (textarea): `id="service-editor-general-desc-textarea"`
+  - Toggle mostrar en Venta Rápida TPV: `id="service-editor-general-pos-visibility-toggle"`
   - Toggle control de stock individual (en productos TPV): `id="service-editor-general-track-stock-toggle"`
   - Checkbox activo: `id="service-editor-general-active-checkbox"`
 - **Pestaña: Contenido**

@@ -38,7 +38,7 @@ export default function ServicesDataGrid({
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [itemTypeFilter, setItemTypeFilter] = useState<'all' | 'services' | 'products' | 'low_stock'>('all');
-  const [webVisibilityFilter, setWebVisibilityFilter] = useState<'all' | 'web' | 'hidden'>('all');
+  const [webVisibilityFilter, setWebVisibilityFilter] = useState<'all' | 'web' | 'web_only' | 'hidden'>('all');
   const [pageSize, setPageSize] = useState<15 | 25 | 50 | 'all'>(25);
   const [currentPage, setCurrentPage] = useState<number>(1);
 
@@ -116,6 +116,8 @@ export default function ServicesDataGrid({
 
     if (webVisibilityFilter === 'web') {
       result = result.filter(s => s.is_visible_on_web !== false);
+    } else if (webVisibilityFilter === 'web_only') {
+      result = result.filter(s => s.is_visible_on_web !== false && s.is_visible_on_pos === false);
     } else if (webVisibilityFilter === 'hidden') {
       result = result.filter(s => s.is_visible_on_web === false);
     }
@@ -228,8 +230,9 @@ export default function ServicesDataGrid({
         bulkActionLoading={bulkActionLoading}
         onBulkActivate={() => handleBulkStatusChange(true)}
         onBulkDeactivate={() => handleBulkStatusChange(false)}
-        onBulkShowOnWeb={() => handleBulkWebVisibility(true)}
-        onBulkHideFromWeb={() => handleBulkWebVisibility(false)}
+        onBulkSoloWeb={() => handleBulkWebVisibility({ is_visible_on_web: true, is_visible_on_pos: false })}
+        onBulkWebAndTpv={() => handleBulkWebVisibility({ is_visible_on_web: true, is_visible_on_pos: true })}
+        onBulkSoloTpv={() => handleBulkWebVisibility({ is_visible_on_web: false, is_visible_on_pos: true })}
         onBulkEnableStock={() => handleBulkTrackStock(true)}
         onBulkDisableStock={() => handleBulkTrackStock(false)}
         onBulkDelete={handleBulkDelete}

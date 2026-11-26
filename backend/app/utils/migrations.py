@@ -374,6 +374,7 @@ $function$;
             "ALTER TABLE clinic_settings ADD COLUMN counter_autolock_minutes INTEGER DEFAULT 10",
             "ALTER TABLE clinic_settings ADD COLUMN require_authorized_device BOOLEAN DEFAULT FALSE",
             "ALTER TABLE services ADD COLUMN track_stock BOOLEAN DEFAULT FALSE",
+            "ALTER TABLE services ADD COLUMN is_visible_on_pos BOOLEAN DEFAULT TRUE",
             "ALTER TABLE clinic_settings ADD COLUMN enable_stock_control BOOLEAN DEFAULT TRUE",
             "CREATE TABLE IF NOT EXISTS time_clock_records (id VARCHAR(36) PRIMARY KEY, tenant_id VARCHAR(36) NOT NULL, staff_id VARCHAR(36) NOT NULL, event_type VARCHAR(20) NOT NULL, timestamp TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()), device_label VARCHAR(100), device_id VARCHAR(255), ip_address VARCHAR(45), notes TEXT, created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()))",
             "CREATE TABLE IF NOT EXISTS authorized_terminals (id VARCHAR(36) PRIMARY KEY, tenant_id VARCHAR(36) NOT NULL, device_name VARCHAR(100) NOT NULL, token_hash VARCHAR(128) NOT NULL, ip_address VARCHAR(45), browser_info VARCHAR(255), is_active BOOLEAN DEFAULT TRUE, created_by_user_id VARCHAR(36), last_seen_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()), created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()))"

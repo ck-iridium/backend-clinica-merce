@@ -301,9 +301,9 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
           }
         }).catch(() => { });
 
-      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/services/`, { headers })
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/services/?is_visible_on_web=true`, { headers })
         .then(res => res.json())
-        .then(data => setServices(data))
+        .then(data => setServices(Array.isArray(data) ? data.filter((s: any) => s.is_active !== false && s.is_visible_on_web !== false && !s.is_product) : []))
         .catch(() => { });
     }
   }, [isDashboard]);
@@ -622,7 +622,7 @@ export default function PublicNavbar({ transparent = false }: { transparent?: bo
                   <div className="flex-1 py-6 px-8 bg-white dark:bg-stone-900 overflow-hidden">
                     {(() => {
                       const servicesList = Array.isArray(services) ? services : [];
-                      const activeServices = servicesList.filter(s => s.category_id === activeCategory).slice(0, 6);
+                      const activeServices = servicesList.filter(s => s.category_id === activeCategory && s.is_visible_on_web !== false && !s.is_product).slice(0, 6);
                       const isFew = activeServices.length <= 3;
 
                       return (

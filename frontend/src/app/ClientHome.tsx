@@ -456,12 +456,14 @@ export default function ClientHome({ content, settings, services, categories }: 
     );
   }
 
-  // Traducir servicios y categorías
-  const translatedServices = services.map((s: any) => ({
-    ...s,
-    name: translate(s.name, s.translations, 'name'),
-    description: translate(s.description, s.translations, 'description'),
-  }));
+  // Traducir servicios y categorías (solo visibles en web pública)
+  const translatedServices = services
+    .filter((s: any) => s.is_active !== false && s.is_visible_on_web !== false && !s.is_product)
+    .map((s: any) => ({
+      ...s,
+      name: translate(s.name, s.translations, 'name'),
+      description: translate(s.description, s.translations, 'description'),
+    }));
 
   const translatedCategories = categories.map((c: any) => ({
     ...c,

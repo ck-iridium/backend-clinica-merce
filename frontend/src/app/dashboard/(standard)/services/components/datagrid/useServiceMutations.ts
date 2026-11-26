@@ -370,29 +370,29 @@ export function useServiceMutations({
     }
   };
 
-  const handleBulkWebVisibility = async (is_visible_on_web: boolean) => {
+  const handleBulkWebVisibility = async (opts: { is_visible_on_web?: boolean; is_visible_on_pos?: boolean }) => {
     if (selectedIds.size === 0) return;
     setBulkActionLoading(true);
-    const toastId = toast.loading(`Actualizando visibilidad web de ${selectedIds.size} ítems...`);
+    const toastId = toast.loading(`Actualizando visibilidad de ${selectedIds.size} ítems...`);
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/bulk-visibility`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({
           ids: Array.from(selectedIds),
-          is_visible_on_web,
+          ...opts,
         })
       });
       if (res.ok) {
-        toast.success(`Visibilidad web de ${selectedIds.size} ítems actualizada con éxito.`, { id: toastId });
+        toast.success(`Visibilidad de ${selectedIds.size} ítems actualizada con éxito.`, { id: toastId });
         setSelectedIds(new Set());
         if (onRefresh) onRefresh();
       } else {
         const data = await res.json();
-        toast.error(data.detail || 'Error al actualizar visibilidad web en lote.', { id: toastId });
+        toast.error(data.detail || 'Error al actualizar visibilidad en lote.', { id: toastId });
       }
     } catch {
-      toast.error('Error de red al actualizar visibilidad web en lote.', { id: toastId });
+      toast.error('Error de red al actualizar visibilidad en lote.', { id: toastId });
     } finally {
       setBulkActionLoading(false);
     }

@@ -52,7 +52,8 @@ class BulkStatusPayload(BaseModel):
 
 class BulkWebVisibilityPayload(BaseModel):
     ids: List[str]
-    is_visible_on_web: bool
+    is_visible_on_web: Optional[bool] = None
+    is_visible_on_pos: Optional[bool] = None
 
 class BulkTrackStockPayload(BaseModel):
     ids: List[str]

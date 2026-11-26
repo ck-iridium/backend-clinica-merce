@@ -42,7 +42,7 @@ const getData = cache(async (tenantId: string) => {
   const [content, settings, services, categories] = await Promise.all([
     fetchSafe(`${apiUrl}/site-content/`, null, 'content'),
     fetchSafe(`${apiUrl}/settings/`, null, 'settings'),
-    fetchSafe(`${apiUrl}/services/`, [], 'services'),
+    fetchSafe(`${apiUrl}/services/?is_visible_on_web=true`, [], 'services'),
     fetchSafe(`${apiUrl}/service-categories/`, [], 'categories'),
   ]);
 

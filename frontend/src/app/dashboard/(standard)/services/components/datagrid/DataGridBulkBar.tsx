@@ -8,8 +8,9 @@ interface DataGridBulkBarProps {
   bulkActionLoading: boolean;
   onBulkActivate: () => void;
   onBulkDeactivate: () => void;
-  onBulkShowOnWeb?: () => void;
-  onBulkHideFromWeb?: () => void;
+  onBulkSoloWeb?: () => void;
+  onBulkWebAndTpv?: () => void;
+  onBulkSoloTpv?: () => void;
   onBulkEnableStock?: () => void;
   onBulkDisableStock?: () => void;
   onBulkDelete: () => void;
@@ -21,8 +22,9 @@ export function DataGridBulkBar({
   bulkActionLoading,
   onBulkActivate,
   onBulkDeactivate,
-  onBulkShowOnWeb,
-  onBulkHideFromWeb,
+  onBulkSoloWeb,
+  onBulkWebAndTpv,
+  onBulkSoloTpv,
   onBulkEnableStock,
   onBulkDisableStock,
   onBulkDelete,
@@ -62,26 +64,37 @@ export function DataGridBulkBar({
         >
           <EyeOff size={14} /> {language === 'fr' ? 'Tout désactiver' : language === 'en' ? 'Deactivate All' : 'Desactivar Todos'}
         </Button>
-        {onBulkShowOnWeb && (
+        {onBulkSoloWeb && (
           <Button
             type="button"
             size="sm"
             disabled={bulkActionLoading}
-            onClick={onBulkShowOnWeb}
+            onClick={onBulkSoloWeb}
             className="bg-stone-800 hover:bg-stone-700 text-emerald-300 text-xs font-bold rounded-xl h-9 px-3 gap-1.5 transition-all"
           >
-            <Globe size={14} /> Mostrar en Web
+            <Globe size={14} /> Solo Web
           </Button>
         )}
-        {onBulkHideFromWeb && (
+        {onBulkWebAndTpv && (
           <Button
             type="button"
             size="sm"
             disabled={bulkActionLoading}
-            onClick={onBulkHideFromWeb}
+            onClick={onBulkWebAndTpv}
+            className="bg-stone-800 hover:bg-stone-700 text-sky-300 text-xs font-bold rounded-xl h-9 px-3 gap-1.5 transition-all"
+          >
+            <Globe size={14} /> Web y TPV
+          </Button>
+        )}
+        {onBulkSoloTpv && (
+          <Button
+            type="button"
+            size="sm"
+            disabled={bulkActionLoading}
+            onClick={onBulkSoloTpv}
             className="bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs font-bold rounded-xl h-9 px-3 gap-1.5 transition-all"
           >
-            <EyeOff size={14} /> Ocultar de Web
+            <EyeOff size={14} /> Solo TPV
           </Button>
         )}
         {onBulkEnableStock && (

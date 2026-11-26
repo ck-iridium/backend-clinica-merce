@@ -149,6 +149,20 @@ async def import_services_excel(
                     ticket_name_val = parse_str(get_val(r, "ticket_name"))
                     description_val = parse_str(get_val(r, "description"))
 
+                    def parse_opt_bool(raw_v):
+                        if raw_v is None or str(raw_v).strip() == "":
+                            return None
+                        sv = str(raw_v).strip().lower()
+                        if sv in ["si", "sí", "yes", "true", "1", "activo", "activado"]:
+                            return True
+                        if sv in ["no", "false", "0", "inactivo", "desactivado"]:
+                            return False
+                        return None
+
+                    col_visible_web = parse_opt_bool(get_val(r, "is_visible_on_web"))
+                    col_visible_pos = parse_opt_bool(get_val(r, "is_visible_on_pos"))
+                    col_track_stock = parse_opt_bool(get_val(r, "track_stock"))
+
                     # Estado activo/desactivado
                     raw_status = get_val(r, "status")
                     is_active_val = True
@@ -190,17 +204,26 @@ async def import_services_excel(
 
                     if visibility_mode == "tpv_only":
                         is_visible_web = False
+                        is_visible_pos = True
+                    elif visibility_mode == "web_only":
+                        is_visible_web = True
+                        is_visible_pos = False
                     elif visibility_mode == "web_and_tpv":
                         is_visible_web = True
+                        is_visible_pos = True
                     else:
-                        is_visible_web = False if is_product_val else True
+                        is_visible_web = col_visible_web if col_visible_web is not None else (False if is_product_val else True)
+                        is_visible_pos = col_visible_pos if col_visible_pos is not None else True
 
                     if stock_control_mode == "disabled":
                         track_stock_val = False
                     elif stock_control_mode == "enabled":
                         track_stock_val = bool(is_product_val)
                     else:
-                        track_stock_val = bool(is_product_val and (stock_val is not None or min_stock_val is not None))
+                        if col_track_stock is not None:
+                            track_stock_val = bool(is_product_val and col_track_stock)
+                        else:
+                            track_stock_val = bool(is_product_val and (stock_val is not None or min_stock_val is not None))
 
                     existing = None
                     if sku_val and sku_val.lower() in existing_by_sku:
@@ -216,6 +239,7 @@ async def import_services_excel(
                             existing.cost_discount = cost_discount_val
                         existing.is_product = is_product_val
                         existing.is_visible_on_web = is_visible_web
+                        existing.is_visible_on_pos = is_visible_pos
                         if stock_control_mode in ("enabled", "disabled") or track_stock_val:
                             existing.track_stock = track_stock_val
                         existing.is_active = is_active_val
@@ -257,6 +281,7 @@ async def import_services_excel(
                             cost_discount=cost_discount_val,
                             is_product=is_product_val,
                             is_visible_on_web=is_visible_web,
+                            is_visible_on_pos=is_visible_pos,
                             track_stock=track_stock_val,
                             sku=sku_val,
                             stock=stock_val,
@@ -318,10 +343,62 @@ def read_services(
     skip: int = 0, 
     limit: int = 1000, 
     is_visible_on_web: Optional[bool] = None,
+    is_visible_on_pos: Optional[bool] = None,
     is_product: Optional[bool] = None,
     db: Session = Depends(database.get_db)
 ):
-    return crud.get_services(db, skip=skip, limit=limit, is_visible_on_web=is_visible_on_web, is_product=is_product)
+    return crud.get_services(
+        db,
+        skip=skip,
+        limit=limit,
+        is_visible_on_web=is_visible_on_web,
+        is_visible_on_pos=is_visible_on_pos,
+        is_product=is_product,
+    )
+
+
+@router.get("/import-template")
+def download_services_import_template():
+    """Genera y descarga una plantilla Excel (.xlsx) oficial con ejemplos para importar servicios, tarifas TPV y productos."""
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Plantilla_Catalogo"
+
+    headers = [
+        "Familia",
+        "Nombre",
+        "Es artículo",
+        "Mostrar en Web",
+        "Mostrar en TPV",
+        "Precio Venta",
+        "Duración",
+        "Stock actual",
+        "Stock mínimo",
+        "Controlar Stock",
+        "Observaciones",
+    ]
+    ws.append(headers)
+
+    sample_rows = [
+        ["Corte y Peinado", "Corte y Secado Señora", "no", "Sí", "Sí", 17.50, 45, "", "", "No", "Servicio visible en la web y cobrable en TPV"],
+        ["Mechas y Balayage", "Balayage y Degradados Naturales", "no", "Sí", "No", 50.50, 90, "", "", "No", "Servicio escaparate Solo Web (oculto en botones rápidos del TPV)"],
+        ["SECADOS", "Secado al aire", "no", "No", "Sí", 12.50, 30, "", "", "No", "Tarifa interna Solo TPV (oculta en web pública)"],
+        ["PRODUCTOS DE VENTA", "Mascarilla Salerm (venta)", "si", "No", "Sí", 20.00, 0, 10, 2, "Sí", "Producto físico de venta en TPV con control de stock"],
+    ]
+    for row in sample_rows:
+        ws.append(row)
+
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+
+    return StreamingResponse(
+        output,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={
+            "Content-Disposition": 'attachment; filename="plantilla-catalogo-probookia.xlsx"'
+        },
+    )
 
 @router.get("/{service_id}", response_model=schemas.ServiceResponse)
 def read_service(service_id: str, db: Session = Depends(database.get_db)):
@@ -451,13 +528,22 @@ def bulk_status_services(payload: schemas.BulkStatusPayload, db: Session = Depen
 @router.post("/bulk-visibility")
 def bulk_visibility_services(payload: schemas.BulkWebVisibilityPayload, db: Session = Depends(database.get_db)):
     tenant_id = database.current_tenant_var.get()
+    updates = {}
+    if payload.is_visible_on_web is not None:
+        updates[models.Service.is_visible_on_web] = payload.is_visible_on_web
+    if payload.is_visible_on_pos is not None:
+        updates[models.Service.is_visible_on_pos] = payload.is_visible_on_pos
+
+    if not updates:
+        return {"message": "Sin cambios de visibilidad"}
+
     updated_count = db.query(models.Service).filter(
         models.Service.id.in_(payload.ids),
         models.Service.tenant_id == tenant_id
-    ).update({models.Service.is_visible_on_web: payload.is_visible_on_web}, synchronize_session=False)
+    ).update(updates, synchronize_session=False)
 
     db.commit()
-    return {"message": f"Visibilidad web de {updated_count} ítems actualizada con éxito"}
+    return {"message": f"Visibilidad de {updated_count} ítems actualizada con éxito"}
 
 
 @router.post("/bulk-track-stock")

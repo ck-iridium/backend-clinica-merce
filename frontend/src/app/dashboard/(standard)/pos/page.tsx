@@ -117,7 +117,7 @@ export default function POSPage() {
 
       if (sRes.ok) {
         const servs = await sRes.json();
-        setServices(servs.filter((s: any) => s.is_active));
+        setServices(servs.filter((s: any) => s.is_active && s.is_visible_on_pos !== false));
       }
 
       if (catRes.ok) {

@@ -185,7 +185,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           console.error('[SITEMAP CATEGORIES FETCH ERROR]', e);
           return null;
         }),
-        fetch(`${apiUrl}/services/`, {
+        fetch(`${apiUrl}/services/?is_visible_on_web=true`, {
           headers,
           next: { revalidate: 3600, tags: [`tenant-${tenantId}-sitemap-services`] },
         }).catch((e) => {
@@ -288,7 +288,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         const services = await servicesRes.json();
         if (Array.isArray(services)) {
           for (const s of services) {
-            if (s.slug && s.is_active !== false) {
+            if (s.slug && s.is_active !== false && s.is_visible_on_web !== false && !s.is_product) {
               // Resolver category_slug y category translations
               const catData = s.category_id ? categoryMap.get(s.category_id) : null;
               const catTrans = parseTranslations(catData?.translations || s.category?.translations);

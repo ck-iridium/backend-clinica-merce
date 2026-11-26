@@ -11,7 +11,8 @@ import {
   FileCheck,
   Store,
   Globe,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Download
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -236,6 +237,24 @@ const SERVICE_FIELDS: FieldDefinition[] = [
     hintSynonyms: ['estado', 'activo', 'status'] 
   },
   { 
+    key: 'is_visible_on_web', 
+    label: 'Mostrar en Web (Sí / No)', 
+    description: 'Indica si el cliente ve este servicio en la web pública y reservas',
+    hintSynonyms: ['mostrar en web', 'visible en web', 'web', 'público', 'publico'] 
+  },
+  { 
+    key: 'is_visible_on_pos', 
+    label: 'Mostrar en TPV / Venta Rápida (Sí / No)', 
+    description: 'Indica si aparece en el catálogo rápido de caja del TPV',
+    hintSynonyms: ['mostrar en tpv', 'visible en tpv', 'tpv', 'pos', 'mostrador'] 
+  },
+  { 
+    key: 'track_stock', 
+    label: 'Controlar Stock (Sí / No)', 
+    description: 'Activa alertas de reposición y descuento al cobrar en productos',
+    hintSynonyms: ['controlar stock', 'control stock', 'track stock'] 
+  },
+  { 
     key: 'description', 
     label: 'Observaciones / Descripción', 
     description: 'Notas internas o descripción comercial',
@@ -263,8 +282,9 @@ export function UniversalExcelImportModal({
   const [previewRows, setPreviewRows] = useState<any[]>([]);
   const [mapping, setMapping] = useState<Record<string, string>>({});
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
-  const [visibilityMode, setVisibilityMode] = useState<'tpv_only' | 'web_and_tpv' | 'auto'>('auto');
+  const [visibilityMode, setVisibilityMode] = useState<'tpv_only' | 'web_only' | 'web_and_tpv' | 'auto'>('auto');
   const [stockControlMode, setStockControlMode] = useState<'auto' | 'enabled' | 'disabled'>('auto');
+  const [downloadingTemplate, setDownloadingTemplate] = useState(false);
   const [importProgress, setImportProgress] = useState<{
     processed: number;
     total_rows: number;
@@ -497,6 +517,30 @@ export function UniversalExcelImportModal({
     }
   };
 
+  const handleDownloadTemplate = async () => {
+    setDownloadingTemplate(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/import-template`, {
+        headers: getTenantHeaders(),
+      });
+      if (!res.ok) throw new Error('No se pudo descargar la plantilla');
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'plantilla-catalogo-probookia.xlsx';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success('Plantilla Excel descargada.');
+    } catch (err: any) {
+      toast.error(err.message || 'Error al descargar la plantilla');
+    } finally {
+      setDownloadingTemplate(false);
+    }
+  };
+
   const handleFinish = () => {
     onSuccess();
     handleReset();
@@ -580,11 +624,26 @@ export function UniversalExcelImportModal({
                 )}
               </div>
 
-              <div className="p-4 bg-stone-50 rounded-2xl border border-stone-200/70 text-xs text-stone-600 space-y-1.5">
-                <p className="font-bold text-stone-800 flex items-center gap-1.5">
-                  <Sparkles size={13} className="text-[#FF6B00]" />
-                  Mapeo Inteligente y Auto-Detección
-                </p>
+              <div className="p-4 bg-stone-50 rounded-2xl border border-stone-200/70 text-xs text-stone-600 space-y-2.5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <p className="font-bold text-stone-800 flex items-center gap-1.5">
+                    <Sparkles size={13} className="text-[#FF6B00]" />
+                    Mapeo Inteligente y Auto-Detección
+                  </p>
+                  {type === 'services' && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={downloadingTemplate}
+                      onClick={handleDownloadTemplate}
+                      className="h-8 rounded-xl text-[11px] font-bold gap-1.5 bg-white hover:bg-orange-50/50 border-stone-200"
+                    >
+                      <Download size={13} className="text-[#FF6B00]" />
+                      {downloadingTemplate ? 'Descargando...' : 'Descargar Plantilla Excel (.xlsx)'}
+                    </Button>
+                  )}
+                </div>
                 <p>
                   No importa cómo se llamen las columnas en tu Excel. Podrás asociar cada columna a tu gusto con vista previa en tiempo real.
                 </p>
@@ -618,22 +677,22 @@ export function UniversalExcelImportModal({
                       Destino de los Precios / Tratamientos Importados
                     </h4>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
                     <button
                       type="button"
-                      onClick={() => setVisibilityMode('tpv_only')}
+                      onClick={() => setVisibilityMode('web_only')}
                       className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
-                        visibilityMode === 'tpv_only'
+                        visibilityMode === 'web_only'
                           ? 'border-[#FF6B00] bg-orange-50/50 ring-1 ring-[#FF6B00]/40'
                           : 'border-stone-200 bg-white hover:border-stone-300'
                       }`}
                     >
                       <div className="flex items-center gap-1.5 font-bold text-xs text-stone-800 mb-1">
-                        <Store size={14} className={visibilityMode === 'tpv_only' ? 'text-[#FF6B00]' : 'text-stone-500'} />
-                        Solo TPV (Mostrador)
+                        <Globe size={14} className={visibilityMode === 'web_only' ? 'text-[#FF6B00]' : 'text-emerald-600'} />
+                        Solo Web
                       </div>
                       <p className="text-[10px] text-stone-500 leading-tight">
-                        Uso interno para cobrar en mostrador. Oculto para reservas en la web.
+                        Escaparate y reservas online para clientes. Oculto en botones rápidos del TPV.
                       </p>
                     </button>
 
@@ -657,6 +716,24 @@ export function UniversalExcelImportModal({
 
                     <button
                       type="button"
+                      onClick={() => setVisibilityMode('tpv_only')}
+                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                        visibilityMode === 'tpv_only'
+                          ? 'border-[#FF6B00] bg-orange-50/50 ring-1 ring-[#FF6B00]/40'
+                          : 'border-stone-200 bg-white hover:border-stone-300'
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5 font-bold text-xs text-stone-800 mb-1">
+                        <Store size={14} className={visibilityMode === 'tpv_only' ? 'text-[#FF6B00]' : 'text-stone-500'} />
+                        Solo TPV (Mostrador)
+                      </div>
+                      <p className="text-[10px] text-stone-500 leading-tight">
+                        Uso interno para cobrar en mostrador. Oculto para reservas en la web.
+                      </p>
+                    </button>
+
+                    <button
+                      type="button"
                       onClick={() => setVisibilityMode('auto')}
                       className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
                         visibilityMode === 'auto'
@@ -669,7 +746,7 @@ export function UniversalExcelImportModal({
                         Auto-detectar
                       </div>
                       <p className="text-[10px] text-stone-500 leading-tight">
-                        Según columna 'Es artículo': artículos solo a TPV, servicios a web y TPV.
+                        Usa tus columnas 'Mostrar en Web' / 'Mostrar en TPV' o 'Es artículo'.
                       </p>
                     </button>
                   </div>

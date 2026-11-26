@@ -163,6 +163,34 @@ export default function GeneralTab({
             )} />
           </button>
         </div>
+
+        {/* SWITCH: VISIBILIDAD EN VENTA RÁPIDA (TPV) */}
+        <div className="pt-3 border-t border-stone-200/60 flex items-center justify-between">
+          <div>
+            <span className="text-xs font-bold text-stone-800 block">
+              Mostrar en Venta Rápida (TPV)
+            </span>
+            <span className="text-[10px] text-stone-500 block">
+              {formValues.is_visible_on_pos !== false
+                ? "Disponible en el catálogo de cobro rápido del mostrador TPV."
+                : "Solo Web: oculto en los botones rápidos del TPV para no duplicar tarifas."}
+            </span>
+          </div>
+          <button
+            id="service-editor-general-pos-visibility-toggle"
+            type="button"
+            onClick={() => setValue('is_visible_on_pos', formValues.is_visible_on_pos === false ? true : false, { shouldDirty: true })}
+            className={cn(
+              "relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors",
+              formValues.is_visible_on_pos !== false ? "bg-emerald-500" : "bg-stone-300"
+            )}
+          >
+            <span className={cn(
+              "inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform",
+              formValues.is_visible_on_pos !== false ? "translate-x-6" : "translate-x-1"
+            )} />
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">

@@ -194,6 +194,7 @@ class Service(Base):
     is_featured = Column(Boolean, default=False)
     is_product = Column(Boolean, default=False, nullable=True)
     is_visible_on_web = Column(Boolean, default=True, nullable=True)
+    is_visible_on_pos = Column(Boolean, default=True, nullable=True)
     track_stock = Column(Boolean, default=False, nullable=True)
     cost_price = Column(Numeric(10, 2), nullable=True)
     sku = Column(String, nullable=True)

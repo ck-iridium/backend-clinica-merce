@@ -124,7 +124,7 @@ async function getServices(tenantId: string) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-    const res = await fetch(`${baseUrl}/services/`, {
+    const res = await fetch(`${baseUrl}/services/?is_visible_on_web=true`, {
       next: { revalidate: 60 },
       signal: controller.signal,
       headers: { "X-Tenant-ID": tenantId }
@@ -331,7 +331,9 @@ export default async function CategoryDynamicPage({
 
   const translatedCategoryName = translate(category.name, category.translations, 'name');
   
-  const categoryServices = allServices.filter((s: any) => s.category_id === category.id && s.is_active);
+  const categoryServices = allServices.filter(
+    (s: any) => s.category_id === category.id && s.is_active && s.is_visible_on_web !== false && !s.is_product
+  );
   // Máximo 4 categorías para el Bento Grid
   const otherCategories = allCategories.filter((c: any) => c.id !== category.id && c.is_active).slice(0, 4);
 

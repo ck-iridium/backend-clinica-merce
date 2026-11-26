@@ -225,6 +225,7 @@ function getTooltipTextForId(id: string): string {
     'consents-new-template-btn': 'Redacta una nueva plantilla de consentimiento legal.',
     'billing-stock-control-toggle': 'Activa o desactiva de forma global las alertas de reposición y el descuento automático de stock al cobrar productos en el TPV.',
     'service-editor-general-track-stock-toggle': 'Activa o desactiva el seguimiento de inventario y alertas de reposición para este producto.',
+    'service-editor-general-pos-visibility-toggle': 'Activa o desactiva si este ítem aparece en los botones de Venta Rápida del mostrador TPV (desactívalo para servicios Solo Web).',
     'billing-invoice-prefix': 'Configura el prefijo de tus facturas.',
     'billing-invoice-next-number': 'Establece el número de la siguiente factura.',
     'billing-logo-pdf-btn': 'Modifica el logo que aparece en tus facturas PDF.',

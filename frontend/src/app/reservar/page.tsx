@@ -196,7 +196,7 @@ export default function BookingPage() {
         }
         const [catRes, srvRes, apptRes, settingsRes, locRes, staffRes] = await Promise.all([
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/service-categories/`, { headers: { 'X-Tenant-ID': tenantId } }),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/`, { headers: { 'X-Tenant-ID': tenantId } }),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/?is_visible_on_web=true&is_product=false`, { headers: { 'X-Tenant-ID': tenantId } }),
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/appointments/`, { headers: { 'X-Tenant-ID': tenantId } }),
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings/`, { headers: { 'X-Tenant-ID': tenantId } }),
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/locations/`, { headers: { 'X-Tenant-ID': tenantId } }),
@@ -255,7 +255,7 @@ export default function BookingPage() {
 
         if (srvRes.ok) {
           const data = await srvRes.json();
-          const activeSrvs = data.filter((s: any) => s.is_active);
+          const activeSrvs = data.filter((s: any) => s.is_active && s.is_visible_on_web !== false && !s.is_product);
           setServices(activeSrvs);
 
           // Check if we came from a direct service or category link

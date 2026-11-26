@@ -18,8 +18,8 @@ interface DataGridFiltersProps {
     products: number;
     low_stock: number;
   };
-  webVisibilityFilter?: 'all' | 'web' | 'hidden';
-  onWebVisibilityFilterChange?: (filter: 'all' | 'web' | 'hidden') => void;
+  webVisibilityFilter?: 'all' | 'web' | 'web_only' | 'hidden';
+  onWebVisibilityFilterChange?: (filter: 'all' | 'web' | 'web_only' | 'hidden') => void;
   enableStockControl?: boolean;
 }
 
@@ -126,6 +126,17 @@ export function DataGridFilters({
                 }`}
               >
                 <Globe size={12} /> En Web
+              </button>
+              <button
+                type="button"
+                onClick={() => onWebVisibilityFilterChange('web_only')}
+                className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-all flex items-center gap-1 ${
+                  webVisibilityFilter === 'web_only'
+                    ? 'bg-white text-emerald-800 shadow-xs'
+                    : 'text-stone-500 hover:text-stone-900'
+                }`}
+              >
+                <Globe size={12} /> Solo Web
               </button>
               <button
                 type="button"

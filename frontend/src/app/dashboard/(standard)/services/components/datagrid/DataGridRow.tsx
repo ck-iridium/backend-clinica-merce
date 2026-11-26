@@ -1,6 +1,6 @@
 "use client"
 import React from 'react';
-import { Pencil, Trash2, Loader2, Sparkles, Package, EyeOff } from 'lucide-react';
+import { Pencil, Trash2, Loader2, Sparkles, Package, EyeOff, Globe } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -141,6 +141,14 @@ export function DataGridRow({
               title="No se muestra en la web pública de reservas; disponible solo en Agenda interna y TPV"
             >
               <EyeOff size={9} /> Oculto en Web
+            </span>
+          )}
+          {svc.is_visible_on_web !== false && svc.is_visible_on_pos === false && (
+            <span
+              className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] rounded-full font-bold bg-emerald-50 text-emerald-700 border border-emerald-200"
+              title="Visible en la web pública y reservas online; oculto en los botones rápidos del TPV"
+            >
+              <Globe size={9} /> Solo Web
             </span>
           )}
           {svc.is_featured && (

@@ -111,7 +111,9 @@ def public_concierge_chat(
 
     active_services = db.query(models.Service).filter(
         models.Service.tenant_id == tenant_id,
-        models.Service.is_active == True
+        models.Service.is_active == True,
+        models.Service.is_visible_on_web != False,
+        models.Service.is_product != True
     ).all()
 
     services_catalog_txt = []

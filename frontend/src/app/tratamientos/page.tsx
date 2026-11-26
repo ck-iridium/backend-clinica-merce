@@ -24,7 +24,7 @@ const getData = cache(async (tenantId: string) => {
       next: { revalidate: 3600, tags: [`tenant-${tenantId}`, `tenant-${tenantId}-categories`] },
       headers: { "X-Tenant-ID": tenantId }
     }),
-    fetch(`${apiUrl}/services/`, {
+    fetch(`${apiUrl}/services/?is_visible_on_web=true`, {
       next: { revalidate: 3600, tags: [`tenant-${tenantId}`, `tenant-${tenantId}-services`] },
       headers: { "X-Tenant-ID": tenantId }
     }),
@@ -108,8 +108,8 @@ export default async function CatalogPage() {
     description: translateServer(s.description, s.translations, 'description')
   }));
 
-  // Filtrar solo activos
-  const activeServices = translatedServices.filter((s: any) => s.is_active);
+  // Filtrar solo activos y visibles en web pública
+  const activeServices = translatedServices.filter((s: any) => s.is_active && s.is_visible_on_web !== false && !s.is_product);
 
   // Agrupar servicios por categoría
   const groupedServices = activeServices.reduce((acc: Record<string, any[]>, svc: any) => {

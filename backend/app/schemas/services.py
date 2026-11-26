@@ -51,6 +51,7 @@ class ServiceBase(BaseModel):
     is_featured: bool = False
     is_product: Optional[bool] = False
     is_visible_on_web: Optional[bool] = True
+    is_visible_on_pos: Optional[bool] = True
     track_stock: Optional[bool] = False
     cost_price: Optional[float] = None
     sku: Optional[str] = None
@@ -89,6 +90,7 @@ class ServiceUpdate(BaseModel):
     is_featured: Optional[bool] = None
     is_product: Optional[bool] = None
     is_visible_on_web: Optional[bool] = None
+    is_visible_on_pos: Optional[bool] = None
     track_stock: Optional[bool] = None
     cost_price: Optional[float] = None
     sku: Optional[str] = None
