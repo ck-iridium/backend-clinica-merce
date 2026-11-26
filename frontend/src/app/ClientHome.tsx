@@ -471,9 +471,10 @@ export default function ClientHome({ content, settings, services, categories }: 
     description: translate(c.description, c.translations, 'description'),
   }));
 
-  // Solo categorías activas, respetando su order_index
+  const visibleCatIds = new Set(translatedServices.map((s: any) => s.category_id).filter(Boolean));
+  // Solo categorías activas con al menos 1 servicio visible en web, respetando su order_index
   const activeCategories = translatedCategories
-    .filter((c: any) => c.is_active)
+    .filter((c: any) => c.is_active && visibleCatIds.has(c.id))
     .sort((a: any, b: any) => (a.order_index ?? 0) - (b.order_index ?? 0));
 
   // Calcular orden final de secciones desde el JSON guardado
