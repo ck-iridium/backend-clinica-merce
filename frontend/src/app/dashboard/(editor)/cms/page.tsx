@@ -21,6 +21,30 @@ import NavigationLivePreview from './components/NavigationLivePreview';
 
 const TABS = ['HERO', 'DESTACADOS', 'SOBRE MÍ', 'CATEGORÍAS', 'CTA', 'ORDENAR', 'SEO'];
 
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  return match ? decodeURIComponent(match[2]) : null;
+}
+
+function getAuthHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (typeof window === 'undefined') return headers;
+  let tenantId = getCookie('tenant_id') || '';
+  let authToken = '';
+  try {
+    const raw = localStorage.getItem('user');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (!tenantId) tenantId = parsed.tenant_id || '';
+      authToken = parsed.access_token || parsed.token || '';
+    }
+  } catch {}
+  if (tenantId) headers['X-Tenant-ID'] = tenantId;
+  if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+  return headers;
+}
+
 export default function CMSPage() {
   const { showFeedback } = useFeedback();
   const [activeMode, setActiveMode] = useState<'HUB' | 'HOME_EDITOR' | 'NAVIGATION_EDITOR'>('HUB');
@@ -103,78 +127,88 @@ export default function CMSPage() {
 
   const fetchContent = async () => {
     try {
+      const headers = getAuthHeaders();
       const [resContent, resCats, resServices, resSettings] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/site-content/`),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/service-categories/`),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/`),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings/`)
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/site-content/`, { headers }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/service-categories/`, { headers }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/`, { headers }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings/`, { headers })
       ]);
       
-      if (resContent.ok && resCats.ok && resServices.ok) {
-        const data = await resContent.json();
-        const cats = await resCats.json();
-        const svcs = await resServices.json();
-        if (resSettings && resSettings.ok) {
-          const settingsData = await resSettings.json();
-          setSettings(settingsData);
-        }
-        
-        setFormData(data);
-        setCategories(cats);
-        setServices(svcs);
-        if (cats.length > 0) setSelectedCategoryId(cats[0].id);
+      let data = defaultContent;
+      let cats: any[] = [];
+      let svcs: any[] = [];
 
-        // Configurar megamenu
+      if (resContent.ok) {
+        data = await resContent.json();
+        setFormData(data);
+      }
+      if (resCats.ok) {
+        cats = await resCats.json();
+        setCategories(cats);
+        if (cats.length > 0) setSelectedCategoryId(cats[0].id);
+      }
+      if (resServices.ok) {
+        svcs = await resServices.json();
+        setServices(svcs);
+      }
+      if (resSettings && resSettings.ok) {
+        const settingsData = await resSettings.json();
+        setSettings(settingsData);
+      }
+
+      // Configurar megamenu si vino data
+      if (data) {
         setMegamenuLayout(data.megamenu_layout || 'bento');
         setMegamenuCategories(data.megamenu_categories_json);
-        const activeCats = cats.filter((c: any) => c.is_active);
-        if (activeCats.length > 0) {
-          setPreviewActiveCategory(activeCats[0].id);
-        }
-
-        // Configurar secciones para la preview visual
-        const baseSections = [
-          { id: 'hero', type: 'hero', label: 'Portada Principal (Hero)', locked: true },
-          { id: 'featured', type: 'featured', label: '⭐ Tratamientos Destacados', locked: false },
-          { id: 'categories_catalog', type: 'categories_catalog', label: '📂 Mosaico de Categorías', locked: false },
-          { id: 'about', type: 'about', label: 'Sobre la Clínica', locked: false },
-          { id: 'cta', type: 'cta', label: 'Llamada a la Acción', locked: false },
-          { id: 'seo', type: 'seo', label: 'SEO', locked: true }
-        ];
-
-        const catSections = cats.map((c: any) => ({
-          id: c.id,
-          type: 'category',
-          label: c.name,
-          locked: false
-        }));
-
-        const allAvailable = [...baseSections, ...catSections];
-        let ordered: any[] = [];
-
-        if (data.home_sections_order) {
-           try {
-              const savedOrder = JSON.parse(data.home_sections_order);
-              savedOrder.forEach((id: string) => {
-                const found = allAvailable.find(s => s.id === id);
-                if (found) ordered.push(found);
-              });
-              allAvailable.forEach(s => {
-                if (!ordered.find(o => o.id === s.id)) ordered.push(s);
-              });
-           } catch {
-              ordered = [baseSections[0], baseSections[1], ...catSections, baseSections[2], baseSections[3]];
-           }
-        } else {
-           ordered = [baseSections[0], baseSections[1], ...catSections, baseSections[2], baseSections[3]];
-        }
-        
-        const hero = ordered.find(s => s.id === 'hero');
-        const seo = ordered.find(s => s.id === 'seo');
-        const middle = ordered.filter(s => s.id !== 'hero' && s.id !== 'seo');
-        
-        setSections([hero, ...middle, seo]);
       }
+      const activeCats = cats.filter((c: any) => c.is_active);
+      if (activeCats.length > 0) {
+        setPreviewActiveCategory(activeCats[0].id);
+      }
+
+      // Configurar secciones para la preview visual
+      const baseSections = [
+        { id: 'hero', type: 'hero', label: 'Portada Principal (Hero)', locked: true },
+        { id: 'featured', type: 'featured', label: '⭐ Tratamientos Destacados', locked: false },
+        { id: 'categories_catalog', type: 'categories_catalog', label: '📂 Mosaico de Categorías', locked: false },
+        { id: 'about', type: 'about', label: 'Sobre la Clínica', locked: false },
+        { id: 'cta', type: 'cta', label: 'Llamada a la Acción', locked: false },
+        { id: 'seo', type: 'seo', label: 'SEO', locked: true }
+      ];
+
+      const catSections = cats.map((c: any) => ({
+        id: c.id,
+        type: 'category',
+        label: c.name,
+        locked: false
+      }));
+
+      const allAvailable = [...baseSections, ...catSections];
+      let ordered: any[] = [];
+
+      if (data?.home_sections_order) {
+         try {
+            const savedOrder = JSON.parse(data.home_sections_order);
+            savedOrder.forEach((id: string) => {
+              const found = allAvailable.find(s => s.id === id);
+              if (found) ordered.push(found);
+            });
+            allAvailable.forEach(s => {
+              if (!ordered.find(o => o.id === s.id)) ordered.push(s);
+            });
+         } catch {
+            ordered = [baseSections[0], baseSections[1], ...catSections, baseSections[2], baseSections[3]];
+         }
+      } else {
+         ordered = [baseSections[0], baseSections[1], ...catSections, baseSections[2], baseSections[3]];
+      }
+      
+      const hero = ordered.find(s => s.id === 'hero');
+      const seo = ordered.find(s => s.id === 'seo');
+      const middle = ordered.filter(s => s.id !== 'hero' && s.id !== 'seo');
+      
+      setSections([hero, ...middle, seo]);
     } catch (err) {
       console.error("Error cargando el CMS", err);
     } finally {
@@ -185,7 +219,9 @@ export default function CMSPage() {
   const fetchNavigation = async () => {
     setLoadingNav(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cms/navigation`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cms/navigation`, {
+        headers: getAuthHeaders()
+      });
       if (res.ok) {
         const data = await res.json();
         setNavigationItems(data);
@@ -200,6 +236,8 @@ export default function CMSPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
+      const authHeaders = getAuthHeaders();
+
       // 1. Guardar orden global y site-content
       const orderToSave = sections.map(s => s.id);
       const payload = {
@@ -209,7 +247,7 @@ export default function CMSPage() {
 
       const resContent = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/site-content/`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders,
         body: JSON.stringify(payload)
       });
       
@@ -223,7 +261,7 @@ export default function CMSPage() {
       if (reorderPayload.length > 0) {
         await fetch(`${process.env.NEXT_PUBLIC_API_URL}/service-categories/reorder`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: authHeaders,
           body: JSON.stringify(reorderPayload)
         });
       }
@@ -232,7 +270,7 @@ export default function CMSPage() {
       const categoryPromises = categories.map(cat => 
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/service-categories/${cat.id}`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
+          headers: authHeaders,
           body: JSON.stringify({
              name: cat.name,
              description: cat.description,
@@ -260,11 +298,13 @@ export default function CMSPage() {
   const handleSaveNavigation = async () => {
     setSavingNav(true);
     try {
+      const authHeaders = getAuthHeaders();
+
       // 1. Guardar etiquetas y visibilidad por enlace
       const promises = navigationItems.map(item => 
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/cms/navigation/${item.id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: authHeaders,
           body: JSON.stringify({
             label: item.label,
             is_visible: item.is_visible
@@ -277,7 +317,7 @@ export default function CMSPage() {
       const idsOrder = navigationItems.map(item => item.id);
       const resOrder = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cms/navigation/reorder`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders,
         body: JSON.stringify({ ids: idsOrder })
       });
 
@@ -304,9 +344,10 @@ export default function CMSPage() {
 
   const handleAddNavItem = async (newItem: { label: string; path: string; is_visible: boolean }) => {
     try {
+      const authHeaders = getAuthHeaders();
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cms/navigation`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders,
         body: JSON.stringify(newItem)
       });
       if (!res.ok) throw new Error();
@@ -329,8 +370,10 @@ export default function CMSPage() {
 
   const handleDeleteNavItem = async (itemId: string) => {
     try {
+      const authHeaders = getAuthHeaders();
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cms/navigation/${itemId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: authHeaders
       });
       if (!res.ok) throw new Error();
       setNavigationItems(prev => prev.filter(item => item.id !== itemId));
@@ -365,9 +408,10 @@ export default function CMSPage() {
   const handleSaveMegamenu = async () => {
     setSavingMegamenu(true);
     try {
+      const authHeaders = getAuthHeaders();
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/site-content/`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders,
         body: JSON.stringify({
           megamenu_layout: megamenuLayout,
           megamenu_categories_json: megamenuCategories
@@ -378,6 +422,23 @@ export default function CMSPage() {
         setFormData(updatedData);
         showFeedback({
           type: 'success',
+          title: 'Megamenú Guardado',
+          message: 'La estructura y categorías del menú desplegable han sido actualizadas.'
+        });
+      } else {
+        throw new Error();
+      }
+    } catch (err) {
+      console.error(err);
+      showFeedback({
+        type: 'error',
+        title: 'Error',
+        message: 'No se pudo guardar la configuración del megamenú.'
+      });
+    } finally {
+      setSavingMegamenu(false);
+    }
+  };
           title: 'Megamenú Guardado',
           message: 'La configuración y distribución del megamenú ha sido actualizada con éxito.'
         });

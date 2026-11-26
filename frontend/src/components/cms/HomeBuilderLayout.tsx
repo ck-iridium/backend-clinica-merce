@@ -91,15 +91,15 @@ export default function HomeBuilderLayout({
         </div>
 
         {/* Navegación por Pestañas */}
-        <div className="flex px-6 pt-4 gap-4 border-b border-stone-100 shrink-0 overflow-x-auto hide-scroll">
+        <div className="flex flex-wrap px-5 pt-3 pb-3 gap-1.5 border-b border-stone-100 shrink-0 bg-stone-50/50">
           {tabs.map((tab) => (
             <button
               key={tab}
               onClick={() => onTabChange(tab)}
-              className={`pb-3 text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all border-b-2 ${
+              className={`px-3 py-1.5 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all ${
                 activeTab === tab
-                  ? 'border-[#d4af37] text-stone-800'
-                  : 'border-transparent text-stone-400 hover:text-stone-600'
+                  ? 'bg-stone-900 text-[#d4af37] shadow-xs'
+                  : 'bg-white border border-stone-200/70 text-stone-500 hover:text-stone-800 hover:border-stone-300'
               }`}
             >
               {tab === 'HERO' 

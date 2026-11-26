@@ -546,7 +546,7 @@ export default function ClientHome({ content, settings, services, categories }: 
           if (section.type === 'featured') {
             if (!content.featured_services_config?.enabled) return null;
             return (
-              <div key="featured" className="w-full snap-start snap-stop-always md:snap-none min-h-[100dvh] flex flex-col justify-center">
+              <div key="featured" className="w-full snap-start md:snap-none min-h-[100dvh] h-auto flex flex-col justify-center">
                 <FeaturedServicesSection
                   config={content.featured_services_config}
                   services={translatedServices}
@@ -561,7 +561,7 @@ export default function ClientHome({ content, settings, services, categories }: 
           if (section.type === 'categories_catalog') {
             if (!content.categories_catalog_config?.enabled) return null;
             return (
-              <div key="categories_catalog" className="w-full snap-start snap-stop-always md:snap-none min-h-[100dvh] flex flex-col justify-center">
+              <div key="categories_catalog" className="w-full snap-start md:snap-none min-h-[100dvh] h-auto flex flex-col justify-center">
                 <CategoriesCatalogSection
                   config={content.categories_catalog_config}
                   categories={activeCategories}

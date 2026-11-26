@@ -40,6 +40,33 @@ export default function CategoriesCatalogSection({
     activeCategories = categories.slice(0, 4);
   }
 
+  // Si aún así no hay ninguna categoría (cargando o datos no disponibles), mostrar categorías de muestra garantizadas
+  if (activeCategories.length === 0) {
+    activeCategories = [
+      {
+        id: 'mock-cat-1',
+        name: 'Peluquería & Estilismo',
+        description: 'Cortes vanguardistas, peinados de autor y estilismo profesional de máxima precisión.',
+        image_url: null,
+        slug: 'peluqueria-estilismo'
+      },
+      {
+        id: 'mock-cat-2',
+        name: 'Tratamientos Capilares',
+        description: 'Hidratación profunda, nutrición botánica y reconstrucción para un cabello sublime.',
+        image_url: null,
+        slug: 'tratamientos-capilares'
+      },
+      {
+        id: 'mock-cat-3',
+        name: 'Coloración & Mechas',
+        description: 'Técnicas de balayage, iluminación natural y matices cálidos de máxima fijación.',
+        image_url: null,
+        slug: 'coloracion-mechas'
+      }
+    ];
+  }
+
   const title = config.title || 'Nuestras Especialidades';
   const subtitle = config.subtitle || 'Explora todas las áreas de cuidado y tratamientos diseñados para tu bienestar integral.';
   const layout = config.layout_style || 'bento';
@@ -83,37 +110,9 @@ export default function CategoriesCatalogSection({
           </Link>
         </div>
 
-        {/* ─── CASO VACÍO: MOCKUP SI NO HAY CATEGORÍAS ─── */}
-        {activeCategories.length === 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-6">
-            {[1, 2, 3].map((i) => (
-              <div 
-                key={i} 
-                className="h-[360px] rounded-3xl bg-gradient-to-br from-stone-900 via-stone-850 to-stone-950 border border-stone-800 flex flex-col justify-between p-8 text-white relative overflow-hidden shadow-lg"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#d4af37] bg-black/40 px-3 py-1 rounded-full border border-white/10 backdrop-blur-md">
-                    Especialidad {i}
-                  </span>
-                </div>
-                <div>
-                  <h3 className="text-2xl font-serif font-bold text-white mb-2">Categoría {i}</h3>
-                  <p className="text-stone-400 text-xs leading-relaxed">
-                    Gestiona y activa categorías en la pestaña de Categorías del panel.
-                  </p>
-                </div>
-                <div className="pt-4 border-t border-white/10 flex items-center justify-between text-[#d4af37] text-xs font-bold uppercase tracking-wider">
-                  <span>Explorar categoría →</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
         {/* ─── FORMATO DE CATEGORÍAS ─── */}
-        {activeCategories.length > 0 && (
-          layout === 'bento' ? (
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
+        {layout === 'bento' ? (
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
             {activeCategories.map((cat: any, idx: number) => {
               let colSpan = 'md:col-span-4';
               if (idx === 0) {
@@ -138,7 +137,7 @@ export default function CategoriesCatalogSection({
                   className={`${colSpan} h-[320px] sm:h-[380px] md:h-[420px] group relative rounded-3xl overflow-hidden shadow-sm border border-stone-200/60 dark:border-stone-800 flex flex-col justify-end p-6 md:p-8 transition-all duration-500 hover:shadow-2xl hover:border-[#d4af37]/60 active:scale-[0.99]`}
                 >
                   {/* Imagen de fondo con degradado de respaldo Quiet Luxury 2026 */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-stone-900 via-stone-850 to-stone-950 z-0 overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-stone-900 via-stone-800 to-stone-950 z-0 overflow-hidden">
                     {cat.image_url ? (
                       <img
                         src={getFullUrl(cat.image_url)}
@@ -146,9 +145,11 @@ export default function CategoriesCatalogSection({
                         className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                       />
                     ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center opacity-70">
-                        <Layers className="w-12 h-12 text-[#d4af37]/50 mb-3" />
-                        <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#d4af37]/80">Especialidad</span>
+                      <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center">
+                        <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-3 backdrop-blur-sm group-hover:scale-105 group-hover:border-[#d4af37]/40 transition-all duration-500">
+                          <Layers className="w-8 h-8 text-[#d4af37]" />
+                        </div>
+                        <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#d4af37]/90">Especialidad</span>
                       </div>
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/15 z-10" />
@@ -161,7 +162,7 @@ export default function CategoriesCatalogSection({
                         Especialidad
                       </span>
                       {showCount && count > 0 && (
-                        <span className="text-white/80 text-xs font-medium bg-black/30 px-2.5 py-0.5 rounded-full backdrop-blur-xs">
+                        <span className="text-white/80 text-xs font-medium bg-black/30 px-2.5 py-0.5 rounded-full backdrop-blur-sm">
                           {count} {count === 1 ? 'tratamiento' : 'tratamientos'}
                         </span>
                       )}
@@ -199,7 +200,7 @@ export default function CategoriesCatalogSection({
                   href={targetUrl}
                   className="h-[360px] group relative rounded-3xl overflow-hidden shadow-sm border border-stone-200/60 dark:border-stone-800 flex flex-col justify-end p-6 md:p-8 transition-all duration-500 hover:shadow-xl hover:border-[#d4af37]/60 active:scale-[0.99]"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-stone-900 via-stone-850 to-stone-950 z-0 overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-stone-900 via-stone-800 to-stone-950 z-0 overflow-hidden">
                     {cat.image_url ? (
                       <img
                         src={getFullUrl(cat.image_url)}
@@ -207,9 +208,11 @@ export default function CategoriesCatalogSection({
                         className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                       />
                     ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center opacity-70">
-                        <Layers className="w-10 h-10 text-[#d4af37]/50 mb-2" />
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#d4af37]/80">Especialidad</span>
+                      <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center">
+                        <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-2 backdrop-blur-sm group-hover:scale-105 group-hover:border-[#d4af37]/40 transition-all duration-500">
+                          <Layers className="w-7 h-7 text-[#d4af37]" />
+                        </div>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#d4af37]/90">Especialidad</span>
                       </div>
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/15 z-10" />
@@ -217,7 +220,7 @@ export default function CategoriesCatalogSection({
 
                   <div className="relative z-20 text-white">
                     {showCount && count > 0 && (
-                      <span className="inline-block text-white/80 text-[11px] font-medium bg-black/40 px-2.5 py-0.5 rounded-full backdrop-blur-xs mb-2">
+                      <span className="inline-block text-white/80 text-[11px] font-medium bg-black/40 px-2.5 py-0.5 rounded-full backdrop-blur-sm mb-2">
                         {count} tratamientos
                       </span>
                     )}
@@ -241,7 +244,6 @@ export default function CategoriesCatalogSection({
               );
             })}
           </div>
-          )
         )}
       </div>
     </section>
