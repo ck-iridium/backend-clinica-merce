@@ -115,7 +115,7 @@ export default function ServicesDataGrid({
     }
 
     if (webVisibilityFilter === 'web') {
-      result = result.filter(s => s.is_visible_on_web !== false);
+      result = result.filter(s => s.is_visible_on_web !== false && s.is_visible_on_pos !== false);
     } else if (webVisibilityFilter === 'web_only') {
       result = result.filter(s => s.is_visible_on_web !== false && s.is_visible_on_pos === false);
     } else if (webVisibilityFilter === 'hidden') {

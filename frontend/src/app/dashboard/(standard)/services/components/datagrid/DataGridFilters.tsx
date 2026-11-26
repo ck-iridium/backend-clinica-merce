@@ -1,6 +1,6 @@
 "use client"
 import React from 'react';
-import { Search, Sparkles, Package, AlertTriangle, Globe, EyeOff } from 'lucide-react';
+import { Search, Sparkles, Package, AlertTriangle, Globe, Store } from 'lucide-react';
 
 interface DataGridFiltersProps {
   categories: any[];
@@ -78,7 +78,7 @@ export function DataGridFilters({
                 }`}
               >
                 <Package size={13} className="text-stone-600" />
-                <span>Productos (TPV) {counts ? `(${counts.products})` : ''}</span>
+                <span>Productos {counts ? `(${counts.products})` : ''}</span>
               </button>
               {enableStockControl && (
                 <button
@@ -114,25 +114,25 @@ export function DataGridFilters({
                     : 'text-stone-500 hover:text-stone-900'
                 }`}
               >
-                Web: Todos
+                Canal: Todos
               </button>
               <button
                 type="button"
                 onClick={() => onWebVisibilityFilterChange('web')}
                 className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-all flex items-center gap-1 ${
                   webVisibilityFilter === 'web'
-                    ? 'bg-white text-emerald-700 shadow-xs'
+                    ? 'bg-white text-sky-700 shadow-xs'
                     : 'text-stone-500 hover:text-stone-900'
                 }`}
               >
-                <Globe size={12} /> En Web
+                <Globe size={12} /> Web y TPV
               </button>
               <button
                 type="button"
                 onClick={() => onWebVisibilityFilterChange('web_only')}
                 className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-all flex items-center gap-1 ${
                   webVisibilityFilter === 'web_only'
-                    ? 'bg-white text-emerald-800 shadow-xs'
+                    ? 'bg-white text-emerald-700 shadow-xs'
                     : 'text-stone-500 hover:text-stone-900'
                 }`}
               >
@@ -147,7 +147,7 @@ export function DataGridFilters({
                     : 'text-stone-500 hover:text-stone-900'
                 }`}
               >
-                <EyeOff size={12} /> Oculto en Web
+                <Store size={12} /> Solo TPV
               </button>
             </div>
           )}
