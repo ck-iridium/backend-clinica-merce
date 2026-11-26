@@ -342,6 +342,62 @@ export function useServiceMutations({
     });
   };
 
+  const handleBulkTrackStock = async (track_stock: boolean) => {
+    if (selectedIds.size === 0) return;
+    setBulkActionLoading(true);
+    const toastId = toast.loading(`Actualizando control de stock de ${selectedIds.size} ítems...`);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/bulk-track-stock`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          ids: Array.from(selectedIds),
+          track_stock,
+        })
+      });
+      if (res.ok) {
+        toast.success(`Control de stock actualizado en los productos seleccionados.`, { id: toastId });
+        setSelectedIds(new Set());
+        if (onRefresh) onRefresh();
+      } else {
+        const data = await res.json();
+        toast.error(data.detail || 'Error al actualizar el control de stock en lote.', { id: toastId });
+      }
+    } catch {
+      toast.error('Error de red al actualizar el control de stock en lote.', { id: toastId });
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
+  const handleBulkWebVisibility = async (is_visible_on_web: boolean) => {
+    if (selectedIds.size === 0) return;
+    setBulkActionLoading(true);
+    const toastId = toast.loading(`Actualizando visibilidad web de ${selectedIds.size} ítems...`);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/bulk-visibility`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          ids: Array.from(selectedIds),
+          is_visible_on_web,
+        })
+      });
+      if (res.ok) {
+        toast.success(`Visibilidad web de ${selectedIds.size} ítems actualizada con éxito.`, { id: toastId });
+        setSelectedIds(new Set());
+        if (onRefresh) onRefresh();
+      } else {
+        const data = await res.json();
+        toast.error(data.detail || 'Error al actualizar visibilidad web en lote.', { id: toastId });
+      }
+    } catch {
+      toast.error('Error de red al actualizar visibilidad web en lote.', { id: toastId });
+    } finally {
+      setBulkActionLoading(false);
+    }
+  };
+
   const handleQuickStockDelta = async (service: any, delta: number) => {
     const currentStock = Number(service.stock ?? 0);
     const nextStock = Math.max(0, currentStock + delta);
@@ -383,6 +439,8 @@ export function useServiceMutations({
     bulkActionLoading,
     handleBulkStatusChange,
     handleBulkDelete,
+    handleBulkTrackStock,
+    handleBulkWebVisibility,
     handleQuickStockDelta,
   };
 }

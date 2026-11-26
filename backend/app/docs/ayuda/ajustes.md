@@ -105,6 +105,7 @@ Para guiar visualmente al usuario y señalar elementos, utiliza la URL `/dashboa
 - IVA por Defecto: `id="billing-default-tax-rate"`
 - Subir Logo para Factura PDF: `id="billing-logo-pdf-btn"` (Dispara input de archivo `id="billing-logo-pdf-input"`)
 - Subir Firma/Cuño para Factura: `id="billing-signature-btn"` (Dispara input de archivo `id="billing-signature-input"`)
+- **Control Global de Stock e Inventario (`enable_stock_control`):** `id="billing-stock-control-toggle"` — Activa o desactiva de forma global el seguimiento de inventario, las alertas de reposición en el catálogo y el descuento automático de unidades al cobrar productos en el TPV. (Además, cada producto individual tiene su propio interruptor `track_stock` en su ficha `id="service-editor-general-track-stock-toggle"` o mediante acciones en lote en `/dashboard/services`).
 
 ### Pestaña: Pasarela de Pagos (Stripe)
 - Conectar Cuenta Stripe: `id="payments-connect-stripe-btn"`

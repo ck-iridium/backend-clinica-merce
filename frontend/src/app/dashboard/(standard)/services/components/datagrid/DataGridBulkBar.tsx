@@ -1,6 +1,6 @@
 "use client"
 import React from 'react';
-import { Eye, EyeOff, Trash2 } from 'lucide-react';
+import { Eye, EyeOff, Globe, PackageCheck, PackageX, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface DataGridBulkBarProps {
@@ -8,6 +8,10 @@ interface DataGridBulkBarProps {
   bulkActionLoading: boolean;
   onBulkActivate: () => void;
   onBulkDeactivate: () => void;
+  onBulkShowOnWeb?: () => void;
+  onBulkHideFromWeb?: () => void;
+  onBulkEnableStock?: () => void;
+  onBulkDisableStock?: () => void;
   onBulkDelete: () => void;
   language: string;
 }
@@ -17,6 +21,10 @@ export function DataGridBulkBar({
   bulkActionLoading,
   onBulkActivate,
   onBulkDeactivate,
+  onBulkShowOnWeb,
+  onBulkHideFromWeb,
+  onBulkEnableStock,
+  onBulkDisableStock,
   onBulkDelete,
   language,
 }: DataGridBulkBarProps) {
@@ -54,6 +62,50 @@ export function DataGridBulkBar({
         >
           <EyeOff size={14} /> {language === 'fr' ? 'Tout désactiver' : language === 'en' ? 'Deactivate All' : 'Desactivar Todos'}
         </Button>
+        {onBulkShowOnWeb && (
+          <Button
+            type="button"
+            size="sm"
+            disabled={bulkActionLoading}
+            onClick={onBulkShowOnWeb}
+            className="bg-stone-800 hover:bg-stone-700 text-emerald-300 text-xs font-bold rounded-xl h-9 px-3 gap-1.5 transition-all"
+          >
+            <Globe size={14} /> Mostrar en Web
+          </Button>
+        )}
+        {onBulkHideFromWeb && (
+          <Button
+            type="button"
+            size="sm"
+            disabled={bulkActionLoading}
+            onClick={onBulkHideFromWeb}
+            className="bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs font-bold rounded-xl h-9 px-3 gap-1.5 transition-all"
+          >
+            <EyeOff size={14} /> Ocultar de Web
+          </Button>
+        )}
+        {onBulkEnableStock && (
+          <Button
+            type="button"
+            size="sm"
+            disabled={bulkActionLoading}
+            onClick={onBulkEnableStock}
+            className="bg-stone-800 hover:bg-stone-700 text-amber-300 text-xs font-bold rounded-xl h-9 px-3 gap-1.5 transition-all"
+          >
+            <PackageCheck size={14} /> Controlar Stock
+          </Button>
+        )}
+        {onBulkDisableStock && (
+          <Button
+            type="button"
+            size="sm"
+            disabled={bulkActionLoading}
+            onClick={onBulkDisableStock}
+            className="bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs font-bold rounded-xl h-9 px-3 gap-1.5 transition-all"
+          >
+            <PackageX size={14} /> Sin Control Stock
+          </Button>
+        )}
         <Button
           id="services-bulk-delete-btn"
           type="button"

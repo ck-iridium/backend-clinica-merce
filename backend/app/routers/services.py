@@ -448,6 +448,31 @@ def bulk_status_services(payload: schemas.BulkStatusPayload, db: Session = Depen
     return {"message": f"Estado de {updated_count} servicios actualizado con éxito"}
 
 
+@router.post("/bulk-visibility")
+def bulk_visibility_services(payload: schemas.BulkWebVisibilityPayload, db: Session = Depends(database.get_db)):
+    tenant_id = database.current_tenant_var.get()
+    updated_count = db.query(models.Service).filter(
+        models.Service.id.in_(payload.ids),
+        models.Service.tenant_id == tenant_id
+    ).update({models.Service.is_visible_on_web: payload.is_visible_on_web}, synchronize_session=False)
+
+    db.commit()
+    return {"message": f"Visibilidad web de {updated_count} ítems actualizada con éxito"}
+
+
+@router.post("/bulk-track-stock")
+def bulk_track_stock_services(payload: schemas.BulkTrackStockPayload, db: Session = Depends(database.get_db)):
+    tenant_id = database.current_tenant_var.get()
+    updated_count = db.query(models.Service).filter(
+        models.Service.id.in_(payload.ids),
+        models.Service.tenant_id == tenant_id,
+        models.Service.is_product == True
+    ).update({models.Service.track_stock: payload.track_stock}, synchronize_session=False)
+
+    db.commit()
+    return {"message": f"Control de stock de {updated_count} productos actualizado con éxito"}
+
+
 @router.post("/export-to-media")
 def export_services_to_media(db: Session = Depends(database.get_db)):
     """Exports the current tenant's services to a CSV file and saves it in their Media Gallery."""

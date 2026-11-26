@@ -49,3 +49,11 @@ class BulkActionPayload(BaseModel):
 class BulkStatusPayload(BaseModel):
     ids: List[str]
     is_active: bool
+
+class BulkWebVisibilityPayload(BaseModel):
+    ids: List[str]
+    is_visible_on_web: bool
+
+class BulkTrackStockPayload(BaseModel):
+    ids: List[str]
+    track_stock: bool

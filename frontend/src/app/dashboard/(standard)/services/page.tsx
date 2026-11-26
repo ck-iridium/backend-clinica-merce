@@ -35,6 +35,7 @@ export default function ServicesPage() {
   const [showManageCategoriesModal, setShowManageCategoriesModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [planType, setPlanType] = useState<string | null>(null);
+  const [enableStockControl, setEnableStockControl] = useState<boolean>(true);
   const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
@@ -212,8 +213,15 @@ export default function ServicesPage() {
 
   const fetchServices = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/`);
+      const [res, settingsRes] = await Promise.all([
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/services/?limit=1000`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings/`)
+      ]);
       if (res.ok) setServices(await res.json());
+      if (settingsRes.ok) {
+        const sData = await settingsRes.json();
+        setEnableStockControl(sData.enable_stock_control !== false);
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -250,6 +258,18 @@ export default function ServicesPage() {
           <div className="flex flex-wrap items-center gap-3">
             <h1 className="text-3xl font-serif font-bold text-stone-900 tracking-tight">{t('dashboard.services.title')}</h1>
             <PlanLimitsCard type="services" />
+            <Link
+              href="/dashboard/settings?tab=billing&hint=billing-stock-control-toggle"
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border transition-colors ${
+                enableStockControl
+                  ? 'bg-emerald-50/80 text-emerald-700 border-emerald-200/80 hover:bg-emerald-100/80'
+                  : 'bg-stone-100 text-stone-600 border-stone-200 hover:bg-stone-200/80'
+              }`}
+              title="Configurar control global de stock en Ajustes > Facturación"
+            >
+              <span className={`w-1.5 h-1.5 rounded-full ${enableStockControl ? 'bg-emerald-500' : 'bg-stone-400'}`} />
+              {enableStockControl ? 'Control de stock: Activo' : 'Control de stock: Desactivado'}
+            </Link>
           </div>
           <p className="text-stone-500 font-medium text-sm">{t('dashboard.services.subtitle')}</p>
         </div>
@@ -323,6 +343,7 @@ export default function ServicesPage() {
         categories={categories}
         loading={loading}
         showArchived={showArchived}
+        enableStockControl={enableStockControl}
         onEditClick={handleEditClick}
         onRefresh={fetchServices}
       />

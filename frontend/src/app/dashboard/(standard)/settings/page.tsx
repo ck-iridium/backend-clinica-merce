@@ -77,6 +77,7 @@ export default function SettingsPage() {
       'billing-default-tax-rate': 'billing',
       'billing-logo-pdf-btn': 'billing',
       'billing-signature-btn': 'billing',
+      'billing-stock-control-toggle': 'billing',
       'payments-connect-stripe-btn': 'payments',
       'payments-manage-stripe-link': 'payments',
       'payments-refresh-status-btn': 'payments',

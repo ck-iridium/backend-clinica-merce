@@ -1,6 +1,6 @@
 "use client"
 import React from 'react';
-import { Pencil, Trash2, Loader2, Sparkles, Package } from 'lucide-react';
+import { Pencil, Trash2, Loader2, Sparkles, Package, EyeOff } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -31,6 +31,7 @@ interface DataGridRowProps {
   onEditClick: (svc: any) => void;
   onDeleteClick: () => void;
   onQuickStockDelta?: (delta: number) => void;
+  enableStockControl?: boolean;
   language: string;
 }
 
@@ -55,6 +56,7 @@ export function DataGridRow({
   onEditClick,
   onDeleteClick,
   onQuickStockDelta,
+  enableStockControl = true,
   language,
 }: DataGridRowProps) {
   return (
@@ -134,8 +136,11 @@ export function DataGridRow({
             </span>
           )}
           {svc.is_visible_on_web === false && (
-            <span className="px-1.5 py-0.5 text-[9px] rounded-full font-bold bg-rose-50 text-rose-700 border border-rose-200" title="Oculto de la web pública (Uso interno TPV/Agenda)">
-              Solo TPV
+            <span
+              className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] rounded-full font-bold bg-stone-100 text-stone-600 border border-stone-200"
+              title="No se muestra en la web pública de reservas; disponible solo en Agenda interna y TPV"
+            >
+              <EyeOff size={9} /> Oculto en Web
             </span>
           )}
           {svc.is_featured && (
@@ -202,6 +207,18 @@ export function DataGridRow({
       {/* Duración o Control Rápido de Stock (Productos TPV) */}
       <td className="p-4">
         {svc.is_product ? (() => {
+          const isTracked = enableStockControl && Boolean(svc.track_stock);
+          if (!isTracked) {
+            return (
+              <span
+                className="inline-flex items-center px-2 py-1 rounded-lg border border-stone-200 bg-stone-50 text-stone-500 text-[10px] font-semibold whitespace-nowrap"
+                title={enableStockControl ? 'Producto sin control de inventario' : 'Control global de stock desactivado'}
+              >
+                Sin control stock
+              </span>
+            );
+          }
+
           const stockVal = Number(svc.stock ?? 0);
           const minStockVal = svc.min_stock !== null && svc.min_stock !== undefined ? Number(svc.min_stock) : 0;
           const isZero = stockVal <= 0;

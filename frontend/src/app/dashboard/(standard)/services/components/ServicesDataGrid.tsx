@@ -2,6 +2,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import MediaPickerModal from '@/components/MediaPickerModal';
+import { Button } from '@/components/ui/button';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   DataGridFilters,
   DataGridBulkBar,
@@ -15,6 +17,7 @@ interface ServicesDataGridProps {
   categories: any[];
   loading: boolean;
   showArchived: boolean;
+  enableStockControl?: boolean;
   onEditClick: (svc: any) => void;
   onRefresh?: () => void;
 }
@@ -24,16 +27,20 @@ export default function ServicesDataGrid({
   categories,
   loading,
   showArchived,
+  enableStockControl = true,
   onEditClick,
   onRefresh,
 }: ServicesDataGridProps) {
   const { language } = useLanguage();
 
-  // Estados locales de filtrado y selección
+  // Estados locales de filtrado, selección y paginación
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [itemTypeFilter, setItemTypeFilter] = useState<'all' | 'services' | 'products' | 'low_stock'>('all');
+  const [webVisibilityFilter, setWebVisibilityFilter] = useState<'all' | 'web' | 'hidden'>('all');
+  const [pageSize, setPageSize] = useState<15 | 25 | 50 | 'all'>(25);
+  const [currentPage, setCurrentPage] = useState<number>(1);
 
   // Hook desacoplado de mutaciones y acciones rápidas
   const {
@@ -56,6 +63,8 @@ export default function ServicesDataGrid({
     bulkActionLoading,
     handleBulkStatusChange,
     handleBulkDelete,
+    handleBulkTrackStock,
+    handleBulkWebVisibility,
     handleQuickStockDelta,
   } = useServiceMutations({
     language,
@@ -66,53 +75,77 @@ export default function ServicesDataGrid({
 
   const getCategoryName = (id: string) => categories.find(c => c.id === id)?.name || "General";
 
-  // Reiniciar selección al cambiar filtros
+  // Reiniciar selección y página al cambiar filtros
   useEffect(() => {
     setSelectedIds(new Set());
-  }, [selectedCategory, searchQuery, showArchived]);
+    setCurrentPage(1);
+  }, [selectedCategory, searchQuery, showArchived, itemTypeFilter, webVisibilityFilter, pageSize]);
 
-  const lowStockCount = useMemo(() => {
-    return services.filter(s => {
-      if (!s.is_active || !s.is_product) return false;
-      const st = Number(s.stock ?? 0);
-      const minSt = s.min_stock !== null && s.min_stock !== undefined ? Number(s.min_stock) : 0;
-      return st === 0 || (minSt > 0 && st <= minSt);
-    }).length;
-  }, [services]);
+  const isLowStockItem = (s: any) => {
+    if (!enableStockControl || !s.is_product || !s.track_stock) return false;
+    const st = Number(s.stock ?? 0);
+    const minSt = s.min_stock !== null && s.min_stock !== undefined ? Number(s.min_stock) : 0;
+    return st === 0 || (minSt > 0 && st <= minSt);
+  };
 
-  // Filtrado de servicios
-  const filteredServices = useMemo(() => {
-    let result = services;
+  const baseActiveServices = useMemo(() => {
+    return showArchived ? services : services.filter(s => s.is_active);
+  }, [services, showArchived]);
 
-    // A. Filtrado por estado archivado (is_active)
-    if (!showArchived) {
-      result = result.filter(s => s.is_active);
-    }
+  const counts = useMemo(() => {
+    const all = baseActiveServices.length;
+    const svcCount = baseActiveServices.filter(s => !s.is_product).length;
+    const prodCount = baseActiveServices.filter(s => s.is_product).length;
+    const lowStock = baseActiveServices.filter(s => s.is_active && isLowStockItem(s)).length;
+    return { all, services: svcCount, products: prodCount, low_stock: lowStock };
+  }, [baseActiveServices, enableStockControl]);
 
-    // A2. Filtrado por Tipo de Ítem (Servicios vs Productos vs Reposición)
+  const lowStockCount = counts.low_stock;
+
+  // Subconjunto tras tipo de ítem y visibilidad web (para filtrar categorías dinámicamente)
+  const preCategoryServices = useMemo(() => {
+    let result = baseActiveServices;
+
     if (itemTypeFilter === 'services') {
       result = result.filter(s => !s.is_product);
     } else if (itemTypeFilter === 'products') {
       result = result.filter(s => s.is_product);
     } else if (itemTypeFilter === 'low_stock') {
-      result = result.filter(s => {
-        if (!s.is_product) return false;
-        const st = Number(s.stock ?? 0);
-        const minSt = s.min_stock !== null && s.min_stock !== undefined ? Number(s.min_stock) : 0;
-        return st === 0 || (minSt > 0 && st <= minSt);
-      });
+      result = result.filter(s => isLowStockItem(s));
     }
 
-    // B. Filtrado por categoría seleccionada
+    if (webVisibilityFilter === 'web') {
+      result = result.filter(s => s.is_visible_on_web !== false);
+    } else if (webVisibilityFilter === 'hidden') {
+      result = result.filter(s => s.is_visible_on_web === false);
+    }
+
+    return result;
+  }, [baseActiveServices, itemTypeFilter, webVisibilityFilter, enableStockControl]);
+
+  const visibleCategories = useMemo(() => {
+    const activeCatIds = new Set(preCategoryServices.map(s => s.category_id).filter(Boolean));
+    return categories.filter(c => activeCatIds.has(c.id));
+  }, [categories, preCategoryServices]);
+
+  useEffect(() => {
+    if (selectedCategory !== 'all' && !visibleCategories.some(c => c.id === selectedCategory)) {
+      setSelectedCategory('all');
+    }
+  }, [visibleCategories, selectedCategory]);
+
+  // Filtrado completo de servicios
+  const filteredServices = useMemo(() => {
+    let result = preCategoryServices;
+
     if (selectedCategory !== 'all') {
       result = result.filter(s => s.category_id === selectedCategory);
     }
 
-    // C. Filtrado por término de búsqueda (nombre, descripción, categoría, SKU o proveedor)
     if (searchQuery.trim() !== '') {
       const term = searchQuery.toLowerCase().trim();
-      result = result.filter(s => 
-        s.name.toLowerCase().includes(term) || 
+      result = result.filter(s =>
+        s.name.toLowerCase().includes(term) ||
         (s.description && s.description.toLowerCase().includes(term)) ||
         (s.sku && s.sku.toLowerCase().includes(term)) ||
         (s.supplier && s.supplier.toLowerCase().includes(term)) ||
@@ -122,20 +155,34 @@ export default function ServicesDataGrid({
     }
 
     return result;
-  }, [services, selectedCategory, searchQuery, showArchived, categories, itemTypeFilter]);
+  }, [preCategoryServices, selectedCategory, searchQuery, categories]);
 
-  // Selección
+  // Paginación cliente
+  const totalPages = useMemo(() => {
+    if (pageSize === 'all') return 1;
+    return Math.max(1, Math.ceil(filteredServices.length / pageSize));
+  }, [filteredServices.length, pageSize]);
+
+  const safePage = Math.min(currentPage, totalPages);
+
+  const paginatedServices = useMemo(() => {
+    if (pageSize === 'all') return filteredServices;
+    const start = (safePage - 1) * pageSize;
+    return filteredServices.slice(start, start + pageSize);
+  }, [filteredServices, pageSize, safePage]);
+
+  // Selección (sobre la página visible)
   const isAllSelected = useMemo(() => {
-    if (filteredServices.length === 0) return false;
-    return filteredServices.every(s => selectedIds.has(s.id));
-  }, [filteredServices, selectedIds]);
+    if (paginatedServices.length === 0) return false;
+    return paginatedServices.every(s => selectedIds.has(s.id));
+  }, [paginatedServices, selectedIds]);
 
   const handleSelectAllToggle = () => {
     const newSelected = new Set(selectedIds);
     if (isAllSelected) {
-      filteredServices.forEach(s => newSelected.delete(s.id));
+      paginatedServices.forEach(s => newSelected.delete(s.id));
     } else {
-      filteredServices.forEach(s => newSelected.add(s.id));
+      paginatedServices.forEach(s => newSelected.add(s.id));
     }
     setSelectedIds(newSelected);
   };
@@ -160,7 +207,7 @@ export default function ServicesDataGrid({
       
       {/* ── SECCIÓN DE FILTROS SUPERIORES Y BÚSQUEDA ── */}
       <DataGridFilters
-        categories={categories}
+        categories={visibleCategories}
         selectedCategory={selectedCategory}
         onSelectCategory={setSelectedCategory}
         searchQuery={searchQuery}
@@ -169,6 +216,10 @@ export default function ServicesDataGrid({
         itemTypeFilter={itemTypeFilter}
         onItemTypeFilterChange={setItemTypeFilter}
         lowStockCount={lowStockCount}
+        counts={counts}
+        webVisibilityFilter={webVisibilityFilter}
+        onWebVisibilityFilterChange={setWebVisibilityFilter}
+        enableStockControl={enableStockControl}
       />
 
       {/* ── BARRA FLOTANTE DE ACCIONES EN MASA ── */}
@@ -177,6 +228,10 @@ export default function ServicesDataGrid({
         bulkActionLoading={bulkActionLoading}
         onBulkActivate={() => handleBulkStatusChange(true)}
         onBulkDeactivate={() => handleBulkStatusChange(false)}
+        onBulkShowOnWeb={() => handleBulkWebVisibility(true)}
+        onBulkHideFromWeb={() => handleBulkWebVisibility(false)}
+        onBulkEnableStock={() => handleBulkTrackStock(true)}
+        onBulkDisableStock={() => handleBulkTrackStock(false)}
         onBulkDelete={handleBulkDelete}
         language={language}
       />
@@ -242,7 +297,7 @@ export default function ServicesDataGrid({
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-100">
-                {filteredServices.map(svc => {
+                {paginatedServices.map(svc => {
                   const isChecked = selectedIds.has(svc.id);
                   const displayCategory = getCategoryName(svc.category_id);
                   const isStatusUpdating = updatingStatusIds.has(svc.id);
@@ -279,6 +334,7 @@ export default function ServicesDataGrid({
                       onEditClick={onEditClick}
                       onDeleteClick={() => handleDeleteIndividual(svc.id, svc.name)}
                       onQuickStockDelta={(delta) => handleQuickStockDelta(svc, delta)}
+                      enableStockControl={enableStockControl}
                       language={language}
                     />
                   );
@@ -287,20 +343,73 @@ export default function ServicesDataGrid({
             </table>
           </div>
           
-          {/* Footer de la Tabla con recuento */}
-          <div className="p-4 bg-stone-50 border-t border-stone-100 flex items-center justify-between text-xs text-stone-400 font-bold tracking-wide">
-            <div>
-              {language === 'fr' 
-                ? `Affichage de ${filteredServices.length} sur ${services.length} traitements` 
-                : language === 'en' 
-                ? `Showing ${filteredServices.length} of ${services.length} services` 
-                : `Mostrando ${filteredServices.length} de ${services.length} tratamientos`}
+          {/* Footer de la Tabla con recuento y paginación */}
+          <div className="p-4 bg-stone-50 border-t border-stone-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-stone-500 font-bold tracking-wide">
+            <div className="flex flex-wrap items-center gap-3">
+              <span>
+                {(() => {
+                  const startIdx = pageSize === 'all' ? 1 : (safePage - 1) * pageSize + 1;
+                  const endIdx = pageSize === 'all'
+                    ? filteredServices.length
+                    : Math.min(safePage * pageSize, filteredServices.length);
+                  return `Mostrando ${startIdx}-${endIdx} de ${filteredServices.length} filtrados (${services.length} totales)`;
+                })()}
+              </span>
+              {selectedIds.size > 0 && (
+                <span className="text-[#d4af37]">
+                  · {selectedIds.size} {language === 'fr' ? 'sélectionnés' : language === 'en' ? 'selected' : 'seleccionados'}
+                </span>
+              )}
             </div>
-            {selectedIds.size > 0 && (
-              <div className="text-[#d4af37]">
-                {selectedIds.size} {language === 'fr' ? 'sélectionnés' : language === 'en' ? 'selected' : 'seleccionados'}
+
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Selector de tamaño de página */}
+              <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-stone-200">
+                {([15, 25, 50, 'all'] as const).map((sizeOpt) => (
+                  <button
+                    key={String(sizeOpt)}
+                    type="button"
+                    onClick={() => setPageSize(sizeOpt)}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                      pageSize === sizeOpt
+                        ? 'bg-stone-900 text-white'
+                        : 'text-stone-500 hover:text-stone-900'
+                    }`}
+                  >
+                    {sizeOpt === 'all' ? 'Todos' : sizeOpt}
+                  </button>
+                ))}
               </div>
-            )}
+
+              {/* Controles de página */}
+              {pageSize !== 'all' && totalPages > 1 && (
+                <div className="flex items-center gap-1.5">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={safePage <= 1}
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    className="h-8 px-2.5 rounded-xl text-xs"
+                  >
+                    <ChevronLeft size={14} /> Anterior
+                  </Button>
+                  <span className="px-2 text-[11px] font-semibold text-stone-600">
+                    Página {safePage} de {totalPages}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={safePage >= totalPages}
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    className="h-8 px-2.5 rounded-xl text-xs"
+                  >
+                    Siguiente <ChevronRight size={14} />
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
 
         </div>

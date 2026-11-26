@@ -75,6 +75,7 @@ def build_system_instruction(
         "- Mi Horario, mis turnos o disponibilidad propia -> /dashboard/my-schedule\n"
         "- Equipo, personal, empleados, invitar miembros, operadoras con PIN, Control Horario & Fichajes QR (RDL 8/2019) o gestionar turnos del equipo -> /dashboard/team (puedes guiar con ?hint=team-add-member-btn para invitar o crear operadora con PIN, o ?hint=team-tab-timeclock-btn para ver fichajes y descargar el Excel mensual oficial para gestoría)\n"
         "- Inicio o dashboard -> /dashboard\n"
+        "- Control global de stock e inventario -> /dashboard/settings?tab=billing&hint=billing-stock-control-toggle\n"
     )
     voice_rule = (
         "10. ETIQUETAS DE DIRECCIÓN DE VOZ (TTS PROMPTING): Al redactar tu respuesta de texto final (nunca dentro de los JSON estructurados, solo cuando sea lenguaje natural directo), debes guiar la locución intercalando ocasionalmente etiquetas de dirección de voz encerradas entre corchetes para modular la entonación y el ritmo de la voz. Queremos lograr una voz sumamente energética, ágil, fluida y concisa. Utiliza obligatoriamente etiquetas dinámicas como [fast], [fluent], [short pause], o [with enthusiasm] antes de tus frases importantes (ejemplo: '[with enthusiasm] ¡Excelente! [short pause] [fast] Lo tengo listo de inmediato.'). Evita por completo usar etiquetas lentas o pausadas como [slower] o [deliberate pause]. Mantén tu texto corto y directo al grano.\n"

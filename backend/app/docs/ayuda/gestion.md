@@ -152,6 +152,13 @@ Catálogo central de tratamientos y productos de venta de la clínica. Permite a
   - Eliminar Selección: `id="services-bulk-delete-btn"`
   - Selector global (Marcar Todos): `id="services-select-all-checkbox"`
 - **Edición Inline en Fila de Tabla (por servicio con `[id]`):**
+  - **Filtros, Visibilidad Web, Paginación y Control de Stock en el Catálogo:**
+    - Filtros superiores con conteo real: `Todos`, `Servicios`, `Productos (TPV)` y `Reposición` (solo cuenta productos activos con `Controlar stock` activado y stock bajo o a cero, siempre que el control global de stock esté activo en Ajustes > Facturación).
+    - Filtro rápido de visibilidad web (`Web: Todos` / `En Web` / `Oculto en Web`) y badge `Oculto en Web` para ítems internos de TPV/Agenda que no se muestran en la web pública.
+    - Categorías/familias dinámicas según la pestaña activa y paginación en el pie de tabla con selector `15 / 25 / 50 / Todos` (por defecto 25 por página).
+    - Acciones masivas al seleccionar ítems: Activar/Desactivar, `Mostrar en Web`, `Ocultar de Web`, `Controlar Stock`, `Sin Control Stock` y Eliminar lote.
+    - Al importar desde Excel (`Importar Excel / Tarifas`), puedes elegir tanto la visibilidad (`visibility_mode`) como el control de stock (`stock_control_mode`: Automático si trae stock, Activar en productos, o Sin control de stock).
+    - Al cobrar un producto en el TPV con control global y `track_stock` activos, el stock se descuenta automáticamente.
   - Checkbox selección de lote: `id="services-select-checkbox-[id]"`
   - Selector de categoría: `id="services-category-select-[id]"`
   - Input duración (min): `id="services-duration-input-[id]"`
@@ -192,6 +199,7 @@ Catálogo central de tratamientos y productos de venta de la clínica. Permite a
   - Importe fianza: `id="service-editor-general-deposit-amount-input"`
   - Autogenerar descripción con IA: `id="service-editor-general-ai-desc-btn"`
   - Descripción corta (textarea): `id="service-editor-general-desc-textarea"`
+  - Toggle control de stock individual (en productos TPV): `id="service-editor-general-track-stock-toggle"`
   - Checkbox activo: `id="service-editor-general-active-checkbox"`
 - **Pestaña: Contenido**
   - Contenedor TipTap: `id="service-editor-content-tiptap"`
