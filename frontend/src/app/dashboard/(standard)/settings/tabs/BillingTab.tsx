@@ -294,7 +294,7 @@ export default function BillingTab({
             type="button"
             role="switch"
             aria-checked={settings.enable_stock_control !== false}
-            onClick={() => updateSetting('enable_stock_control', settings.enable_stock_control === false)}
+            onClick={() => setSettings({ ...settings, enable_stock_control: settings.enable_stock_control === false })}
             className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/40 ${
               settings.enable_stock_control !== false ? 'bg-emerald-500' : 'bg-stone-200'
             }`}
