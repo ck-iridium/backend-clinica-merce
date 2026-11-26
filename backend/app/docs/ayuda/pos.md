@@ -3,12 +3,16 @@
 Este manual sirve como la única fuente de verdad (RAG) para guiar al usuario en el uso del módulo de Venta Rápida / TPV (POS) de la clínica.
 
 ## 1. Reglas de Negocio
-El módulo de Venta Rápida / TPV (`/dashboard/pos`) permite emitir comprobantes de pago de forma inmediata por tratamientos, servicios o productos.
+El módulo de Venta Rápida / TPV (`/dashboard/pos`) permite emitir comprobantes de pago de forma inmediata por tratamientos, servicios o productos sin necesidad de cita previa.
+- **Dos formas de cobrar en ProBookia:**
+  1. **Venta Rápida (`/dashboard/pos`):** Para ventas directas en mostrador sin cita asociada.
+  2. **Cobro directo desde una Cita (`/dashboard/calendar`):** Al abrir una cita en la agenda y pulsar **"Cobrar Cita (TPV)"** (`id="edit-appt-open-pos-btn"`), se abre el panel lateral TPV con soporte para **Tarjeta, Efectivo o Bizum**, añadir servicios o productos extra al carrito, emitir Ticket o Factura Nominal, marcar la cita como realizada/pagada automáticamente y registrar el tratamiento en el historial técnico del cliente.
+- **Modo Mostrador TPV y Bloqueo por PIN:** Si el Modo Mostrador está activo en `Ajustes > Agenda`, el terminal muestra la operadora activa (`id="counter-active-operator-pill"`) y puede bloquearse manualmente (`id="sidebar-counter-lock-btn"`) o por inactividad, requiriendo el **PIN de 4 dígitos** (configurable en **Mi Perfil Digital `/dashboard/profile`** o por el Administrador en **Equipo `/dashboard/team`**).
 - Permite seleccionar si se emite un Ticket (Factura Simplificada) o una Factura Nominal (vinculada a un paciente concreto).
 - Permite buscar un cliente registrado para vincular la venta a su expediente clínico.
-- Permite seleccionar el tratamiento base, modificar el importe a cobrar y especificar el método de pago (Tarjeta o Efectivo).
+- Permite seleccionar el tratamiento base, modificar el importe a cobrar y especificar el método de pago (Tarjeta, Efectivo o Bizum en TPV de cita).
 - Este cobro genera automáticamente una factura firmada y marcada como sujeta a IVA (21%).
-- La venta se registra de inmediato en la contabilidad y el historial del cliente, pero **no genera ninguna reserva de cita en el calendario de la agenda**.
+- La venta directa en `/dashboard/pos` se registra de inmediato en la contabilidad y el historial del cliente, pero **no genera ninguna reserva de cita en el calendario de la agenda**.
 
 ## 2. Seguridad (RBAC)
 El acceso al TPV y cobros está restringido para preservar la integridad de la caja:

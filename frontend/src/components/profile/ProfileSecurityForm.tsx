@@ -1,5 +1,5 @@
 import React from 'react';
-import { Key, Loader2, MonitorSmartphone, LogOut, AlertCircle } from 'lucide-react';
+import { Key, Loader2, MonitorSmartphone, LogOut, AlertCircle, KeyRound, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface ProfileSecurityFormProps {
@@ -7,6 +7,11 @@ interface ProfileSecurityFormProps {
   setPassword: (val: string) => void;
   savingPassword: boolean;
   handleUpdatePassword: (e: React.FormEvent) => void;
+  pin: string;
+  setPin: (val: string) => void;
+  hasPin: boolean;
+  savingPin: boolean;
+  handleUpdatePin: (e: React.FormEvent) => void;
   browserInfo: string;
   handleLogout: () => void;
 }
@@ -16,6 +21,11 @@ export default function ProfileSecurityForm({
   setPassword,
   savingPassword,
   handleUpdatePassword,
+  pin,
+  setPin,
+  hasPin,
+  savingPin,
+  handleUpdatePin,
   browserInfo,
   handleLogout
 }: ProfileSecurityFormProps) {
@@ -27,11 +37,53 @@ export default function ProfileSecurityForm({
         </div>
         <div>
           <h3 className="text-xl sm:text-2xl font-serif font-semibold text-stone-800">Seguridad</h3>
-          <p className="text-stone-400 text-sm">Protege tu acceso y gestiona tus conexiones.</p>
+          <p className="text-stone-400 text-sm">Protege tu acceso, PIN de mostrador y gestiona tus conexiones.</p>
         </div>
       </div>
 
       <div className="space-y-10">
+        {/* PIN Personal de Mostrador TPV y Fichaje QR */}
+        <form onSubmit={handleUpdatePin} className="space-y-4 pb-10 border-b border-stone-100">
+          <div className="flex flex-wrap items-center justify-between gap-2 px-1">
+            <label className="text-[11px] font-black uppercase tracking-widest text-stone-400 flex items-center gap-2">
+              <KeyRound size={14} className="text-[#D4AF37]" />
+              PIN de Mostrador y Fichaje (4 dígitos)
+            </label>
+            <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border flex items-center gap-1.5 ${
+              hasPin
+                ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80'
+                : 'bg-amber-50 text-amber-700 border-amber-200/80'
+            }`}>
+              {hasPin ? <><CheckCircle2 size={12} /> PIN Configurado</> : 'Sin PIN asignado'}
+            </span>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <input
+              id="profile-pin-input"
+              type="password"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={4}
+              value={pin}
+              onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+              placeholder={hasPin ? "Nuevo PIN (4 dígitos)" : "Crear PIN (ej. 1234)"}
+              className="flex-1 bg-stone-50 border border-stone-200 rounded-[1.2rem] px-5 py-4 text-sm tracking-[0.35em] font-mono focus:bg-white focus:ring-4 focus:ring-stone-100 focus:border-[#D4AF37] transition-all outline-none font-bold"
+            />
+            <Button
+              id="profile-update-pin-btn"
+              type="submit"
+              variant="luxury"
+              disabled={savingPin || pin.length !== 4}
+              className="px-8 py-4 rounded-xl font-bold whitespace-nowrap"
+            >
+              {savingPin ? <Loader2 className="animate-spin" size={18} /> : (hasPin ? "Cambiar PIN" : "Guardar PIN")}
+            </Button>
+          </div>
+          <p className="text-xs text-stone-400 px-1 leading-relaxed">
+            Este código numérico personal te permite desbloquear la pantalla en <strong>Modo Mostrador TPV</strong> y validar tu identidad al <strong>fichar entrada/salida mediante código QR</strong>.
+          </p>
+        </form>
+
         <form onSubmit={handleUpdatePassword} className="space-y-6">
           <div className="space-y-3">
             <label className="text-[11px] font-black uppercase tracking-widest text-stone-400 px-1">Cambiar Contraseña</label>

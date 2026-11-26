@@ -271,6 +271,7 @@ export function TerminalSecurityManager({
 
           <div className="flex items-center gap-3">
             <button
+              id="hardware-guard-toggle"
               type="button"
               onClick={handleToggleRestriction}
               disabled={toggling}
@@ -324,6 +325,7 @@ export function TerminalSecurityManager({
 
             {!isCurrentRegistered ? (
               <Button
+                id="hardware-guard-authorize-btn"
                 type="button"
                 size="sm"
                 onClick={() => setShowAddModal(true)}
@@ -470,6 +472,7 @@ export function TerminalSecurityManager({
           </div>
 
           <Button
+            id="desktop-app-install-btn"
             type="button"
             onClick={handlePwaInstall}
             className="rounded-xl bg-[#FF6B00] hover:bg-[#e05e00] text-white text-xs font-bold gap-2 shadow-lg h-11 px-5 cursor-pointer shrink-0"

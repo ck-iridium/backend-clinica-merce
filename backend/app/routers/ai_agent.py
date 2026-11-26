@@ -280,7 +280,7 @@ def ai_webmaster_chat(request: schemas.AIChatRequest, db: Session = Depends(get_
                         updated_fields.append("services")
                     elif name == "create_new_category":
                         updated_fields.append("categories")
-                    elif name in ["set_storefront_layout", "update_featured_categories", "update_landing_config", "add_hero_slide"]:
+                    elif name in ["set_storefront_layout", "update_featured_categories", "update_landing_config", "add_hero_slide", "update_featured_services_config", "update_categories_catalog_config", "reorder_home_sections"]:
                         updated_fields.append("landing_config")
                         updated_fields.append("layout_style")
                         if mode == "webmaster":

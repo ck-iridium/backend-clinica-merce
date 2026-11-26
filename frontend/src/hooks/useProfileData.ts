@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { getUserProfile, updateUserProfile } from '@/app/actions/profile';
+import { getUserProfile, updateUserProfile, updateMyPinAction } from '@/app/actions/profile';
 import { toast } from 'sonner';
 import { useAuthRole } from '@/hooks/useAuthRole';
 import { useFeedback } from '@/app/contexts/FeedbackContext';
@@ -29,12 +29,15 @@ export function useProfileData() {
   const [fullName, setFullName] = useState('');
   const [pendingAvatarUrl, setPendingAvatarUrl] = useState<string | null>(null);
   const [password, setPassword] = useState('');
+  const [pin, setPin] = useState('');
+  const [hasPin, setHasPin] = useState(false);
   const [receiveEmailAppointments, setReceiveEmailAppointments] = useState(true);
   const [receiveAgendaReminders, setReceiveAgendaReminders] = useState(true);
   
   // Loading states
   const [savingIdentity, setSavingIdentity] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
+  const [savingPin, setSavingPin] = useState(false);
   const [savingPrefs, setSavingPrefs] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   
@@ -74,6 +77,7 @@ export function useProfileData() {
           setProfile(profileData);
           setFullName(profileData.full_name || (isImpersonating ? 'Soporte Técnico' : ''));
           setPendingAvatarUrl(profileData.avatar_url || null);
+          setHasPin(Boolean(profileData.pin_code_hash));
           setReceiveEmailAppointments(profileData.receive_email_appointments ?? true);
           setReceiveAgendaReminders(profileData.receive_agenda_reminders ?? true);
 
@@ -143,6 +147,35 @@ export function useProfileData() {
       }
     } finally {
       setSavingPassword(false);
+    }
+  };
+
+  const handleUpdatePin = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const cleanPin = pin.trim();
+    if (!/^\d{4}$/.test(cleanPin)) {
+      toast.error("El PIN debe tener exactamente 4 dígitos numéricos.");
+      return;
+    }
+    setSavingPin(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        toast.error("Sesión expirada. Vuelve a iniciar sesión.");
+        return;
+      }
+      const res = await updateMyPinAction(cleanPin, session.access_token);
+      if (res.success) {
+        toast.success("PIN de mostrador y fichaje guardado correctamente.");
+        setHasPin(true);
+        setPin('');
+      } else {
+        toast.error(res.error || "No se pudo actualizar el PIN.");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Error al guardar el PIN.");
+    } finally {
+      setSavingPin(false);
     }
   };
 
@@ -288,6 +321,9 @@ export function useProfileData() {
     // Security
     password,
     setPassword,
+    pin,
+    setPin,
+    hasPin,
     
     // Preferences
     receiveEmailAppointments,
@@ -298,6 +334,7 @@ export function useProfileData() {
     // Loading States
     savingIdentity,
     savingPassword,
+    savingPin,
     savingPrefs,
     uploadingAvatar,
     
@@ -311,6 +348,7 @@ export function useProfileData() {
     
     // Actions
     handleUpdatePassword,
+    handleUpdatePin,
     handleAvatarClick,
     onFileSelected,
     handleCropComplete,

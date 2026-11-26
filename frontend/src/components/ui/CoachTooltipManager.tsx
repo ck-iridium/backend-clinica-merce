@@ -93,14 +93,23 @@ function getTooltipTextForId(id: string): string {
     'calendar-filter-confirmed-btn': 'Filtra para ver solo las citas confirmadas.',
     'calendar-filter-pending-btn': 'Filtra para ver citas pendientes de aprobación web.',
     'calendar-filter-paid-btn': 'Filtra para ver solo citas marcadas como pagadas.',
+    'calendar-viewmode-week-btn': 'Muestra la planificación de toda la semana completa en columnas por día.',
+    'calendar-viewmode-day-btn': 'Muestra la vista diaria con una columna por cada especialista del centro.',
+    'calendar-location-selector-trigger': 'Cambia entre Todas las sedes o filtra la agenda por una sucursal concreta.',
+    'calendar-filter-staff-all-btn': 'Muestra las citas de todo el equipo o filtra por un profesional concreto.',
     'calendar-close-panel-btn': 'Colapsa la barra lateral para maximizar el espacio.',
     'create-appt-appointment-tab': 'Registra una cita de servicio o tratamiento.',
     'create-appt-block-tab': 'Registra un bloqueo de agenda para periodos no laborables.',
     'create-appt-client-select-trigger': 'Selecciona el cliente que recibirá la sesión.',
     'create-appt-service-select-trigger': 'Elige el tratamiento o técnica a realizar.',
+    'create-appt-resource-select-trigger': 'Asigna una cabina, sala o equipo exclusivo para evitar dobles citas.',
     'create-appt-notes-textarea': 'Introduce anotaciones especiales para la cita.',
     'create-appt-submit-btn': 'Confirma y agenda la cita o bloqueo.',
     'create-appt-cancel-btn': 'Cancela la operación sin guardar.',
+    'edit-appt-open-pos-btn': 'Abre el panel TPV para cobrar la cita con Tarjeta, Efectivo o Bizum y añadir productos extra.',
+    'edit-appt-open-formulas-btn': 'Consulta las fórmulas técnicas e historial clínico del cliente sin salir de la cita.',
+    'edit-appt-staff-select-trigger': 'Reasigna la cita a otro especialista con detección automática de solapamientos.',
+    'edit-appt-location-select-trigger': 'Traslada la cita a otra sede física del centro.',
     'edit-appt-notes-textarea': 'Añade o modifica observaciones de la cita.',
     'edit-appt-save-notes-btn': 'Guarda los comentarios clínicos de la cita.',
     'edit-appt-confirm-web-booking-btn': 'Acepta y confirma la cita solicitada desde la web.',
@@ -230,7 +239,14 @@ function getTooltipTextForId(id: string): string {
     'service-editor-design-color-picker-input': 'Selecciona un color de acento único para destacar el botón de reserva y cabeceras de este servicio en el portal público.',
     'service-editor-design-corporate-color-btn': 'Restablece el color de acento del servicio al color corporativo general de la clínica.',
 
-    // Ajustes Agenda Tab (horarios y ausencias)
+    // Ajustes Agenda Tab (modalidad, mostrador PIN, fichajes QR, hardware guard, escritorio, horarios y ausencias)
+    'agenda-booking-modality-toggle': 'Activa las reservas online o cambia al Modo Teléfono/Presencial exclusivo.',
+    'agenda-counter-mode-toggle': 'Activa el bloqueo de pantalla con PIN de 4 dígitos para proteger el mostrador TPV.',
+    'agenda-counter-autolock-group': 'Elige tras cuántos minutos de inactividad se bloqueará automáticamente el mostrador.',
+    'agenda-timeclock-toggle': 'Habilita el Control Horario legal (RDL 8/2019) para fichar con QR desde el móvil.',
+    'hardware-guard-toggle': 'Restringe el acceso al panel exclusivamente a los ordenadores homologados del centro.',
+    'hardware-guard-authorize-btn': 'Homologa este ordenador como terminal autorizado del centro antes de activar la restricción.',
+    'desktop-app-install-btn': 'Instala ProBookia en el Escritorio de tu PC o Mac como aplicación directa sin barras de navegador.',
     'agenda-open-time': 'Define la hora de apertura diaria de tu centro.',
     'agenda-close-time': 'Define la hora de cierre diaria de tu centro.',
     'agenda-lunch-start': 'Define el inicio del descanso de mediodía de la agenda.',
@@ -239,7 +255,14 @@ function getTooltipTextForId(id: string): string {
     'agenda-booking-margin-hours': 'Horas de antelación mínimas requeridas para que un cliente reserve online.',
 
     // CMS / Editor Web
-    'cms-bento-home-builder': 'Abre el constructor visual para editar el Hero, Sobre Mí, tratamientos y SEO de la página principal.',
+    'cms-bento-home-builder': 'Abre el constructor visual para editar el Hero, Destacados, Sobre Mí, Categorías, Ordenar y SEO de la portada.',
+    'cms-home-tab-DESTACADOS': 'Configura el bloque de Tratamientos Destacados en la página de inicio.',
+    'cms-home-tab-CATEGORÍAS': 'Configura el Mosaico de Categorías en portada y el diseño individual de cada categoría.',
+    'cms-home-tab-ORDENAR': 'Reordena de forma visual qué secciones aparecen primero en tu página de inicio.',
+    'cms-featured-toggle': 'Activa o desactiva la sección de Servicios Destacados en la portada.',
+    'cms-categories-mosaic-toggle': 'Activa un mosaico unificado Bento o Grid con todas tus categorías en la portada.',
+    'cms-categories-hide-individual-toggle': 'Oculta los bloques individuales de categorías para mostrar una portada más limpia solo con el mosaico.',
+    'cms-order-sections-list': 'Usa las flechas para subir o bajar el orden de las secciones de tu Home (el Hero permanece fijo arriba).',
     'cms-bento-nav-editor': 'Accede al gestor de enlaces del menú superior y distribución del megamenú público.',
     'cms-bento-branding': 'Redirecciona a la pestaña de ajustes para cambiar la paleta de colores y fuentes de la clínica.',
     'cms-bento-pages': 'Navega al gestor para crear y publicar páginas independientes de políticas o promociones.',
@@ -248,6 +271,8 @@ function getTooltipTextForId(id: string): string {
     // Mi Perfil Digital
     'profile-fullname-input': 'Actualiza tu nombre completo para firmas y comunicaciones.',
     'profile-avatar-upload-btn': 'Sube o cambia tu fotografía de perfil profesional.',
+    'profile-pin-input': 'Crea o actualiza tu PIN personal de 4 dígitos para el Modo Mostrador TPV y fichaje con QR.',
+    'profile-update-pin-btn': 'Guarda tu nuevo PIN de 4 dígitos.',
     'profile-save-all-btn': 'Guardar todos los cambios en tu perfil y notificaciones.',
     'profile-new-password-input': 'Escribe una nueva contraseña segura para tu acceso.',
     'profile-update-password-btn': 'Aplica el cambio de tu contraseña.',
@@ -255,10 +280,14 @@ function getTooltipTextForId(id: string): string {
     'profile-email-appointments-check': 'Activa o desactiva los avisos de reservas/cancelaciones por email.',
     'profile-agenda-reminders-check': 'Activa o desactiva el resumen matutino diario de tu agenda.',
     
-    // Gestión
-    'team-add-member-btn': 'Envía una invitación a un nuevo miembro del equipo.',
+    // Gestión y Barra Lateral Mostrador
+    'team-add-member-btn': 'Crea una operadora de mostrador con PIN o envía una invitación remota por email.',
+    'team-tab-timeclock-btn': 'Consulta el registro de jornada diario/mensual (RDL 8/2019) y descarga el Excel oficial para gestoría.',
+    'sidebar-counter-qr-btn': 'Abre el código QR dinámico rotativo (20s) para que el equipo fiche entrada/salida con su móvil.',
+    'sidebar-counter-lock-btn': 'Bloquea el mostrador al instante para solicitar el PIN de 4 dígitos.',
     'locations-add-btn': 'Agrega una nueva sucursal física de tu negocio.',
-    'services-new-btn': 'Agrega un nuevo tratamiento al catálogo.',
+    'services-new-btn': 'Agrega un nuevo tratamiento o producto al catálogo.',
+    'services-import-excel-btn': 'Importa servicios, tarifas, productos y stock masivamente desde un archivo Excel o CSV.',
     'services-categories-btn': 'Organiza y edita las categorías de tus tratamientos.'
   };
 

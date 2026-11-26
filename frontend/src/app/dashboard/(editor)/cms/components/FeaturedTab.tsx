@@ -104,6 +104,7 @@ export default function FeaturedTab({
           </span>
         </div>
         <button
+          id="cms-featured-toggle"
           type="button"
           onClick={() => updateConfig('enabled', !config.enabled)}
           className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none ${

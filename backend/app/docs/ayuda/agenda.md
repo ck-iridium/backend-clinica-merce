@@ -16,6 +16,10 @@ El módulo de Agenda (`/dashboard/calendar`) permite la gestión de citas de pac
 - Crear bloqueos de tiempo (por descanso, formación u otros motivos) para evitar reservas.
 - Editar o cancelar citas y bloqueos de tiempo existentes.
 - Confirmar citas recibidas desde el portal web de reserva de pacientes.
+- **Cobrar Cita directamente desde la Agenda (TPV embebido):** Al abrir cualquier cita (`id="edit-appt-open-pos-btn"`), Recepción o Administrador pueden realizar el cobro inmediato con **Tarjeta, Efectivo o Bizum**, añadir servicios o productos adicionales al ticket, alternar entre Factura Nominal o Ticket de Contado, emitir el comprobante fiscal y marcar automáticamente la cita como realizada/pagada (registrando además el servicio en el historial técnico del cliente).
+- **Cabinas y Recursos Físicos:** Asignar cabinas, salas o equipos exclusivos al crear o editar citas (`id="create-appt-resource-select-trigger"`) para evitar dobles reservas del mismo recurso.
+- **Ficha Técnica e Historial Rápido:** Consultar fórmulas de color/técnicas o historial clínico directamente desde la cita (`id="edit-appt-open-formulas-btn"`).
+- **Modo Teléfono / Presencial:** Si en `Ajustes > Agenda` se desactivan las reservas online, la agenda interna sigue operando normalmente para anotar citas manuales recibidas por teléfono o presencialmente.
 
 ## 2. Seguridad (RBAC)
 El acceso y las acciones permitidas varían según el rol:
@@ -112,6 +116,12 @@ Para guiar visualmente al usuario y señalar elementos, utiliza la URL `/dashboa
   - Selector: `id="create-appt-submit-btn"`
 
 ### Modal de Edición de Citas y Bloqueos
+- **Cobrar Cita (TPV embebido):** Abre el panel lateral de cobro TPV para cobrar la cita con Tarjeta, Efectivo o Bizum, añadir servicios/productos extra y emitir ticket/factura en el acto.
+  - Ruta: `/dashboard/calendar` (Modal de cita abierto)
+  - Selector: `id="edit-appt-open-pos-btn"`
+- **Ficha & Historial Rápido:** Abre el panel lateral con fórmulas técnicas y notas históricas del cliente.
+  - Ruta: `/dashboard/calendar` (Modal de cita abierto)
+  - Selector: `id="edit-appt-open-formulas-btn"`
 - **Reasignar / Cambiar Especialista:** Permite ver el profesional asignado a la cita y reasignarlo directamente a cualquier miembro del equipo o desasignarlo ("Sin especialista asignado"), con detección automática de solapamiento de horario.
   - Ruta: `/dashboard/calendar` (Modal abierto)
   - Selector: `id="edit-appt-staff-select-trigger"`

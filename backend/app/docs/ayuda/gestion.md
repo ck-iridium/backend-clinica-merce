@@ -11,6 +11,13 @@ Permite administrar la plantilla de profesionales de la clínica:
 - **Invitaciones por Correo y Multi-idioma:** Envío de enlaces de activación a nuevos miembros especificando su rol. El correo se envía automáticamente en el idioma activo del usuario/panel (Español, Francés o Inglés) utilizando la plantilla institucional de ProBookia con estética Quiet Luxury y el remitente oficial de notificaciones.
 - **Aislamiento Multi-Tenant Estricto:** Cada invitación está anclada exclusivamente al negocio emisor y a su subdominio (`[tenant].probookia.com`). Si un usuario no ha sido explícitamente invitado y no figura como 'Pendiente' en la lista de miembros de ese negocio, el sistema deniega tajantemente la activación de la cuenta y el acceso al panel. Un mismo usuario puede pertenecer a varios negocios, pero sus credenciales, estados ('Pendiente'/'Activo') y roles permanecen estrictamente aislados por negocio.
 - **Asignación de Roles:** Administrar y cambiar los permisos (Administrador, Recepción, Especialista).
+- **Modo Mostrador TPV y PIN de 4 Dígitos:**
+  - Al añadir un miembro (`id="team-add-member-btn"`), se puede elegir entre **Mostrador (PIN)** (operadora local sin email ni acceso remoto desde casa, solo desbloquea con PIN en mostrador) o **Acceso Remoto (Email)** (invitación por correo).
+  - Para asignar o cambiar el PIN de 4 dígitos de cualquier miembro desde Equipo: botón del icono de llave (`id="team-pin-btn-[id]"`). Además, cada empleado con acceso a su cuenta también puede crear o cambiar su propio PIN desde **Mi Perfil Digital (`/dashboard/profile`)** (`id="profile-pin-input"`).
+- **Control Horario & Fichajes por QR (RDL 8/2019):**
+  - El personal ficha entrada, pausas y salida escaneando con su móvil el código QR dinámico rotativo (desde el icono QR de la barra lateral `id="sidebar-counter-qr-btn"` o desde la pantalla bloqueada del mostrador) e introduciendo su PIN de 4 dígitos.
+  - En el primer fichaje queda vinculado su teléfono personal (anti-fraude). Si cambia de móvil, el Administrador puede desvincularlo pulsando `id="team-unbind-device-btn-[id]"`.
+  - En la pestaña **Control Horario & Fichajes (RDL 8/2019)** (`id="team-tab-timeclock-btn"`), el Administrador consulta los registros diarios/mensuales por empleada y descarga el informe oficial en Excel para gestoría.
 - **Planificador de Turnos (Rostering):** Configuración individual de turnos recurrentes semanales y excepciones puntuales (festivos, bajas, guardias) asociándolos a sucursales físicas.
 
 ### Seguridad (RBAC)
@@ -80,10 +87,11 @@ Permite dar de alta, editar y administrar los centros físicos y sucursales de l
 - **Autocompletado Inteligente con OpenStreetMap (Nominatim):** Al escribir una dirección, el sistema detecta y preserva el número de portal exacto (ej. `57`) incluso si el mapa no tiene el nodo mapeado, y filtra las redundancias administrativas (barrios, comarcas o comunidades repetidas) para generar un formato postal limpio y profesional español.
 - **Geocodificación con Mapa Interactivo (Leaflet):** Selector visual con pin dorado para ajuste milimétrico de la entrada del centro sin sobreescribir la dirección manual.
 - **Páginas Públicas de SEO Local (`/sedes` y `/sedes/[slug]`):**
-  - **Índice General (`/sedes`):** Listado público de todos los centros físicos activos con información de contacto, horarios y botón directo de reserva.
+  - **Índice General (`/sedes`):** Listado público de todos los centros físicos activos con información de contacto, horarios y botón directo de reserva (o llamada/WhatsApp si está activo el Modo Teléfono).
   - **Landing Individual (`/sedes/[slug]`):** Ficha web pública optimizada para Google con breadcrumbs, mapa interactivo, catálogo de tratamientos prestados y profesionales asignados.
   - **Inyección de Schema.org JSON-LD:** Microdatos estructurados (`HealthAndBeautyBusiness` / `MedicalBusiness`) para posicionamiento orgánico en Google Rich Snippets y Google Maps.
   - **Reserva Pre-filtrada por Sede:** Botón *"Reservar en esta sede"* que abre el flujo `/reservar?location=ID` cargando directamente el centro seleccionado.
+- **Cabinas y Recursos Físicos:** Cada sede permite gestionar cabinas, salas o aparatología (`LocationResourcesModal`) con número de unidades; los servicios pueden requerir una cabina específica para impedir solapamientos en la agenda.
 - **Sitemap Dinámico:** Las sedes activas se indexan automáticamente en tiempo real en `/sitemap.xml` para Googlebot.
 
 ### Seguridad (RBAC)
@@ -119,7 +127,7 @@ Permite dar de alta, editar y administrar los centros físicos y sucursales de l
 ## 4. Módulo: Servicios y Tratamientos (`/dashboard/services`)
 
 ### Reglas de Negocio
-Catálogo central de tratamientos de la clínica. Permite archivar servicios, cambiar su precio o duración de forma rápida (inline) o acceder al editor enriquecido (CMS/SEO) para modificar la ficha pública del tratamiento.
+Catálogo central de tratamientos y productos de venta de la clínica. Permite archivar ítems, cambiar su precio o duración de forma rápida (inline), gestionar stock/inventario de productos (`SKU`, `stock`, `stock mínimo`, `proveedor`, filtro *Reposición*), controlar visibilidad en web (`is_visible_on_web`), importar tarifas o productos masivamente desde Excel (`id="services-import-excel-btn"`), o acceder al editor enriquecido (CMS/SEO) para modificar la ficha pública del tratamiento.
 
 ### Seguridad (RBAC)
 - **Administrador:** Acceso completo para editar, añadir categorías, modificar precios y redactar contenido SEO.
@@ -129,9 +137,15 @@ Catálogo central de tratamientos de la clínica. Permite archivar servicios, ca
 - **Controles Superiores (Listado):**
   - Mostrar/Ocultar Archivados: `id="services-archived-toggle-btn"`
   - Exportar Catálogo a Galería: `id="services-export-btn"`
+  - Importar Excel / Tarifas y Productos: `id="services-import-excel-btn"`
   - Gestionar Categorías: `id="services-categories-btn"`
   - Crear Tratamiento Nuevo: `id="services-new-btn"`
   - Buscador de Servicios: `id="services-search-input"`
+- **Pestañas de Control Horario y PIN en Equipo (`/dashboard/team`):**
+  - Pestaña Personal & Permisos: `id="team-tab-members-btn"`
+  - Pestaña Control Horario & Fichajes (RDL 8/2019): `id="team-tab-timeclock-btn"`
+  - Botón asignar/cambiar PIN de miembro: `id="team-pin-btn-[id]"`
+  - Botón desvincular teléfono móvil de miembro: `id="team-unbind-device-btn-[id]"`
 - **Acciones en Lote (Bulk Actions):**
   - Activar Selección: `id="services-bulk-activate-btn"`
   - Desactivar Selección: `id="services-bulk-deactivate-btn"`

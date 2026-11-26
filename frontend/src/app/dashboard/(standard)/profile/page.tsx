@@ -72,6 +72,11 @@ export default function ProfilePage() {
             setPassword={data.setPassword}
             savingPassword={data.savingPassword}
             handleUpdatePassword={data.handleUpdatePassword}
+            pin={data.pin}
+            setPin={data.setPin}
+            hasPin={data.hasPin}
+            savingPin={data.savingPin}
+            handleUpdatePin={data.handleUpdatePin}
             browserInfo={data.browserInfo}
             handleLogout={data.handleLogout}
           />

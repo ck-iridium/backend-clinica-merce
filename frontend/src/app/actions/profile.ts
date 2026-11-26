@@ -279,3 +279,62 @@ export async function updateUserProfile(userId: string, updates: any, targetTena
     return { success: false, error: error.message };
   }
 }
+
+/**
+ * Permite al usuario autenticado crear o actualizar su propio PIN de 4 dígitos
+ * para desbloquear el Modo Mostrador TPV y fichar mediante QR móvil.
+ */
+export async function updateMyPinAction(newPin: string, accessToken: string) {
+  try {
+    const cleanPin = (newPin || '').trim();
+    if (!/^\d{4}$/.test(cleanPin)) {
+      return { success: false, error: "El PIN debe contener exactamente 4 dígitos numéricos." };
+    }
+
+    if (!accessToken) {
+      return { success: false, error: "Sesión no válida. Vuelve a iniciar sesión." };
+    }
+
+    const { data: { user }, error: userError } = await supabase.auth.getUser(accessToken);
+    if (userError || !user) {
+      return { success: false, error: "No se pudo verificar tu identidad." };
+    }
+
+    const cookieStore = cookies();
+    let tenantId = cookieStore.get('tenant_id')?.value;
+    const isImpersonating = cookieStore.get('is_impersonating')?.value === 'true';
+    const impersonateTenantId = cookieStore.get('impersonate_tenant_id')?.value;
+    if (isImpersonating && impersonateTenantId) {
+      tenantId = impersonateTenantId;
+    }
+
+    if (!tenantId || tenantId === 'undefined') {
+      return { success: false, error: "Inquilino no identificado." };
+    }
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+    const res = await fetch(`${apiUrl}/time-clock/update-pin`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Tenant-ID': tenantId,
+      },
+      body: JSON.stringify({
+        staff_id: user.id,
+        new_pin: cleanPin,
+      }),
+      signal: AbortSignal.timeout(5000),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      return { success: false, error: err.detail || "No se pudo guardar el PIN." };
+    }
+
+    revalidatePath('/dashboard/profile');
+    revalidatePath('/dashboard/team');
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message || "Error de conexión al guardar el PIN." };
+  }
+}

@@ -95,6 +95,7 @@ export default function HomeBuilderLayout({
           {tabs.map((tab) => (
             <button
               key={tab}
+              id={`cms-home-tab-${tab}`}
               onClick={() => onTabChange(tab)}
               className={`px-3 py-1.5 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all ${
                 activeTab === tab

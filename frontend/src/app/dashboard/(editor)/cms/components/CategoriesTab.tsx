@@ -145,6 +145,7 @@ const CategoriesTab = memo(({
             </span>
           </div>
           <button
+            id="cms-categories-mosaic-toggle"
             type="button"
             onClick={() => updateCatalogConfig('enabled', !catalogConfig.enabled)}
             className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none ${
@@ -219,6 +220,7 @@ const CategoriesTab = memo(({
                 </span>
               </div>
               <button
+                id="cms-categories-hide-individual-toggle"
                 type="button"
                 onClick={() => updateCatalogConfig('hide_individual_sections', !catalogConfig.hide_individual_sections)}
                 className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none mt-0.5 ${

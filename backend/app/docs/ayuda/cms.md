@@ -24,9 +24,17 @@ El panel de Editor Web y CMS centraliza la gestión del portal público de la cl
     - *Ancho Completo (`hero_content_fullwidth`):* Control toggle que define el comportamiento del contenedor de texto:
       - Desactivado (Recomendado): Mantiene el contenido acotado a la cuadrícula de la web (`max-w-7xl mx-auto px-6`). La alineación izquierda coincide exactamente con la vertical del logotipo del Navbar.
       - Activado (Fullwidth): Extiende el contenido hasta el borde físico exterior de la pantalla.
+  - **DESTACADOS (Servicios Destacados en Home):** Sección curada para mostrar los tratamientos estrella en la portada principal (`featured_services_config`):
+    - Interruptor para activar o desactivar el bloque (`id="cms-featured-toggle"`).
+    - Título y subtítulo personalizables.
+    - Diseño visual elegible entre **Bento Luxury** (asimétrico con protagonista), **Grid Limpio** (3 columnas) o **Carrusel** (`slider`).
+    - Opciones para mostrar u ocultar precio y duración, y buscador/selector de tratamientos concretos por categoría.
   - **SOBRE MÍ / CLÍNICA:** Descripción de la historia, fotografía del equipo o del local, alineación del diseño (imagen a la izquierda o derecha) y botón opcional.
-  - **CATEGORÍAS:** Mosaico/carrusel de categorías de servicios para destacar tratamientos (ej. Facial, Corporal, Uñas) e inyectar accesos rápidos.
+  - **CATEGORÍAS (Mosaico de Categorías en Portada + Detalle):**
+    - *Mosaico de Categorías en Portada (`categories_catalog_config`):* Interruptor (`id="cms-categories-mosaic-toggle"`) que unifica todas las categorías en un Bento Luxury o Grid interactivo en la Home. Incluye el interruptor clave **"Ocultar despliegue individual de categorías"** (`id="cms-categories-hide-individual-toggle"`) para mantener la portada más limpia mostrando solo el mosaico en lugar de desplegar cada categoría por separado.
+    - *Detalle por Categoría:* Imagen, descripción y estilo de visualización por categoría (`cards_slider`, `bento_grid`, `traditional_grid`, `minimalist_list`).
   - **CTA (Llamada a la Acción):** Banner de cierre de la página web para incentivar reservas con título, subtítulo y enlace al flujo de cita previa.
+  - **ORDENAR (Estructura y Orden de la Home):** Pestaña (`id="cms-home-tab-ORDENAR"`) para organizar visualmente qué bloques aparecen primero en la página de inicio (`home_sections_order`). La Portada Principal (Hero) permanece fija en la posición `#1`, mientras que Destacados, Mosaico de Categorías, Sobre la Clínica, CTA y las secciones de categorías pueden subirse o bajarse con flechas viendo el resultado al instante en la vista previa (`id="cms-order-sections-list"`).
   - **SEO:** Inyección de títulos meta, descripción optimizada para buscadores y palabras clave del portal público.
 - **Menú Dinámico (Gestor de Navegación):** Edición interactiva de la barra superior (Navbar) y Megamenú:
   - Ordenar y ocultar/mostrar los enlaces del header.
@@ -45,9 +53,24 @@ La modificación del sitio web público de la clínica es una acción crítica q
 
 Para guiar visualmente al usuario y señalar elementos, utiliza la URL del Hub `/dashboard/cms` y los siguientes selectores e identificadores estables (`id="..."`):
 
-### Bento Grid del Hub Principal (`/dashboard/cms`)
+### Bento Grid del Hub Principal (`/dashboard/cms`) y Pestañas del Home Builder
 - **Editar Portada Principal (Home Builder):** Acceso al editor visual de secciones de inicio.
   - Selector: `id="cms-bento-home-builder"`
+- **Pestañas del Home Builder:**
+  - Pestaña Hero: `id="cms-home-tab-HERO"`
+  - Pestaña Destacados: `id="cms-home-tab-DESTACADOS"`
+  - Pestaña Sobre Mí: `id="cms-home-tab-SOBRE MÍ"`
+  - Pestaña Categorías: `id="cms-home-tab-CATEGORÍAS"`
+  - Pestaña CTA: `id="cms-home-tab-CTA"`
+  - Pestaña Ordenar Home: `id="cms-home-tab-ORDENAR"`
+  - Pestaña SEO: `id="cms-home-tab-SEO"`
+- **Servicios Destacados en Home (Tab DESTACADOS):**
+  - Activar/desactivar bloque de destacados: `id="cms-featured-toggle"`
+- **Categorías Destacadas / Mosaico en Home (Tab CATEGORÍAS):**
+  - Activar Mosaico de Categorías en Portada: `id="cms-categories-mosaic-toggle"`
+  - Ocultar despliegue individual de categorías: `id="cms-categories-hide-individual-toggle"`
+- **Ordenar la Home (Tab ORDENAR):**
+  - Lista interactiva de jerarquía de secciones (Hero fijo `#1`): `id="cms-order-sections-list"`
 - **Gestor de Diapositivas del Hero:** Barra interactiva superior de diapositivas para añadir, duplicar, ordenar o alternar la diapositiva en edición.
   - Selector: `id="cms-hero-slide-manager"`
 - **Añadir Nueva Diapositiva al Hero:** Botón para crear una diapositiva adicional.

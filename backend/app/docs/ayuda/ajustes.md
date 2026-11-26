@@ -115,8 +115,35 @@ Para guiar visualmente al usuario y señalar elementos, utiliza la URL `/dashboa
 - Habilitar Fianzas Globales: Checkbox `id="payments-global-deposit-checkbox"`
 - Importe Fianza por Defecto: `id="payments-global-deposit-amount-input"`
 
-### Pestaña: Agenda (Horario Hábil y Ausencias de la Empresa)
-*Esta pestaña sirve para configurar el horario hábil semanal, los días laborables de la clínica y las ausencias anuales prolongadas (vacaciones de verano, Navidad, festivos oficiales de la empresa).*
+### Pestaña: Agenda (Modalidad de Reservas, Mostrador TPV, Fichajes, Hardware Guard, App de Escritorio y Horarios)
+*Esta pestaña (`/dashboard/settings?tab=agenda`) centraliza la modalidad de reservas, la seguridad del mostrador, el control horario, los terminales autorizados, la instalación como app de escritorio, el horario hábil y las ausencias/vacaciones.*
+
+#### 1. Modalidad de Reservas (Online vs Solo Teléfono / Presencial)
+- **Interruptor de Reservas Online:** `id="agenda-booking-modality-toggle"`
+- Cuando está **activo** (`allow_online_booking = true`), los clientes reservan online en `/reservar` y el Asistente Concierge muestra huecos y enlaces de reserva.
+- Cuando se **desactiva** (**Modo Teléfono / Presencial**): se pausa el motor de reservas web (`/reservar` muestra invitación telefónica/WhatsApp), los botones de la web y el Concierge dirigen al teléfono/WhatsApp del centro, y la agenda interna del equipo continúa funcionando normalmente para anotar citas manuales.
+
+#### 2. Modo Mostrador TPV y Bloqueo por PIN
+- **Activar/Desactivar Modo Mostrador TPV:** `id="agenda-counter-mode-toggle"`
+- **Auto-bloqueo por Inactividad (`Desactivado`, `5 min`, `10 min`, `15 min`):** `id="agenda-counter-autolock-group"`
+- Cuando está activo, tras el tiempo de inactividad (o pulsando el candado **"Bloquear Mostrador (PIN)"** `id="sidebar-counter-lock-btn"` en la barra lateral o en la pastilla de operadora `id="counter-active-operator-pill"`), la pantalla muestra un salvapantallas de lujo donde cada empleada selecciona su perfil e introduce su **PIN personal de 4 dígitos**.
+- **Dónde se crea/cambia el PIN:** Cada empleado puede crear o cambiar su propio PIN de 4 dígitos desde **Mi Perfil Digital (`/dashboard/profile`)** (`id="profile-pin-input"`), y el Administrador también puede crear operadoras de solo mostrador o asignar/cambiar cualquier PIN desde **Equipo (`/dashboard/team`)**.
+
+#### 3. Control Horario & Fichajes con QR Móvil (RDL 8/2019)
+- **Activar/Desactivar Control Horario & Fichajes:** `id="agenda-timeclock-toggle"`
+- Permite que el personal fiche **Entrada, Pausa, Reanudación y Salida** escaneando con su móvil un **código QR dinámico rotativo anti-fraude** (cambia cada 20 segundos) desde el icono QR de la barra lateral (`id="sidebar-counter-qr-btn"`) o desde la pantalla bloqueada de mostrador, validando con su PIN de 4 dígitos y vinculando su teléfono personal (`bound_device_id`).
+- Los resúmenes mensuales e informes oficiales en Excel para gestoría se consultan y descargan en **Equipo > Control Horario & Fichajes** (`/dashboard/team`, pestaña `id="team-tab-timeclock-btn"`).
+
+#### 4. Protección de Terminales (Hardware Guard)
+- **Activar/Desactivar Hardware Guard:** `id="hardware-guard-toggle"`
+- **Homologar este PC (autorizar ordenador actual):** `id="hardware-guard-authorize-btn"`
+- Bloquea el acceso al panel de gestión fuera de los ordenadores o tablets autorizados dentro del centro (evitando accesos desde casa por empleados). El Administrador puede homologar equipos con un nombre identificativo, ver el listado de terminales homologados y revocar accesos en cualquier momento. *(Nota: debes homologar al menos este ordenador antes de activar la restricción).*
+
+#### 5. Instalar ProBookia en el Escritorio de este PC (App / Modo Kiosco PWA)
+- **Botón Instalar como Aplicación:** `id="desktop-app-install-btn"`
+- Instala ProBookia en Windows o Mac como aplicación de escritorio con acceso directo propio, abriéndose a pantalla completa sin barras ni pestañas de navegador (ideal junto al Modo Mostrador TPV). Si el navegador no lanza la ventana automática, muestra la guía en 3 pasos para Chrome/Edge (`⋮` > Guardar y compartir / Aplicaciones > Instalar página como aplicación > Crear acceso directo en el Escritorio).
+
+#### 6. Horario Hábil, Ausencias y Antelación
 - Hora Apertura: `id="agenda-open-time"`
 - Hora Cierre: `id="agenda-close-time"`
 - Inicio Descanso: `id="agenda-lunch-start"`
@@ -187,10 +214,14 @@ Para guiar visualmente al usuario y señalar elementos, utiliza la URL `/dashboa
   - Genera el botón interactivo *"Añadir a Google Calendar"* y el enlace de contacto directo por WhatsApp.
 
 ## 4. Mi Perfil Digital
-La sección de Perfil Personal (`/dashboard/profile`) permite al usuario cambiar su información de cuenta, preferencias de notificaciones y contraseñas:
+La sección de Perfil Personal (`/dashboard/profile`) permite a cada usuario (Administrador, Recepción o Especialista) cambiar su información de cuenta, su PIN de mostrador, preferencias de notificaciones y contraseña:
 - Nombre Completo: `id="profile-fullname-input"`
 - Cargar/Cambiar Avatar: `id="profile-avatar-upload-btn"`
 - Guardar Cambios (Nombre y Preferencias): `id="profile-save-all-btn"`
+- **PIN Personal de Mostrador y Fichaje (4 dígitos):**
+  - Campo PIN (4 dígitos numéricos): `id="profile-pin-input"`
+  - Guardar / Cambiar PIN: `id="profile-update-pin-btn"`
+  - Permite a cada empleado configurar o actualizar su propio código PIN para desbloquear el Modo Mostrador TPV y fichar entrada/salida mediante QR móvil.
 - Input Nueva Contraseña: `id="profile-new-password-input"`
 - Botón Actualizar Contraseña: `id="profile-update-password-btn"`
 - Notificación Email Citas: Checkbox `id="profile-email-appointments-check"`

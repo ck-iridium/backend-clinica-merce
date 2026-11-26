@@ -107,7 +107,7 @@ export default function OrderSectionsTab({
         </div>
       </div>
 
-      <div className="space-y-2.5">
+      <div id="cms-order-sections-list" className="space-y-2.5">
         {displaySections.map((section: any, idx: number) => {
           const isHero = section.type === 'hero';
           const active = isSectionActive(section);

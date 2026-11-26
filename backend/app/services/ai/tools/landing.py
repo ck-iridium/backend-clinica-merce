@@ -1606,3 +1606,226 @@ def update_page_block(
         properties=props,
         block_id=block_id
     )
+
+
+def update_featured_services_config(
+    enabled: Optional[bool] = None,
+    title: Optional[str] = None,
+    subtitle: Optional[str] = None,
+    layout_style: Optional[str] = None,
+    show_price: Optional[bool] = None,
+    show_duration: Optional[bool] = None,
+    service_names_or_slugs: Optional[List[str]] = None
+) -> str:
+    """
+    Configura el bloque de 'Servicios Destacados' (Tratamientos Estrella) en la portada (Home).
+    Args:
+        enabled: True para mostrar el bloque en portada, False para ocultarlo.
+        title: Título de la sección (ej. 'Tratamientos Estrella').
+        subtitle: Subtítulo o introducción de la sección.
+        layout_style: Estilo visual: 'bento' (Bento Luxury asimétrico), 'grid' (Grid 3 columnas) o 'slider' (Carrusel).
+        show_price: True para mostrar el precio en las tarjetas.
+        show_duration: True para mostrar la duración en minutos.
+        service_names_or_slugs: Lista opcional de nombres, slugs o IDs de servicios a destacar.
+    """
+    db = SessionLocal()
+    try:
+        tenant_id = current_tenant_var.get()
+        if not tenant_id:
+            return "Error: No se ha podido resolver el identificador del inquilino (tenant_id)."
+
+        content = get_site_content(db)
+        current_cfg = dict(content.featured_services_config or {
+            "enabled": False,
+            "title": "Tratamientos Estrella",
+            "subtitle": "Nuestra selección más demandada para una experiencia de cuidado y bienestar excepcional.",
+            "service_ids": [],
+            "layout_style": "bento",
+            "show_price": True,
+            "show_duration": True
+        })
+
+        if enabled is not None:
+            current_cfg["enabled"] = bool(enabled)
+        if title is not None:
+            current_cfg["title"] = clean_clean_text(title) or current_cfg.get("title", "Tratamientos Estrella")
+        if subtitle is not None:
+            current_cfg["subtitle"] = clean_clean_text(subtitle) or ""
+        if layout_style is not None:
+            ls = layout_style.lower().strip()
+            if "grid" in ls:
+                current_cfg["layout_style"] = "grid"
+            elif "slider" in ls or "carrusel" in ls:
+                current_cfg["layout_style"] = "slider"
+            else:
+                current_cfg["layout_style"] = "bento"
+        if show_price is not None:
+            current_cfg["show_price"] = bool(show_price)
+        if show_duration is not None:
+            current_cfg["show_duration"] = bool(show_duration)
+
+        matched_names = []
+        if service_names_or_slugs is not None:
+            all_services = db.query(models.Service).filter(
+                models.Service.tenant_id == tenant_id,
+                models.Service.is_active == True
+            ).all()
+            selected_ids = []
+            for raw_item in service_names_or_slugs:
+                clean_item = normalize_slug_str(raw_item)
+                raw_lower = str(raw_item).strip().lower()
+                for srv in all_services:
+                    s_slug_norm = normalize_slug_str(srv.slug or "")
+                    s_name_norm = normalize_slug_str(srv.name or "")
+                    if (
+                        str(srv.id).lower() == raw_lower
+                        or s_slug_norm == clean_item
+                        or s_name_norm == clean_item
+                        or (clean_item and clean_item in s_name_norm)
+                    ):
+                        if str(srv.id) not in selected_ids:
+                            selected_ids.append(str(srv.id))
+                            matched_names.append(srv.name)
+                        break
+            current_cfg["service_ids"] = selected_ids
+
+        update_site_content(db, schemas.SiteContentUpdate(featured_services_config=current_cfg))
+        status_txt = "activado" if current_cfg.get("enabled") else "desactivado"
+        extra = f" con servicios: {', '.join(matched_names)}" if matched_names else ""
+        return f"Éxito: El bloque de Servicios Destacados en la portada ha quedado {status_txt} (diseño: {current_cfg.get('layout_style', 'bento')}){extra}."
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error en update_featured_services_config: {e}")
+        return f"Error al configurar Servicios Destacados: {str(e)}"
+    finally:
+        db.close()
+
+
+def update_categories_catalog_config(
+    enabled: Optional[bool] = None,
+    title: Optional[str] = None,
+    subtitle: Optional[str] = None,
+    layout_style: Optional[str] = None,
+    hide_individual_sections: Optional[bool] = None
+) -> str:
+    """
+    Configura el bloque 'Mosaico de Categorías en Portada' de la página principal (Home).
+    Args:
+        enabled: True para activar el mosaico de categorías en la portada, False para desactivarlo.
+        title: Título de la sección (ej. 'Nuestras Especialidades').
+        subtitle: Subtítulo descriptivo de la sección.
+        layout_style: Diseño visual del mosaico: 'bento' (Bento Luxury) o 'grid' (Grid Homogéneo).
+        hide_individual_sections: True para ocultar las secciones individuales de cada categoría en la portada y dejarla más limpia mostrando solo el mosaico; False para mostrarlas todas.
+    """
+    db = SessionLocal()
+    try:
+        tenant_id = current_tenant_var.get()
+        if not tenant_id:
+            return "Error: No se ha podido resolver el identificador del inquilino (tenant_id)."
+
+        content = get_site_content(db)
+        current_cfg = dict(content.categories_catalog_config or {
+            "enabled": False,
+            "title": "Nuestras Especialidades",
+            "subtitle": "Explora todas las áreas de cuidado y tratamientos diseñados para tu bienestar.",
+            "layout_style": "bento",
+            "show_services_count": True,
+            "hide_individual_sections": False
+        })
+
+        if enabled is not None:
+            current_cfg["enabled"] = bool(enabled)
+        if title is not None:
+            current_cfg["title"] = clean_clean_text(title) or current_cfg.get("title", "Nuestras Especialidades")
+        if subtitle is not None:
+            current_cfg["subtitle"] = clean_clean_text(subtitle) or ""
+        if layout_style is not None:
+            ls = layout_style.lower().strip()
+            current_cfg["layout_style"] = "grid" if "grid" in ls else "bento"
+        if hide_individual_sections is not None:
+            current_cfg["hide_individual_sections"] = bool(hide_individual_sections)
+
+        update_site_content(db, schemas.SiteContentUpdate(categories_catalog_config=current_cfg))
+        status_txt = "activado" if current_cfg.get("enabled") else "desactivado"
+        hide_txt = " (ocultando secciones individuales)" if current_cfg.get("hide_individual_sections") else ""
+        return f"Éxito: El Mosaico de Categorías en Portada ha quedado {status_txt} en modo '{current_cfg.get('layout_style', 'bento')}'{hide_txt}."
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error en update_categories_catalog_config: {e}")
+        return f"Error al configurar Mosaico de Categorías: {str(e)}"
+    finally:
+        db.close()
+
+
+def reorder_home_sections(section_order: List[str]) -> str:
+    """
+    Reordena las secciones visibles de la página de inicio (Home).
+    El bloque 'hero' siempre permanece fijo en primera posición (#1) y 'seo' al final.
+    Args:
+        section_order: Lista ordenada de secciones después del Hero. Valores válidos:
+            - 'featured' (o 'destacados')
+            - 'categories_catalog' (o 'categorias_mosaico', 'mosaico')
+            - 'about' (o 'sobre_mi', 'clinica')
+            - 'cta' (o 'llamada_accion')
+            - Nombres, slugs o IDs de categorías específicas (ej. 'facial', 'corporal').
+    """
+    import json
+    db = SessionLocal()
+    try:
+        tenant_id = current_tenant_var.get()
+        if not tenant_id:
+            return "Error: No se ha podido resolver el identificador del inquilino (tenant_id)."
+
+        if not section_order:
+            return "Aviso: Debes indicar al menos el orden deseado de las secciones."
+
+        all_cats = db.query(models.ServiceCategory).filter(
+            models.ServiceCategory.tenant_id == tenant_id
+        ).order_by(models.ServiceCategory.order_index.asc()).all()
+
+        alias_map = {
+            "featured": "featured",
+            "destacados": "featured",
+            "servicios_destacados": "featured",
+            "tratamientos_destacados": "featured",
+            "categories_catalog": "categories_catalog",
+            "categorias_mosaico": "categories_catalog",
+            "mosaico": "categories_catalog",
+            "mosaico_categorias": "categories_catalog",
+            "about": "about",
+            "sobre_mi": "about",
+            "sobre_nosotros": "about",
+            "clinica": "about",
+            "cta": "cta",
+            "llamada_accion": "cta",
+        }
+
+        resolved_middle: List[str] = []
+        for item in section_order:
+            norm = normalize_slug_str(str(item)).replace("-", "_")
+            if norm in ("hero", "seo"):
+                continue
+            mapped = alias_map.get(norm)
+            if not mapped:
+                for c in all_cats:
+                    if str(c.id) == str(item).strip() or normalize_slug_str(c.slug or "") == normalize_slug_str(str(item)) or normalize_slug_str(c.name or "") == normalize_slug_str(str(item)):
+                        mapped = str(c.id)
+                        break
+            if mapped and mapped not in resolved_middle:
+                resolved_middle.append(mapped)
+
+        default_tail = ["featured", "categories_catalog", "about", "cta"] + [str(c.id) for c in all_cats]
+        for fallback_id in default_tail:
+            if fallback_id not in resolved_middle:
+                resolved_middle.append(fallback_id)
+
+        final_order = ["hero"] + resolved_middle + ["seo"]
+        update_site_content(db, schemas.SiteContentUpdate(home_sections_order=json.dumps(final_order)))
+
+        return f"Éxito: El orden de la portada ha sido actualizado: Hero -> {' -> '.join(resolved_middle[:5])}."
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error en reorder_home_sections: {e}")
+        return f"Error al reordenar secciones de la Home: {str(e)}"
+    finally:
+        db.close()

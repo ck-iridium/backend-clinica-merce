@@ -62,6 +62,7 @@ export default function AgendaTab({
               )}
             </span>
             <button
+              id="agenda-booking-modality-toggle"
               type="button"
               onClick={() => setSettings({
                 ...settings,
@@ -115,6 +116,7 @@ export default function AgendaTab({
                   {Boolean(settings.enable_counter_mode) ? "✓ Modo Mostrador Activo" : "Desactivado"}
                 </span>
                 <button
+                  id="agenda-counter-mode-toggle"
                   type="button"
                   onClick={() => setSettings({
                     ...settings,
@@ -140,7 +142,7 @@ export default function AgendaTab({
                           <label className="block text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1.5">
                             Auto-bloqueo por Inactividad
                           </label>
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                          <div id="agenda-counter-autolock-group" className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                             {[
                               { value: 0, label: "Desactivado" },
                               { value: 5, label: "5 min" },
@@ -209,6 +211,7 @@ export default function AgendaTab({
                           {settings.enable_time_clock !== false ? "✓ Fichajes Activos" : "Desactivado"}
                         </span>
                         <button
+                          id="agenda-timeclock-toggle"
                           type="button"
                           onClick={() => setSettings({
                             ...settings,

@@ -135,7 +135,9 @@ def public_concierge_chat(
         locations_desc_lines.append(f"- Sede: {loc.name} [ID: {loc.id}]{addr_part}")
     locations_info_str = "\n".join(locations_desc_lines) if locations_desc_lines else "Sede central"
 
-    # Modalidad de trabajo
+    # Modalidad de trabajo y reservas online
+    allow_online_booking = getattr(settings, "allow_online_booking", True) is not False
+    whatsapp_number = getattr(settings, "whatsapp_number", None) or clinic_phone
     work_modality = getattr(settings, "work_modality", "clinic_only") or "clinic_only"
     has_home_service = work_modality in ("both", "home_only")
 
@@ -190,7 +192,31 @@ SEDE PRINCIPAL:
     elif "dental" in sector or "salud" in sector or "medic" in sector:
         sector_tonality = "riguroso, empático, tranquilizador, clínico y de alta gama"
 
-    system_instruction = f"""Eres el Asistente Virtual 24/7 de "{clinic_name}".
+    if not allow_online_booking:
+        system_instruction = f"""Eres el Asistente Virtual 24/7 de "{clinic_name}".
+Tu tono es {sector_tonality} (estilo Quiet Luxury: sofisticado, educado, claro y conciso).
+Tu misión es orientar al visitante de la web, responder sus dudas sobre servicios, precios y horarios, e invitarle a concertar su cita por teléfono o WhatsApp.
+
+INFORMACIÓN DEL NEGOCIO:
+- Nombre: {clinic_name}
+- Dirección: {clinic_address}
+- Teléfono de contacto: {clinic_phone}
+- WhatsApp: {whatsapp_number}
+- Horario de apertura habitual: {open_time} a {close_time}
+- Fecha actual del sistema: {today_str} ({weekday_es})
+{multi_location_instruction}
+
+CATÁLOGO DE SERVICIOS ACTIVOS:
+{catalog_str}
+
+DIRECTIVA CRÍTICA — MODO TELÉFONO / PRESENCIAL EXCLUSIVO ACTIVO:
+- Este centro tiene pausado temporalmente el motor de reservas online en la web.
+- Tienes TERMINANTEMENTE PROHIBIDO generar etiquetas `[RESERVA: ...]` o invitar a reservar online automáticamente.
+- Si el visitante pregunta cómo reservar o pide cita para un día/hora, explícale con extrema elegancia que actualmente gestionamos nuestras citas de forma personalizada por teléfono o presencialmente, e indícale el teléfono `{clinic_phone}` (y WhatsApp `{whatsapp_number}` si está disponible) para que nuestro equipo le atienda de inmediato.
+- Puedes mostrar tarjetas informativas de servicios si pregunta por tratamientos usando `[OPCIONES: Servicio A | Servicio B | Servicio C]`.
+- Mantén tus respuestas breves, naturales y fluidas (máximo 25-35 palabras) ya que se sintetizan por voz."""
+    else:
+        system_instruction = f"""Eres el Asistente Virtual 24/7 de "{clinic_name}".
 Tu tono es {sector_tonality} (estilo Quiet Luxury: sofisticado, educado, claro y conciso).
 Tu misión es orientar al visitante de la web, responder sus dudas sobre servicios y horarios, y ayudarle a encontrar el mejor tratamiento para agendar su cita de forma ágil y natural.
 
@@ -298,7 +324,7 @@ DIRECTIVAS DE INTELIGENCIA CONVERSACIONAL (PASO A PASO - CERO VOLCADOS DE SERVIC
     try:
         model = genai.GenerativeModel(
             model_name="gemini-2.5-flash",
-            tools=[consultar_huecos_disponibles],
+            tools=[consultar_huecos_disponibles] if allow_online_booking else [],
             system_instruction=system_instruction
         )
 
@@ -436,7 +462,7 @@ DIRECTIVAS DE INTELIGENCIA CONVERSACIONAL (PASO A PASO - CERO VOLCADOS DE SERVIC
         # 2. Detectar acción de reserva [RESERVA: service_id=..., date=..., time=..., location_id=...]
         action = None
         reserva_match = re.search(r'\[RESERVA:\s*([^\]]+)\]', raw_text, re.IGNORECASE)
-        if reserva_match:
+        if allow_online_booking and reserva_match:
             params_str = reserva_match.group(1)
             kv_pairs = dict(re.findall(r'(\w+)=([^\s,]+)', params_str))
             srv_id = kv_pairs.get("service_id")
@@ -513,11 +539,12 @@ DIRECTIVAS DE INTELIGENCIA CONVERSACIONAL (PASO A PASO - CERO VOLCADOS DE SERVIC
         logger.error(f"Error procesando conversación de concierge: {e}", exc_info=True)
         fallback_msg = (
             f"Gracias por contactar con {clinic_name}. En este momento estoy actualizando "
-            "la disponibilidad. Puedes ver todos nuestros servicios y reservar directamente tu cita "
-            "haciendo clic en el botón de reserva."
+            + ("la disponibilidad. Puedes ver todos nuestros servicios y reservar directamente tu cita haciendo clic en el botón de reserva."
+               if allow_online_booking else
+               f"la información. Puedes llamarnos directamente al {clinic_phone} para reservar tu cita.")
         )
         return schemas.AIConciergeResponse(
             response=fallback_msg,
-            action=schemas.ConciergeAction(type="booking", url="/reservar"),
+            action=schemas.ConciergeAction(type="booking", url="/reservar") if allow_online_booking else None,
             remaining_messages=MAX_SESSION_MESSAGES - session_info["count"]
         )
