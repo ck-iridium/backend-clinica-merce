@@ -915,3 +915,60 @@ export async function getCounterOperatorsAction(explicitTenantId?: string) {
     return { success: false, data: [] };
   }
 }
+
+export async function getCounterShowcaseServicesAction(explicitTenantId?: string) {
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+    const cookieStore = cookies();
+    let tenantId = explicitTenantId || cookieStore.get('tenant_id')?.value;
+    const isImpersonating = cookieStore.get('is_impersonating')?.value === 'true';
+    const impersonateTenantId = cookieStore.get('impersonate_tenant_id')?.value;
+    if (isImpersonating && impersonateTenantId && !explicitTenantId) tenantId = impersonateTenantId;
+
+    if (!tenantId || tenantId === 'undefined') {
+      return { success: false, data: [] };
+    }
+
+    let resolvedId = tenantId;
+    if (!/^[0-9a-fA-F-]{36}$/.test(tenantId)) {
+      const { data: tenantRow } = await supabaseAdmin
+        .from('tenants')
+        .select('id')
+        .eq('slug', tenantId)
+        .maybeSingle();
+      if (tenantRow?.id) {
+        resolvedId = tenantRow.id;
+      }
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from('services')
+      .select('id, name, price, duration_minutes, image_url, service_categories(name)')
+      .eq('tenant_id', resolvedId)
+      .eq('is_active', true)
+      .limit(32);
+
+    if (error || !data) {
+      return { success: false, data: [] };
+    }
+
+    const mapped = data
+      .map((s: any) => ({
+        id: s.id,
+        name: s.name,
+        price: s.price,
+        duration_minutes: s.duration_minutes,
+        image_url: s.image_url || null,
+        category_name: Array.isArray(s.service_categories)
+          ? s.service_categories[0]?.name || null
+          : s.service_categories?.name || null,
+      }))
+      // Priorizar los que tienen imagen real para el muro 3D
+      .sort((a, b) => Number(Boolean(b.image_url)) - Number(Boolean(a.image_url)));
+
+    return { success: true, data: mapped };
+  } catch (error: any) {
+    console.error("Excepción en getCounterShowcaseServicesAction:", error);
+    return { success: false, data: [] };
+  }
+}

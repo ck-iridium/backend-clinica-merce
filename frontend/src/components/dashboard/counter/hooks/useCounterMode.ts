@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
-import { getCounterOperatorsAction } from '@/app/actions/team';
-import { Operator, CounterModeManagerProps } from '../types';
+import { getCounterOperatorsAction, getCounterShowcaseServicesAction } from '@/app/actions/team';
+import { Operator, ShowcaseService, CounterModeManagerProps } from '../types';
 
 export function useCounterMode({
   tenantId: initialTenantId,
@@ -29,6 +29,7 @@ export function useCounterMode({
   const [pinValue, setPinValue] = useState<string>('');
   const [isVerifyingPin, setIsVerifyingPin] = useState<boolean>(false);
   const [pinError, setPinError] = useState<string | null>(null);
+  const [showcaseServices, setShowcaseServices] = useState<ShowcaseService[]>([]);
 
   // Estados del Token QR dinámico de 20s
   const [qrToken, setQrToken] = useState<string>('');
@@ -275,6 +276,13 @@ export function useCounterMode({
         .catch(err => console.warn("No se pudo cargar ajuste de auto-bloqueo:", err));
 
       fetchOperators();
+      getCounterShowcaseServicesAction(resolved)
+        .then(res => {
+          if (res.success && Array.isArray(res.data)) {
+            setShowcaseServices(res.data);
+          }
+        })
+        .catch(() => {});
     }
 
     const handleOpenQR = () => setShowQRModal(true);
@@ -553,6 +561,7 @@ export function useCounterMode({
     handlePinBackspace,
     handleResetOperator,
     unlockCounter,
-    handleLogout
+    handleLogout,
+    showcaseServices
   };
 }

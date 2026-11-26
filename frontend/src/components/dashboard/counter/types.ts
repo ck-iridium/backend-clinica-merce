@@ -8,6 +8,15 @@ export interface Operator {
   has_pin?: boolean;
 }
 
+export interface ShowcaseService {
+  id: string;
+  name: string;
+  price?: number | string | null;
+  duration_minutes?: number | null;
+  image_url?: string | null;
+  category_name?: string | null;
+}
+
 export interface CounterModeManagerProps {
   tenantId?: string;
   clinicName?: string;

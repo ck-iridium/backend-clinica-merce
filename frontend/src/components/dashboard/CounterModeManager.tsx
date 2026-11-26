@@ -38,6 +38,7 @@ export default function CounterModeManager(props: CounterModeManagerProps) {
     handleResetOperator,
     unlockCounter,
     handleLogout,
+    showcaseServices,
   } = useCounterMode(props);
 
   // Evitar desajustes de hidratación (React #418) en SSR
@@ -69,6 +70,7 @@ export default function CounterModeManager(props: CounterModeManagerProps) {
           pinValue={pinValue}
           pinError={pinError}
           isVerifyingPin={isVerifyingPin}
+          showcaseServices={showcaseServices}
           onOpenQR={() => setShowQRModal(true)}
           onLogout={handleLogout}
           onSelectOperator={setSelectedOperator}
