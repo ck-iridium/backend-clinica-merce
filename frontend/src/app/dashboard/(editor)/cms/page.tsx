@@ -60,7 +60,7 @@ export default function CMSPage() {
   const [showAIImageModal, setShowAIImageModal] = useState(false);
   const [aiImageTarget, setAiImageTarget] = useState<{ type: 'hero_slide' | 'about' | 'category', categoryId?: string } | null>(null);
 
-  const defaultContent = {
+  const defaultContent: any = {
     hero_title: '', hero_subtitle: '', hero_button_text: '', hero_button_link: '',
     hero_image_url: '', hero_video_url: '', hero_alignment: 'center', hero_horizontal_alignment: 'center',
     hero_content_fullwidth: false,
@@ -135,7 +135,7 @@ export default function CMSPage() {
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings/`, { headers })
       ]);
       
-      let data = defaultContent;
+      let data: any = defaultContent;
       let cats: any[] = [];
       let svcs: any[] = [];
 
@@ -427,23 +427,6 @@ export default function CMSPage() {
         });
       } else {
         throw new Error();
-      }
-    } catch (err) {
-      console.error(err);
-      showFeedback({
-        type: 'error',
-        title: 'Error',
-        message: 'No se pudo guardar la configuración del megamenú.'
-      });
-    } finally {
-      setSavingMegamenu(false);
-    }
-  };
-          title: 'Megamenú Guardado',
-          message: 'La configuración y distribución del megamenú ha sido actualizada con éxito.'
-        });
-      } else {
-        throw new Error("Error saving megamenu config");
       }
     } catch (err) {
       console.error(err);

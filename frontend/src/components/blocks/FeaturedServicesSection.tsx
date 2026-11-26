@@ -34,11 +34,14 @@ export default function FeaturedServicesSection({
   if (!config || config.enabled === false) return null;
 
   // Filtrar servicios seleccionados por id con trim y casing seguro
-  const targetIds = Array.isArray(config.service_ids) ? config.service_ids : [];
+  const rawIds = (Array.isArray(config.service_ids) && config.service_ids.length > 0)
+    ? config.service_ids
+    : (Array.isArray((config as any).selected_services_ids) ? (config as any).selected_services_ids : []);
+  const targetIds: string[] = rawIds.map((id: any) => String(id));
   
   let featuredServices = targetIds.length > 0
     ? targetIds
-        .map(id => services.find((s: any) => String(s?.id || '').trim().toLowerCase() === String(id || '').trim().toLowerCase()))
+        .map((id: string) => services.find((s: any) => String(s?.id || '').trim().toLowerCase() === id.trim().toLowerCase()))
         .filter(Boolean)
     : services.slice(0, 4);
 
@@ -319,7 +322,7 @@ export default function FeaturedServicesSection({
         )}
 
         {/* ─── FORMATO: SLIDER / CARRUSEL ─── */}
-        {layout === 'slider' && featuredServices.length > 0 && (
+        {layout === 'slider' && (
           <div className="flex gap-6 overflow-x-auto pb-6 pt-2 hide-scroll snap-x snap-mandatory">
             {featuredServices.map((svc: any) => {
               const catSlug = getCategorySlug(svc);
@@ -328,7 +331,7 @@ export default function FeaturedServicesSection({
                   key={svc.id}
                   className="w-[280px] sm:w-[320px] shrink-0 snap-start bg-white dark:bg-stone-900 rounded-3xl overflow-hidden shadow-sm border border-stone-200/60 dark:border-stone-800 flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-[#d4af37]/40 group"
                 >
-                  <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-stone-900 via-stone-850 to-stone-950">
+                  <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-stone-900 via-stone-800 to-stone-950">
                     {svc.image_url ? (
                       <img
                         src={getFullUrl(svc.image_url)}
@@ -336,9 +339,11 @@ export default function FeaturedServicesSection({
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                       />
                     ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center opacity-70">
-                        <Sparkles className="w-10 h-10 text-[#d4af37]/50 mb-2" />
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#d4af37]/80">Tratamiento Exclusivo</span>
+                      <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center">
+                        <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-2 backdrop-blur-sm group-hover:scale-105 group-hover:border-[#d4af37]/40 transition-all duration-500">
+                          <Sparkles className="w-7 h-7 text-[#d4af37]" />
+                        </div>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#d4af37]/90">Tratamiento Exclusivo</span>
                       </div>
                     )}
                     {showDuration && svc.duration_minutes && (
