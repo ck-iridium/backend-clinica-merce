@@ -87,7 +87,7 @@ export default function FeaturedServicesSection({
 
   const title = config.title || 'Tratamientos Estrella';
   const subtitle = config.subtitle || 'Nuestra selección más demandada para una experiencia de cuidado y bienestar excepcional.';
-  const layout = config.layout_style || 'bento';
+  const layout = (config.layout_style === 'grid' || config.layout_style === 'slider') ? config.layout_style : 'bento';
   const showPrice = config.show_price !== false;
   const showDuration = config.show_duration !== false;
 

@@ -28,12 +28,12 @@ const FALLBACK_EDITORIAL_TITLES = [
 
 // Paletas editoriales "Quiet Luxury" para tarjetas sin fotografía
 const EDITORIAL_PALETTES_LIGHT = [
-  'from-[#F5EFE6] via-[#E8DCCB] to-[#D6C2A5]', // Champagne cálido
-  'from-[#EFECE6] via-[#DFD8CC] to-[#C8B9A6]', // Lino y arena
-  'from-[#F4EBE1] via-[#E5D3BE] to-[#C9AD88]', // Oro suave y crema
-  'from-[#EAECEF] via-[#D8DCE3] to-[#BFC6D1]', // Perla arquitectónica
-  'from-[#F3EAE8] via-[#E2D0CC] to-[#C9ADA7]', // Cuarzo rosado sutil
-  'from-[#292524] via-[#1C1917] to-[#0C0A09]', // Contraste antracita de lujo
+  'from-[#F5EFE6] via-[#E8DCCB] to-[#D6C2A5]',
+  'from-[#EFECE6] via-[#DFD8CC] to-[#C8B9A6]',
+  'from-[#F4EBE1] via-[#E5D3BE] to-[#C9AD88]',
+  'from-[#EAECEF] via-[#D8DCE3] to-[#BFC6D1]',
+  'from-[#F3EAE8] via-[#E2D0CC] to-[#C9ADA7]',
+  'from-[#292524] via-[#1C1917] to-[#0C0A09]',
 ];
 
 const EDITORIAL_PALETTES_DARK = [
@@ -78,7 +78,8 @@ function ShowcaseCard({
 
   return (
     <div
-      className={`group relative aspect-[4/3] w-full rounded-2xl overflow-hidden border transition-colors ${
+      style={{ backfaceVisibility: 'hidden', transform: 'translateZ(0)' }}
+      className={`group relative aspect-[4/3] w-full shrink-0 rounded-2xl overflow-hidden border transition-colors ${
         isDarkMode
           ? 'bg-stone-900 border-white/10 shadow-[0_12px_32px_rgba(0,0,0,0.45)]'
           : 'bg-white border-stone-200/80 shadow-[0_12px_32px_rgba(28,25,23,0.08)]'
@@ -91,14 +92,13 @@ function ShowcaseCard({
             alt={service.name}
             onError={() => setImgFailed(true)}
             className="w-full h-full object-cover scale-[1.02]"
-            loading="lazy"
+            loading="eager"
+            decoding="async"
           />
-          {/* Degradado inferior para legibilidad elegante sobre foto real */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/5" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-black/5" />
         </>
       ) : (
         <div className={`relative w-full h-full bg-gradient-to-br ${gradientClass}`}>
-          {/* Detalle geométrico sutil tipo Quiet Luxury */}
           <div
             className={`absolute -right-8 -top-8 w-36 h-36 rounded-full border ${
               isDarkCard ? 'border-[#D4AF37]/20' : 'border-[#D4AF37]/30'
@@ -109,7 +109,6 @@ function ShowcaseCard({
               isDarkCard ? 'border-white/5' : 'border-white/40'
             }`}
           />
-          {/* Monograma gigante sutil */}
           <div
             className={`absolute right-4 bottom-3 font-serif text-5xl font-bold select-none leading-none ${
               isDarkCard ? 'text-white/[0.06]' : 'text-stone-900/[0.06]'
@@ -168,8 +167,9 @@ function ShowcaseCard({
 
 /**
  * CounterDiagonalBackground
- * Muro 3D en perspectiva diagonal con 6 columnas en marquee infinito que cubren el 100% de la pantalla.
- * Prioriza las imágenes reales de servicios del tenant y ofrece tarjetas editoriales de lujo como fallback.
+ * Muro 3D en perspectiva diagonal con 6 columnas en marquee infinito.
+ * Cada columna tiene una altura fija menor que el 50% de su contenido duplicado,
+ * garantizando un loop 100% continuo sin huecos ni apariciones repentinas.
  */
 export function CounterDiagonalBackground({
   services,
@@ -178,7 +178,8 @@ export function CounterDiagonalBackground({
 }: CounterDiagonalBackgroundProps) {
   const NUM_COLUMNS = 6;
 
-  // Construir pool garantizado de al menos 30 tarjetas para poblar 6 columnas sin huecos
+  // Pool de al menos 48 tarjetas (8 por columna x 2 duplicado = 16 por columna)
+  // para asegurar que 1x bloque siempre supere la altura del contenedor visible.
   const columns = useMemo(() => {
     const basePool: ShowcaseService[] =
       services.length > 0
@@ -190,12 +191,12 @@ export function CounterDiagonalBackground({
             category_name: clinicName,
           }));
 
-    const minTotal = 30;
+    const minTotal = 48;
     const expanded: ShowcaseService[] = [];
     while (expanded.length < minTotal) {
       for (const item of basePool) {
         expanded.push(item);
-        if (expanded.length >= Math.max(minTotal, basePool.length)) break;
+        if (expanded.length >= minTotal && expanded.length >= basePool.length) break;
       }
     }
 
@@ -207,14 +208,14 @@ export function CounterDiagonalBackground({
     return cols;
   }, [services, clinicName]);
 
-  const durations = [54, 66, 58, 70, 62, 68];
+  const durations = [72, 84, 76, 88, 80, 90];
 
   return (
     <div
       aria-hidden="true"
       className="fixed inset-0 overflow-hidden pointer-events-none select-none z-0"
     >
-      {/* Plano 3D inclinado sobredimensionado para cubrir todas las esquinas sin huecos */}
+      {/* Plano 3D inclinado sobredimensionado */}
       <div
         className="absolute -inset-[45%] flex items-center justify-center"
         style={{
@@ -222,15 +223,16 @@ export function CounterDiagonalBackground({
           transformStyle: 'preserve-3d',
         }}
       >
-        <div className="grid grid-cols-3 md:grid-cols-6 gap-4 sm:gap-5 w-[185vw] min-w-[2100px]">
+        <div className="grid grid-cols-3 md:grid-cols-6 gap-4 sm:gap-5 w-[185vw] min-w-[2100px] h-[175vh] min-h-[1450px]">
           {columns.map((colItems, colIdx) => {
             const isReverse = colIdx % 2 === 1;
             const duplicated = [...colItems, ...colItems];
 
             return (
-              <div key={colIdx} className="overflow-hidden">
+              <div key={colIdx} className="h-full overflow-hidden relative">
                 <motion.div
                   className="flex flex-col gap-4 sm:gap-5 will-change-transform"
+                  initial={{ y: isReverse ? '-50%' : '0%' }}
                   animate={{
                     y: isReverse ? ['-50%', '0%'] : ['0%', '-50%'],
                   }}
@@ -256,13 +258,20 @@ export function CounterDiagonalBackground({
         </div>
       </div>
 
-      {/* Velo radial suave: protege el centro sin apagar los laterales */}
+      {/* Overlay blanco/marfil suave para dar protagonismo al pedestal central */}
+      <div
+        className={`absolute inset-0 backdrop-blur-[1.5px] ${
+          isDarkMode ? 'bg-stone-950/35' : 'bg-white/30'
+        }`}
+      />
+
+      {/* Viñeta radial suave para enfocar la atención en el centro */}
       <div
         className="absolute inset-0"
         style={{
           background: isDarkMode
-            ? 'radial-gradient(ellipse 46% 52% at 50% 50%, rgba(12,10,9,0.82) 0%, rgba(12,10,9,0.42) 55%, rgba(12,10,9,0.18) 100%)'
-            : 'radial-gradient(ellipse 46% 52% at 50% 50%, rgba(250,249,246,0.86) 0%, rgba(250,249,246,0.38) 55%, rgba(250,249,246,0.12) 100%)',
+            ? 'radial-gradient(ellipse 50% 56% at 50% 50%, rgba(12,10,9,0.84) 0%, rgba(12,10,9,0.45) 55%, rgba(12,10,9,0.22) 100%)'
+            : 'radial-gradient(ellipse 50% 56% at 50% 50%, rgba(255,255,255,0.78) 0%, rgba(250,249,246,0.38) 55%, rgba(250,249,246,0.18) 100%)',
         }}
       />
 

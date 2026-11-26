@@ -69,7 +69,7 @@ export default function CategoriesCatalogSection({
 
   const title = config.title || 'Nuestras Especialidades';
   const subtitle = config.subtitle || 'Explora todas las áreas de cuidado y tratamientos diseñados para tu bienestar integral.';
-  const layout = config.layout_style || 'bento';
+  const layout = config.layout_style === 'grid' ? 'grid' : 'bento';
   const showCount = config.show_services_count !== false;
 
   const getFullUrl = (url?: string) => {
