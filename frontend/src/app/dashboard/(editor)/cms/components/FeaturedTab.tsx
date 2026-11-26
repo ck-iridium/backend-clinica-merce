@@ -263,7 +263,7 @@ export default function FeaturedTab({
                     onClick={() => setSelectedCategoryFilter('all')}
                     className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold whitespace-nowrap transition-all ${
                       selectedCategoryFilter === 'all'
-                        ? 'bg-stone-900 text-white'
+                        ? 'bg-[#FF6B00] text-white'
                         : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
                     }`}
                   >
@@ -278,7 +278,7 @@ export default function FeaturedTab({
                         onClick={() => setSelectedCategoryFilter(String(cat.id))}
                         className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold whitespace-nowrap transition-all ${
                           isCurrent
-                            ? 'bg-stone-900 text-white'
+                            ? 'bg-[#FF6B00] text-white'
                             : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
                         }`}
                       >
