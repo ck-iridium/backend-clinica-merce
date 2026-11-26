@@ -99,7 +99,7 @@ export default function HomeBuilderLayout({
               onClick={() => onTabChange(tab)}
               className={`px-3 py-1.5 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all ${
                 activeTab === tab
-                  ? 'bg-stone-900 text-[#d4af37] shadow-xs'
+                  ? 'bg-[#FF6B00] text-white shadow-xs'
                   : 'bg-white border border-stone-200/70 text-stone-500 hover:text-stone-800 hover:border-stone-300'
               }`}
             >
