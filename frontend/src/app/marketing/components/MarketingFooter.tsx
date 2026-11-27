@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { PROBOOKIA_BRAND } from '@/lib/probookiaBrand';
 
 interface MarketingFooterProps {
   primaryColor?: string;
@@ -10,15 +11,15 @@ interface MarketingFooterProps {
 }
 
 export default function MarketingFooter({
-  primaryColor = '#1c1917',
-  tertiaryColor = '#D4AF37',
-  logoFooterSvg,
-  logoSvg
+  primaryColor = PROBOOKIA_BRAND.primaryColor,
+  tertiaryColor = PROBOOKIA_BRAND.tertiaryColor,
+  logoFooterSvg = PROBOOKIA_BRAND.logoFooterSvg,
+  logoSvg = PROBOOKIA_BRAND.logoSvg
 }: MarketingFooterProps) {
-  const darkColor = primaryColor || '#1c1917';
-  const accentColor = tertiaryColor || '#D4AF37';
+  const darkColor = primaryColor || PROBOOKIA_BRAND.primaryColor;
+  const accentColor = tertiaryColor || PROBOOKIA_BRAND.tertiaryColor;
 
-  const resolvedLogo = logoFooterSvg || logoSvg;
+  const resolvedLogo = logoFooterSvg || PROBOOKIA_BRAND.logoFooterSvg || logoSvg || PROBOOKIA_BRAND.logoSvg;
 
   return (
     <footer 

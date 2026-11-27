@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { BookOpen, ChevronRight, Menu, X, ArrowUpRight } from 'lucide-react';
+import { PROBOOKIA_BRAND } from '@/lib/probookiaBrand';
 
 interface MarketingHeaderProps {
   logoSvg?: string | null;
@@ -19,9 +20,9 @@ const NAV_ITEMS = [
 ];
 
 export default function MarketingHeader({
-  logoSvg,
-  primaryColor,
-  tertiaryColor,
+  logoSvg = PROBOOKIA_BRAND.logoSvg,
+  primaryColor = PROBOOKIA_BRAND.primaryColor,
+  tertiaryColor = PROBOOKIA_BRAND.tertiaryColor,
   onOpenOnboarding
 }: MarketingHeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

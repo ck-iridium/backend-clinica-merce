@@ -1,6 +1,7 @@
 import DocsClientPage from './DocsClientPage';
 import { DOCS_NAVIGATION } from './content';
 import { getDocContent } from '@/lib/docs';
+import { PROBOOKIA_BRAND } from '@/lib/probookiaBrand';
 
 export const revalidate = 60; // Revalidate settings cache every 60 seconds
 
@@ -9,11 +10,12 @@ export default async function Page() {
 
   // 1. Fallback default branding settings
   const defaultSettings = {
-    primary_color: '#3b82f6',
-    secondary_color: '#1c1917',
-    tertiary_color: '#d4af37',
+    primary_color: PROBOOKIA_BRAND.primaryColor,
+    secondary_color: PROBOOKIA_BRAND.secondaryColor,
+    tertiary_color: PROBOOKIA_BRAND.tertiaryColor,
     font_family: 'playfair_inter',
-    logo_svg: null as string | null,
+    logo_svg: PROBOOKIA_BRAND.logoSvg,
+    logo_footer_svg: PROBOOKIA_BRAND.logoFooterSvg,
     font_weight_headings: 'semibold',
     favicon_url: null as string | null,
   };
@@ -33,7 +35,8 @@ export default async function Page() {
           secondary_color: data.settings.secondary_color || defaultSettings.secondary_color,
           tertiary_color: data.settings.tertiary_color || defaultSettings.tertiary_color,
           font_family: data.settings.font_family || defaultSettings.font_family,
-          logo_svg: data.settings.logo_svg || null,
+          logo_svg: data.settings.logo_svg || defaultSettings.logo_svg,
+          logo_footer_svg: data.settings.logo_footer_svg || defaultSettings.logo_footer_svg,
           font_weight_headings: data.settings.font_weight_headings || defaultSettings.font_weight_headings,
           favicon_url: data.settings.favicon_url || null,
         };

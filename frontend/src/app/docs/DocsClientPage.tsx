@@ -387,9 +387,9 @@ export default function DocsClientPage({ brandingSettings, docsContent }: DocsCl
 
       {/* HEADER CORPORATIVO B2B SAAS (IDENTICO A PROBOOKIA) */}
       <MarketingHeader
-        logoSvg={logoSvg}
-        primaryColor="#1c1917"
-        tertiaryColor="#d4af37"
+        logoSvg={brandingSettings?.logo_svg}
+        primaryColor={brandingSettings?.primary_color}
+        tertiaryColor={brandingSettings?.tertiary_color}
       />
 
       {/* Hero Header para la Documentación */}
@@ -524,9 +524,10 @@ export default function DocsClientPage({ brandingSettings, docsContent }: DocsCl
 
       {/* Footer Unificado Oficial ProBookia */}
       <MarketingFooter
-        primaryColor="#1c1917"
-        tertiaryColor="#d4af37"
-        logoSvg={logoSvg}
+        primaryColor={brandingSettings?.primary_color}
+        tertiaryColor={brandingSettings?.tertiary_color}
+        logoFooterSvg={brandingSettings?.logo_footer_svg}
+        logoSvg={brandingSettings?.logo_svg}
       />
 
     </div>
