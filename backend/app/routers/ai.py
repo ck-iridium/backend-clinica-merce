@@ -90,6 +90,22 @@ def generate_content(request: schemas.AIGenerationRequest, db: Session = Depends
 
     ai_provider = settings.ai_provider or "gemini"
     system_prompt = SYSTEM_PROMPT_TEMPLATE.format(tone=request.tone)
+
+    length_map = {
+        "short": "EXTENSIÓN SOLICITADA: Corta y muy concisa (ve directo al grano, menos palabras).",
+        "medium": "EXTENSIÓN SOLICITADA: Media y equilibrada.",
+        "long": "EXTENSIÓN SOLICITADA: Larga, más detallada y descriptiva (respetando siempre el formato requerido).",
+    }
+    length_key = (request.length or "medium").lower()
+    if length_key in length_map:
+        system_prompt += f"\n- {length_map[length_key]}\n"
+
+    if request.instructions and request.instructions.strip():
+        system_prompt += (
+            f"\nINSTRUCCIONES ESPECÍFICAS DEL USUARIO (PRIORIDAD ALTA):\n"
+            f"- {request.instructions.strip()}\n"
+            f"- Aplica estas indicaciones en estilo, enfoque, tipo de negocio y contenido, manteniendo intacto el formato de salida exigido.\n"
+        )
     
     if request.type == "short_description":
         system_prompt += (

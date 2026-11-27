@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { Sparkles, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { AITextPromptModal, AITextPromptOptions } from '@/components/cms/AITextPromptModal';
 
 function getCookie(name: string): string | null {
   if (typeof document === 'undefined') return null;
@@ -39,18 +40,21 @@ export default function CtaTab({
 }) {
   const { t } = useLanguage();
   const [isGeneratingCta, setIsGeneratingCta] = useState(false);
+  const [showAiPromptModal, setShowAiPromptModal] = useState(false);
 
-  const handleGenerateCta = async () => {
+  const handleGenerateCta = async (opts: AITextPromptOptions) => {
     setIsGeneratingCta(true);
     try {
-      const promptText = `Genera un título llamativo, un subtítulo convincente y el texto de acción para el botón de la sección CTA (Llamada a la Acción) de una clínica de estética y bienestar. Título actual: "${formData.cta_title || ''}"`;
+      const promptText = `Genera un título llamativo, un subtítulo convincente y el texto de acción para el botón de la sección CTA. Título actual: "${formData.cta_title || ''}"`;
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ai/generate`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({
           prompt: promptText,
           type: 'cta_copy',
-          tone: 'premium'
+          tone: opts.tone,
+          length: opts.length,
+          instructions: opts.instructions,
         })
       });
       if (!res.ok) {
@@ -62,6 +66,7 @@ export default function CtaTab({
       if (data.cta_subtitle) setFormData((prev: any) => ({ ...prev, cta_subtitle: data.cta_subtitle }));
       if (data.cta_button_text) setFormData((prev: any) => ({ ...prev, cta_button_text: data.cta_button_text }));
       toast.success('¡Llamada a la acción generada con éxito!');
+      setShowAiPromptModal(false);
     } catch (e: any) {
       toast.error(e.message || 'Error al generar texto con IA');
     } finally {
@@ -82,7 +87,7 @@ export default function CtaTab({
          </div>
          <button
            type="button"
-           onClick={handleGenerateCta}
+           onClick={() => setShowAiPromptModal(true)}
            disabled={isGeneratingCta}
            className="flex items-center gap-1.5 text-xs font-bold text-[#FF6B00] bg-orange-50 hover:bg-orange-100 border border-orange-200/80 px-3 py-1.5 rounded-xl transition-all shadow-2xs active:scale-95 disabled:opacity-50"
          >
@@ -142,6 +147,14 @@ export default function CtaTab({
           </div>
         </div>
       </div>
+
+      <AITextPromptModal
+        open={showAiPromptModal}
+        onClose={() => setShowAiPromptModal(false)}
+        title="Redactar Llamada a la Acción (CTA)"
+        isGenerating={isGeneratingCta}
+        onConfirm={handleGenerateCta}
+      />
     </div>
   );
 }

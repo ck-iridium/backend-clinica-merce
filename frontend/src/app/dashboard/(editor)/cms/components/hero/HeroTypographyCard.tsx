@@ -5,6 +5,7 @@ import { useLanguage } from '@/app/contexts/LanguageContext';
 import { Type, Sliders, Sparkles, Loader2, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import { HeroSubCardProps, parseSizeScale } from './types';
+import { AITextPromptModal, AITextPromptOptions } from '@/components/cms/AITextPromptModal';
 
 function getCookie(name: string): string | null {
   if (typeof document === 'undefined') return null;
@@ -41,22 +42,25 @@ export default function HeroTypographyCard({
 }: HeroSubCardProps) {
   const { t } = useLanguage();
   const [isGeneratingCopy, setIsGeneratingCopy] = useState(false);
+  const [showAiPromptModal, setShowAiPromptModal] = useState(false);
 
   const titleScale = parseSizeScale(getResponsiveValue('hero_title_size', data.hero_title_size ?? 100), 100);
   const subtitleScale = parseSizeScale(getResponsiveValue('hero_subtitle_size', data.hero_subtitle_size ?? 100), 100);
   const titleMaxWidth = getResponsiveValue('hero_title_max_width', data.hero_title_max_width ?? 100);
 
-  const handleGenerateHeroCopy = async () => {
+  const handleGenerateHeroCopy = async (opts: AITextPromptOptions) => {
     setIsGeneratingCopy(true);
     try {
-      const promptText = `Genera un titular H1 y un subtítulo elegante y memorable para la portada de una clínica de estética y bienestar. Titular actual: "${data.hero_title || ''}"`;
+      const promptText = `Genera un titular H1 y un subtítulo elegante y memorable para la portada. Titular actual: "${data.hero_title || ''}"`;
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ai/generate`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({
           prompt: promptText,
           type: 'hero_copy',
-          tone: 'premium'
+          tone: opts.tone,
+          length: opts.length,
+          instructions: opts.instructions,
         })
       });
       if (!res.ok) {
@@ -67,6 +71,7 @@ export default function HeroTypographyCard({
       if (resData.hero_title) onChange('hero_title', resData.hero_title);
       if (resData.hero_subtitle) onChange('hero_subtitle', resData.hero_subtitle);
       toast.success('¡Titular y subtítulo generados con éxito!');
+      setShowAiPromptModal(false);
     } catch (e: any) {
       toast.error(e.message || 'Error al generar texto con IA');
     } finally {
@@ -113,7 +118,7 @@ export default function HeroTypographyCard({
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={handleGenerateHeroCopy}
+              onClick={() => setShowAiPromptModal(true)}
               disabled={isGeneratingCopy}
               className="flex items-center gap-1.5 text-[10px] font-bold text-[#FF6B00] bg-orange-50 hover:bg-orange-100 border border-orange-200/80 px-2.5 py-1 rounded-xl transition-all shadow-2xs active:scale-95 disabled:opacity-50"
               title="Generar titular y subtítulo con IA"
@@ -316,6 +321,14 @@ export default function HeroTypographyCard({
           </div>
         </div>
       </div>
+
+      <AITextPromptModal
+        open={showAiPromptModal}
+        onClose={() => setShowAiPromptModal(false)}
+        title="Redactar Titular y Subtítulo del Hero"
+        isGenerating={isGeneratingCopy}
+        onConfirm={handleGenerateHeroCopy}
+      />
     </div>
   );
 }

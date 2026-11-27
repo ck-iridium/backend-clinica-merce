@@ -6,6 +6,8 @@ class AIGenerationRequest(BaseModel):
     prompt: str
     type: str  # "description" or "seo"
     tone: str = "premium"  # "premium", "cercano", "clinico"
+    instructions: Optional[str] = None
+    length: Optional[str] = "medium"  # "short", "medium", "long"
 
 class AIImageGenerationRequest(BaseModel):
     prompt: str

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { Sparkles, Globe, Loader2, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { AITextPromptModal, AITextPromptOptions } from '@/components/cms/AITextPromptModal';
 
 interface SeoTabProps {
   formData: any;
@@ -47,6 +48,7 @@ export default function SeoTab({ formData, setFormData }: SeoTabProps) {
   const { t } = useLanguage();
   const [selectedLang, setSelectedLang] = useState<LangCode>('es');
   const [isGeneratingSEO, setIsGeneratingSEO] = useState(false);
+  const [showAiPromptModal, setShowAiPromptModal] = useState(false);
   const [isTranslatingLang, setIsTranslatingLang] = useState(false);
 
   // Valores dinámicos según idioma
@@ -87,7 +89,7 @@ export default function SeoTab({ formData, setFormData }: SeoTabProps) {
   };
 
   // Generar SEO en Español (Idioma Base)
-  const handleGenerateSEO = async () => {
+  const handleGenerateSEO = async (opts: AITextPromptOptions) => {
     const heroTitle = formData.hero_title || '';
     const heroSubtitle = formData.hero_subtitle || '';
     const aboutTitle = formData.about_title || '';
@@ -95,7 +97,7 @@ export default function SeoTab({ formData, setFormData }: SeoTabProps) {
 
     setIsGeneratingSEO(true);
     try {
-      const contextPrompt = `Portal web de clínica de estética y bienestar.\nTitular portada: ${heroTitle}\nSubtítulo portada: ${heroSubtitle}\nSección Sobre Mí: ${aboutTitle} - ${aboutText}`;
+      const contextPrompt = `Portal web del negocio.\nTitular portada: ${heroTitle}\nSubtítulo portada: ${heroSubtitle}\nSección Sobre Mí: ${aboutTitle} - ${aboutText}`;
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/ai/generate`, {
         method: 'POST',
@@ -103,7 +105,9 @@ export default function SeoTab({ formData, setFormData }: SeoTabProps) {
         body: JSON.stringify({
           prompt: contextPrompt,
           type: 'seo',
-          tone: 'premium',
+          tone: opts.tone,
+          length: opts.length,
+          instructions: opts.instructions,
         }),
       });
 
@@ -121,6 +125,7 @@ export default function SeoTab({ formData, setFormData }: SeoTabProps) {
       }));
 
       toast.success('¡Metadatos SEO optimizados con éxito!');
+      setShowAiPromptModal(false);
     } catch (error: any) {
       toast.error(error.message || 'Error al generar SEO');
     } finally {
@@ -218,7 +223,7 @@ export default function SeoTab({ formData, setFormData }: SeoTabProps) {
         {selectedLang === 'es' ? (
           <button
             type="button"
-            onClick={handleGenerateSEO}
+            onClick={() => setShowAiPromptModal(true)}
             disabled={isGeneratingSEO}
             className="flex items-center gap-1.5 text-xs font-bold text-[#FF6B00] bg-orange-50 hover:bg-orange-100 border border-orange-200/80 px-3 py-1.5 rounded-xl transition-all shadow-2xs active:scale-95 disabled:opacity-50"
           >
@@ -371,6 +376,14 @@ export default function SeoTab({ formData, setFormData }: SeoTabProps) {
           </div>
         </div>
       </div>
+
+      <AITextPromptModal
+        open={showAiPromptModal}
+        onClose={() => setShowAiPromptModal(false)}
+        title="Optimizar Metadatos SEO con IA"
+        isGenerating={isGeneratingSEO}
+        onConfirm={handleGenerateSEO}
+      />
     </div>
   );
 }

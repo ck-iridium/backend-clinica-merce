@@ -5,6 +5,7 @@ import { GripVertical, Sparkles, Loader2 } from 'lucide-react';
 import ImageUploadBlock from './ImageUploadBlock';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { toast } from 'sonner';
+import { AITextPromptModal, AITextPromptOptions } from '@/components/cms/AITextPromptModal';
 
 function getCookie(name: string): string | null {
   if (typeof document === 'undefined') return null;
@@ -55,6 +56,7 @@ const CategoriesTab = memo(({
 }) => {
   const { t } = useLanguage();
   const [isGeneratingCategoryCopy, setIsGeneratingCategoryCopy] = useState(false);
+  const [showAiPromptModal, setShowAiPromptModal] = useState(false);
 
   // El estado vive AQUÍ, totalmente aislado del padre durante el drag
   const [localItems, setLocalItems] = useState(initialCategories);
@@ -92,18 +94,20 @@ const CategoriesTab = memo(({
     }));
   };
 
-  const handleGenerateCategoryCopy = async () => {
+  const handleGenerateCategoryCopy = async (opts: AITextPromptOptions) => {
     if (!selectedCategory) return;
     setIsGeneratingCategoryCopy(true);
     try {
-      const promptText = `Genera un nombre comercial elegante y una descripción breve (1 o 2 frases) para una categoría de tratamientos estéticos. Categoría actual: "${selectedCategory.name || ''}"`;
+      const promptText = `Genera un nombre comercial elegante y una descripción breve para una categoría de servicios. Categoría actual: "${selectedCategory.name || ''}"`;
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ai/generate`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({
           prompt: promptText,
           type: 'category_copy',
-          tone: 'premium'
+          tone: opts.tone,
+          length: opts.length,
+          instructions: opts.instructions,
         })
       });
       if (!res.ok) {
@@ -114,6 +118,7 @@ const CategoriesTab = memo(({
       if (data.name) handleCategoryChange(selectedCategory.id, 'name', data.name);
       if (data.description) handleCategoryChange(selectedCategory.id, 'description', data.description);
       toast.success('¡Categoría redactada con éxito!');
+      setShowAiPromptModal(false);
     } catch (e: any) {
       toast.error(e.message || 'Error al generar texto con IA');
     } finally {
@@ -301,7 +306,7 @@ const CategoriesTab = memo(({
                  </label>
                  <button
                    type="button"
-                   onClick={handleGenerateCategoryCopy}
+                   onClick={() => setShowAiPromptModal(true)}
                    disabled={isGeneratingCategoryCopy}
                    className="flex items-center gap-1.5 text-[10px] font-bold text-[#FF6B00] bg-orange-50 hover:bg-orange-100 border border-orange-200/80 px-2 py-0.5 rounded-lg transition-all shadow-2xs active:scale-95 disabled:opacity-50"
                    title="Generar nombre y descripción con IA"
@@ -372,6 +377,14 @@ const CategoriesTab = memo(({
             ))}
          </Reorder.Group>
       </div>
+
+      <AITextPromptModal
+        open={showAiPromptModal}
+        onClose={() => setShowAiPromptModal(false)}
+        title={`Redactar Categoría: ${selectedCategory?.name || ''}`}
+        isGenerating={isGeneratingCategoryCopy}
+        onConfirm={handleGenerateCategoryCopy}
+      />
     </div>
   );
 });

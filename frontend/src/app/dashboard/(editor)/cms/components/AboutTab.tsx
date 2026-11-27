@@ -5,6 +5,7 @@ import { SelectSimple } from '@/components/ui/select';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { Sparkles, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { AITextPromptModal, AITextPromptOptions } from '@/components/cms/AITextPromptModal';
 
 function getCookie(name: string): string | null {
   if (typeof document === 'undefined') return null;
@@ -45,18 +46,21 @@ export default function AboutTab({
 }) {
   const { t } = useLanguage();
   const [isGeneratingBio, setIsGeneratingBio] = useState(false);
+  const [showAiPromptModal, setShowAiPromptModal] = useState(false);
 
-  const handleGenerateBio = async () => {
+  const handleGenerateBio = async (opts: AITextPromptOptions) => {
     setIsGeneratingBio(true);
     try {
-      const promptText = `Genera un título y una biografía o manifiesto de filosofía exclusivo y cálido para la sección Sobre Mí de una clínica de estética y bienestar. Título actual: "${formData.about_title || ''}"`;
+      const promptText = `Genera un título y una biografía o manifiesto de filosofía exclusivo y cálido para la sección Sobre Mí. Título actual: "${formData.about_title || ''}"`;
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ai/generate`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({
           prompt: promptText,
           type: 'about_bio',
-          tone: 'premium'
+          tone: opts.tone,
+          length: opts.length,
+          instructions: opts.instructions,
         })
       });
       if (!res.ok) {
@@ -67,6 +71,7 @@ export default function AboutTab({
       if (data.about_title) setFormData((prev: any) => ({ ...prev, about_title: data.about_title }));
       if (data.about_text) setFormData((prev: any) => ({ ...prev, about_text: data.about_text }));
       toast.success('¡Filosofía y biografía redactadas con éxito!');
+      setShowAiPromptModal(false);
     } catch (e: any) {
       toast.error(e.message || 'Error al generar texto con IA');
     } finally {
@@ -128,7 +133,7 @@ export default function AboutTab({
             </label>
             <button
               type="button"
-              onClick={handleGenerateBio}
+              onClick={() => setShowAiPromptModal(true)}
               disabled={isGeneratingBio}
               className="flex items-center gap-1.5 text-xs font-bold text-[#FF6B00] bg-orange-50 hover:bg-orange-100 border border-orange-200/80 px-2.5 py-1 rounded-xl transition-all shadow-2xs active:scale-95 disabled:opacity-50"
             >
@@ -189,6 +194,14 @@ export default function AboutTab({
           )}
         </div>
       </div>
+
+      <AITextPromptModal
+        open={showAiPromptModal}
+        onClose={() => setShowAiPromptModal(false)}
+        title="Redactar Biografía / Filosofía"
+        isGenerating={isGeneratingBio}
+        onConfirm={handleGenerateBio}
+      />
     </div>
   );
 }
