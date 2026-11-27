@@ -45,6 +45,13 @@ export default function MarketingFooter({
         {/* Enlaces en color terciario configurado */}
         <div className="flex flex-wrap justify-center gap-6 sm:gap-8 text-xs font-bold">
           <Link 
+            href="/terminos" 
+            style={{ color: accentColor }}
+            className="hover:underline hover:brightness-125 transition-all"
+          >
+            Términos del Servicio (B2B)
+          </Link>
+          <Link 
             href="/privacidad" 
             style={{ color: accentColor }}
             className="hover:underline hover:brightness-125 transition-all"

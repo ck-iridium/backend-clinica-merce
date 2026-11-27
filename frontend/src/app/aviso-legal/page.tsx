@@ -31,11 +31,11 @@ export default function AvisoLegalPage() {
             En cumplimiento del artículo 10 de la Ley 34/2002, de 11 de julio, de Servicios de la Sociedad de la Información y Comercio Electrónico (LSSICE), se exponen los siguientes datos identificativos del titular de este sitio web:
           </p>
           <ul className="mt-4 space-y-2 list-none p-0">
-            <li><strong>Titular:</strong> {settings.legal_name || settings.clinic_name}</li>
-            <li><strong>CIF/NIF:</strong> {settings.clinic_nif}</li>
-            <li><strong>Domicilio:</strong> {settings.clinic_address}</li>
-            <li><strong>Email:</strong> {settings.clinic_email}</li>
-            <li><strong>Teléfono/WhatsApp:</strong> {settings.whatsapp_number || settings.clinic_phone}</li>
+            <li><strong>Titular:</strong> {settings.legal_name || settings.clinic_name || 'Titular del Centro'}</li>
+            <li><strong>CIF/NIF:</strong> {settings.clinic_nif || 'Disponible en el establecimiento'}</li>
+            <li><strong>Domicilio Social:</strong> {settings.clinic_address || 'Dirección registrada del centro'}</li>
+            <li><strong>Email de Contacto:</strong> {settings.clinic_email || 'Email de atención del centro'}</li>
+            <li><strong>Teléfono / WhatsApp:</strong> {settings.whatsapp_number || settings.clinic_phone || 'Teléfono del centro'}</li>
             {settings.sanitary_register && (
               <li><strong>Nº Registro Sanitario:</strong> {settings.sanitary_register}</li>
             )}

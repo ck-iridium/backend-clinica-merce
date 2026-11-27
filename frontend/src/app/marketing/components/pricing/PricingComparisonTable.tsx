@@ -144,6 +144,61 @@ export function PricingComparisonTable({
 
             <tr className="hover:bg-stone-50/50 transition-colors">
               <td className="py-3.5 px-6">
+                <span className="font-bold text-stone-900 block text-xs md:text-sm">Control de Stock y Almacén en TPV (/pos)</span>
+                <span className="text-[11px] text-stone-400 font-medium">Descuento automático en ventas, stock mínimo y reposición</span>
+              </td>
+              <td className="py-3.5 px-6">
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-stone-700 bg-stone-100 px-2.5 py-1 rounded-full border border-stone-200/60">
+                  <span>Básico manual</span>
+                </span>
+              </td>
+              <td className="py-3.5 px-6 border-x border-[#D4AF37]/25" style={{ backgroundColor: `${accentColor}06` }}>
+                <span 
+                  style={{ backgroundColor: `${accentColor}18`, borderColor: `${accentColor}40`, color: '#1c1917' }}
+                  className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border shadow-2xs"
+                >
+                  <Check className="w-3.5 h-3.5 text-stone-950 stroke-[2.5]" />
+                  <span>Automático en TPV + Mínimos</span>
+                </span>
+              </td>
+              <td className="py-3.5 px-6">
+                <span 
+                  style={{ backgroundColor: `${accentColor}18`, borderColor: `${accentColor}40`, color: '#1c1917' }}
+                  className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border shadow-2xs"
+                >
+                  <Check className="w-3.5 h-3.5 text-stone-950 stroke-[2.5]" />
+                  <span>Multisede + Proveedores</span>
+                </span>
+              </td>
+            </tr>
+
+            <tr className="hover:bg-stone-50/50 transition-colors">
+              <td className="py-3.5 px-6">
+                <span className="font-bold text-stone-900 block text-xs md:text-sm">Catálogo Dual por Canal (Web vs TPV)</span>
+                <span className="text-[11px] text-stone-400 font-medium">Conceptos exclusivos de mostrador ocultos en la web</span>
+              </td>
+              <td className="py-3.5 px-6">
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-stone-800 bg-stone-100 px-2.5 py-1 rounded-full border border-stone-200/60">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5]" />
+                  <span>Incluido</span>
+                </span>
+              </td>
+              <td className="py-3.5 px-6 border-x border-[#D4AF37]/25" style={{ backgroundColor: `${accentColor}06` }}>
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-stone-800 bg-stone-100 px-2.5 py-1 rounded-full border border-stone-200/60">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5]" />
+                  <span>Incluido</span>
+                </span>
+              </td>
+              <td className="py-3.5 px-6">
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-stone-800 bg-stone-100 px-2.5 py-1 rounded-full border border-stone-200/60">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5]" />
+                  <span>Incluido</span>
+                </span>
+              </td>
+            </tr>
+
+            <tr className="hover:bg-stone-50/50 transition-colors">
+              <td className="py-3.5 px-6">
                 <span className="font-bold text-stone-900 block text-xs md:text-sm">Servicios y tratamientos en catálogo</span>
                 <span className="text-[11px] text-stone-400 font-medium">Tiempos de cabina, precios y categorías sin límites</span>
               </td>
@@ -237,6 +292,34 @@ export function PricingComparisonTable({
               </td>
               <td className="py-3.5 px-6 font-bold text-stone-900">
                 Ilimitados
+              </td>
+            </tr>
+
+            <tr className="hover:bg-stone-50/50 transition-colors">
+              <td className="py-3.5 px-6">
+                <span className="font-bold text-stone-900 block text-xs md:text-sm">Registro de Jornada y Fichaje (/fichar)</span>
+                <span className="text-[11px] text-stone-400 font-medium">Cumplimiento legal obligatorio (RDL 8/2019) con geolocalización, PIN y exportación oficial a Excel</span>
+              </td>
+              <td className="py-3.5 px-6 text-stone-700 font-medium">
+                1 usuario (Autónomo)
+              </td>
+              <td className="py-3.5 px-6 border-x border-[#D4AF37]/25" style={{ backgroundColor: `${accentColor}06` }}>
+                <span 
+                  style={{ backgroundColor: `${accentColor}18`, borderColor: `${accentColor}40`, color: '#1c1917' }}
+                  className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border shadow-2xs"
+                >
+                  <Check className="w-3.5 h-3.5 text-stone-950 stroke-[2.5]" />
+                  <span>Hasta 4 empleados + Excel</span>
+                </span>
+              </td>
+              <td className="py-3.5 px-6 font-bold text-stone-950">
+                <span 
+                  style={{ backgroundColor: `${accentColor}18`, borderColor: `${accentColor}40`, color: '#1c1917' }}
+                  className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border shadow-2xs"
+                >
+                  <Check className="w-3.5 h-3.5 text-stone-950 stroke-[2.5]" />
+                  <span>Multisede ilimitado + Auditoría</span>
+                </span>
               </td>
             </tr>
 
@@ -422,6 +505,37 @@ export function PricingComparisonTable({
                 >
                   <Sparkles className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
                   <span>250 fotos / mes</span>
+                </span>
+              </td>
+            </tr>
+
+            <tr className="hover:bg-stone-50/50 transition-colors">
+              <td className="py-3.5 px-6">
+                <span className="font-bold text-stone-900 block text-xs md:text-sm">Asistente Virtual Concierge 24/7</span>
+                <span className="text-[11px] text-stone-400 font-medium">Widget web interactivo, pastillas horarias, llamadas telefónicas y enlace a WhatsApp</span>
+              </td>
+              <td className="py-3.5 px-6">
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-stone-800 bg-stone-100 px-2.5 py-1 rounded-full border border-stone-200/60">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5]" />
+                  <span>Modo web básico</span>
+                </span>
+              </td>
+              <td className="py-3.5 px-6 border-x border-[#D4AF37]/25" style={{ backgroundColor: `${accentColor}06` }}>
+                <span 
+                  style={{ backgroundColor: `${accentColor}18`, borderColor: `${accentColor}40`, color: '#1c1917' }}
+                  className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border shadow-2xs"
+                >
+                  <Check className="w-3.5 h-3.5 text-stone-950 stroke-[2.5]" />
+                  <span>Voz + WhatsApp & Tel</span>
+                </span>
+              </td>
+              <td className="py-3.5 px-6">
+                <span 
+                  style={{ backgroundColor: `${accentColor}20`, borderColor: `${accentColor}50`, color: '#1c1917' }}
+                  className="inline-flex items-center gap-1.5 text-[11px] font-black px-3 py-1 rounded-full border shadow-2xs"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                  <span>Multisede + Voz Ilimitada</span>
                 </span>
               </td>
             </tr>

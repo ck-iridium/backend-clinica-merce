@@ -69,6 +69,14 @@ export const DOCS_NAVIGATION: DocSectionNavigation[] = [
         }
       },
       {
+        id: 'control-stock-tpv',
+        title: {
+          es: 'Control de Stock y Almacén en TPV',
+          en: 'Stock Control & POS Inventory',
+          fr: 'Gestion des Stocks & TPV'
+        }
+      },
+      {
         id: 'consentimientos-base64',
         title: {
           es: 'Consentimientos y Firmas Digitales',
@@ -117,6 +125,14 @@ export const DOCS_NAVIGATION: DocSectionNavigation[] = [
           en: 'Unconfirmed Booking Slot Cleanup',
           fr: 'Liberación des Créneaux Orphelins'
         }
+      },
+      {
+        id: 'asistente-concierge-24-7',
+        title: {
+          es: 'Asistente Virtual Concierge 24/7',
+          en: '24/7 Virtual Concierge Assistant',
+          fr: 'Assistant Virtuel Concierge 24/7'
+        }
       }
     ]
   },
@@ -158,6 +174,14 @@ export const DOCS_NAVIGATION: DocSectionNavigation[] = [
           es: 'Bloqueo de Citas y Horario de Antelación',
           en: 'Booking Blockouts & Lead Time',
           fr: "Blocages & Délai d'Anticipation"
+        }
+      },
+      {
+        id: 'control-fichaje-jornada',
+        title: {
+          es: 'Control de Fichaje y Horario Laboral',
+          en: 'Employee Time Clock & Labor Law',
+          fr: 'Pointage & Gestion du Temps de Travail'
         }
       }
     ]
@@ -252,6 +276,40 @@ export const DOCS_NAVIGATION: DocSectionNavigation[] = [
           es: 'Asistentes Inteligentes para Gestionar tu Web',
           en: 'Autonomous AI Assistant & Global Copilot',
           fr: 'Assistants IA Autonomes & Copilote'
+        }
+      }
+    ]
+  },
+  {
+    id: 'tpv-facturacion-bonos',
+    title: {
+      es: 'Sección 8: TPV, Facturación y Bonos',
+      en: 'Section 8: POS, Official Invoicing & Vouchers',
+      fr: 'Section 8: Caisse TPV, Facturation & Forfaits'
+    },
+    subpages: [
+      {
+        id: 'tpv-caja-rapida',
+        title: {
+          es: 'Venta Rápida y TPV Mostrador (POS Express)',
+          en: 'Quick POS Counter Sales (POS Express)',
+          fr: 'Vente Rapide en Caisse TPV'
+        }
+      },
+      {
+        id: 'facturacion-oficial-iva',
+        title: {
+          es: 'Facturación Oficial, IVA y Rectificativas',
+          en: 'Official Invoicing, VAT & Corrective Notes',
+          fr: 'Facturation Officielle & TVA'
+        }
+      },
+      {
+        id: 'gestion-bonos-vouchers',
+        title: {
+          es: 'Emisión y Control de Bonos (Vouchers)',
+          en: 'Multi-Session Vouchers & Tracking',
+          fr: 'Émission & Suivi des Forfaits'
         }
       }
     ]
