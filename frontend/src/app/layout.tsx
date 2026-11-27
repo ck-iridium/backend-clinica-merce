@@ -24,14 +24,14 @@ const inter = Inter({
 });
 
 const cormorantGaramond = Cormorant_Garamond({
-  weight: ['400', '500', '600', '700'],
+  weight: ['400', '600', '700'],
   subsets: ['latin'],
   variable: '--font-cormorant',
   display: 'swap',
 });
 
 const playfair = Playfair({
-  weight: ['400', '500', '600', '700', '800', '900'],
+  weight: ['400', '600', '700'],
   subsets: ['latin'],
   variable: '--font-playfair-base',
   display: 'swap',
@@ -50,14 +50,14 @@ const outfit = Outfit({
 });
 
 const fredoka = Fredoka({
-  weight: ['300', '400', '500', '600', '700'],
+  weight: ['400', '600'],
   subsets: ['latin'],
   variable: '--font-fredoka',
   display: 'swap',
 });
 
 const cinzel = Cinzel({
-  weight: ['400', '500', '600', '700'],
+  weight: ['400', '700'],
   subsets: ['latin'],
   variable: '--font-cinzel',
   display: 'swap',
@@ -83,21 +83,21 @@ const dmSans = DM_Sans({
 });
 
 const poppins = Poppins({
-  weight: ['300', '400', '500', '600', '700'],
+  weight: ['400', '600'],
   subsets: ['latin'],
   variable: '--font-poppins',
   display: 'swap',
 });
 
 const lato = Lato({
-  weight: ['300', '400', '700', '900'],
+  weight: ['400', '700'],
   subsets: ['latin'],
   variable: '--font-lato',
   display: 'swap',
 });
 
 const syne = Syne({
-  weight: ['400', '500', '600', '700', '800'],
+  weight: ['400', '700'],
   subsets: ['latin'],
   variable: '--font-syne',
   display: 'swap',
