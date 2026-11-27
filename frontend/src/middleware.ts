@@ -212,9 +212,13 @@ export async function middleware(request: NextRequest) {
       url.pathname.startsWith("/docs") ||
       url.pathname.startsWith("/onboarding") ||
       url.pathname === "/login" ||
+      url.pathname === "/terminos" ||
       url.pathname === "/aviso-legal" ||
       url.pathname === "/privacidad" ||
       url.pathname === "/cookies" ||
+      url.pathname === "/condiciones-reserva" ||
+      url.pathname === "/contacto" ||
+      url.pathname === "/contact" ||
       url.pathname === "/robots.txt" ||
       url.pathname === "/sitemap.xml" ||
       url.pathname === "/favicon.ico" ||
