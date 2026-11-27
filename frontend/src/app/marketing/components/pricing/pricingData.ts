@@ -38,7 +38,8 @@ export const PRICING_PLANS: PricingPlan[] = [
       { text: 'Firma en tablet y consentimientos LOPD' },
       { text: 'Emisión y control de Bonos (/vouchers)' },
       { text: 'Facturación oficial correlativa e IVA (/invoices)' },
-      { text: 'Caja rápida TPV con control de stock manual' },
+      { text: 'Caja rápida TPV con control de stock automático' },
+      { text: 'Asistente Virtual Concierge 24/7 (con voz y WhatsApp)' },
       { text: 'Web con CMS + Subdominio (y dominio propio)' },
       { text: 'Fianza anti-plantones Stripe Connect' },
       { text: 'Soporte técnico por email' }
@@ -82,7 +83,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     features: [
       { text: 'Hasta 10 miembros (+15€/mes extra)', isBold: true },
       { text: 'Hasta 5 sedes (+20€/mes extra)', isBold: true },
-      { text: 'Fichaje legal y Stock Multisede con trazabilidad', isBold: true },
+      { text: 'Fichaje legal multisede para todo el equipo', isBold: true },
       { text: 'Co-Piloto & Diseñador Web IA (Acciones ilimitadas ∞)', isBold: true },
       { text: '250 fotos/mes con IA incluidas (Ilimitadas con tu clave)', isSpecial: true },
       { text: 'Todo lo incluido en el Plan Pro' },
