@@ -6,6 +6,8 @@ import { Search, ChevronRight, Menu, X, ArrowLeft, BookOpen, Globe } from 'lucid
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import DOMPurify from 'isomorphic-dompurify';
 import { Skeleton } from '@/components/ui/skeleton';
+import MarketingHeader from '@/app/marketing/components/MarketingHeader';
+import MarketingFooter from '@/app/marketing/components/MarketingFooter';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -129,40 +131,33 @@ export default function DynamicDocsPage({ params }: { params: { slug: string[] }
   return (
     <div className="min-h-screen bg-[#FAFAFA] font-sans antialiased text-stone-800 flex flex-col transition-all duration-300">
       
-      {/* ── TOP NAV BAR ─────────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-stone-200/60 shadow-sm transition-all select-none">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 group shrink-0">
-            <div className="w-10 h-10 rounded-xl bg-stone-900 border border-stone-850 flex items-center justify-center shadow-md shadow-black/10 group-hover:scale-105 transition-all">
-              <span className="font-serif italic text-lg font-bold text-[#d4af37]">P</span>
-            </div>
-            <span className="font-serif text-xl font-bold tracking-tight text-stone-900 group-hover:text-[#d4af37] transition-all">
-              ProBookia Docs
-            </span>
-          </Link>
+      {/* ── TOP NAV BAR (PROBOOKIA OFICIAL) ─────────────────────── */}
+      <MarketingHeader primaryColor="#1c1917" tertiaryColor="#d4af37" />
 
-          {/* Search bar inside header */}
-          <div className="hidden md:flex items-center relative w-96 max-w-md mx-6">
-            <Search className="absolute left-3 w-4 h-4 text-stone-400 pointer-events-none" />
+      {/* ── SUB-BAR: BUSCADOR & IDIOMA ─────────────────────────── */}
+      <div className="bg-white/80 backdrop-blur-md border-b border-stone-200/60 py-3 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none" />
             <input
               type="text"
               placeholder={uiT.searchPlaceholder}
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full bg-stone-50 border border-stone-200 rounded-2xl pl-10 pr-4 py-2.5 text-xs text-stone-800 placeholder-stone-400 outline-none focus:bg-white focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/20 transition-all font-medium"
+              className="w-full bg-stone-50 border border-stone-200 rounded-xl pl-10 pr-4 py-2 text-xs text-stone-800 placeholder-stone-400 outline-none focus:bg-white focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]/20 transition-all font-medium"
             />
           </div>
 
-          <div className="flex items-center gap-4 shrink-0">
+          <div className="flex items-center gap-3">
             {/* Language Selector */}
             <div className="flex items-center bg-stone-50 p-1 rounded-xl border border-stone-200/60">
               {(['es', 'en', 'fr'] as const).map(l => (
                 <button
                   key={l}
                   onClick={() => setLanguage(l)}
-                  className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
                     lang === l 
-                      ? 'bg-stone-900 text-white shadow-sm' 
+                      ? 'bg-stone-900 text-white shadow-xs' 
                       : 'text-stone-400 hover:text-stone-600'
                   }`}
                 >
@@ -171,34 +166,13 @@ export default function DynamicDocsPage({ params }: { params: { slug: string[] }
               ))}
             </div>
 
-            <Link
-              href="/login"
-              className="hidden sm:inline-flex items-center bg-stone-900 hover:bg-[#d4af37] text-white px-5 py-2.5 rounded-2xl text-[11px] font-black uppercase tracking-wider shadow-sm transition-all duration-300"
-            >
-              {uiT.professionalAccess}
-            </Link>
-
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="lg:hidden p-2 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-700"
             >
-              {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+              {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
             </button>
           </div>
-        </div>
-      </header>
-
-      {/* Mobile search bar */}
-      <div className="block md:hidden bg-white px-4 py-3 border-b border-stone-150 shrink-0">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none" />
-          <input
-            type="text"
-            placeholder={uiT.searchPlaceholder}
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="w-full bg-stone-50 border border-stone-200 rounded-2xl pl-10 pr-4 py-2.5 text-xs text-stone-800 placeholder-stone-400 outline-none focus:bg-white focus:border-[#d4af37] focus:ring-2 focus:ring-[#d4af37]/20 transition-all font-medium font-sans"
-          />
         </div>
       </div>
 
@@ -305,22 +279,8 @@ export default function DynamicDocsPage({ params }: { params: { slug: string[] }
 
       </div>
 
-      {/* ── FOOTER ──────────────────────────────────────────────── */}
-      <footer className="bg-white border-t border-stone-200/60 py-10 mt-auto select-none shrink-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
-          <p className="text-xs text-stone-400 font-sans">
-            {uiT.footerText}
-          </p>
-          <div className="flex gap-6">
-            <Link href="/" className="text-xs text-stone-400 hover:text-[#d4af37] transition-all">
-              {uiT.backHome}
-            </Link>
-            <Link href="/login" className="text-xs text-stone-400 hover:text-[#d4af37] transition-all">
-              {uiT.professionalAccess}
-            </Link>
-          </div>
-        </div>
-      </footer>
+      {/* ── FOOTER UNIFICADO PROBOOKIA ──────────────────────────── */}
+      <MarketingFooter primaryColor="#1c1917" tertiaryColor="#d4af37" />
 
     </div>
   );

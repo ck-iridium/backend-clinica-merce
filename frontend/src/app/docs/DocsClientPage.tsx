@@ -5,6 +5,8 @@ import { Search, ChevronRight, BookOpen, Menu, X, ArrowLeft } from 'lucide-react
 import LanguageSelector from '@/components/LanguageSelector';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { DOCS_NAVIGATION } from './content';
+import MarketingHeader from '@/app/marketing/components/MarketingHeader';
+import MarketingFooter from '@/app/marketing/components/MarketingFooter';
 
 interface DocsClientPageProps {
   brandingSettings: any;
@@ -383,36 +385,12 @@ export default function DocsClientPage({ brandingSettings, docsContent }: DocsCl
         }
       ` }} />
 
-      {/* HEADER CORPORATIVO B2B SAAS (SIN FUGA DE CLINICA) */}
-      <header className="sticky top-0 z-50 w-full bg-white/95 dark:bg-stone-950/95 backdrop-blur-md border-b border-stone-100 dark:border-stone-900 py-1 transition-all duration-300">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {logoSvg ? (
-              <Link href="/" className="h-10 flex items-center justify-start [&>svg]:h-full [&>svg]:w-auto [&>svg]:max-w-full" dangerouslySetInnerHTML={{ __html: logoSvg }} />
-            ) : (
-              <Link href="/" className="text-xl md:text-2xl font-serif tracking-widest text-stone-950 dark:text-white font-semibold select-none">
-                PROBOOKIA <span style={{ color: tertiaryColor }} className="font-sans text-[10px] font-black tracking-[0.25em] uppercase ml-1">SaaS</span>
-              </Link>
-            )}
-          </div>
-          
-          <div className="flex items-center gap-4">
-            <LanguageSelector />
-            <Link 
-              href="/login" 
-              className="px-5 py-2.5 rounded-xl text-xs font-bold bg-stone-50 dark:bg-stone-900 text-stone-700 dark:text-stone-350 border border-stone-200/60 dark:border-stone-850 hover:text-stone-950 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-stone-800 transition-all duration-300 active:scale-95 shadow-sm"
-            >
-              {uiT.professionalAccess}
-            </Link>
-            <Link
-              href="/"
-              className="bg-stone-950 hover:bg-stone-900 dark:bg-white dark:hover:bg-stone-50 text-white dark:text-stone-950 px-5 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all duration-300 hover:scale-105 active:scale-95"
-            >
-              {uiT.getStarted}
-            </Link>
-          </div>
-        </div>
-      </header>
+      {/* HEADER CORPORATIVO B2B SAAS (IDENTICO A PROBOOKIA) */}
+      <MarketingHeader
+        logoSvg={logoSvg}
+        primaryColor="#1c1917"
+        tertiaryColor="#d4af37"
+      />
 
       {/* Hero Header para la Documentación */}
       <header className="border-b border-stone-100 dark:border-stone-900 bg-stone-50/50 dark:bg-stone-900/10 py-12 md:py-16 px-6">
@@ -544,19 +522,12 @@ export default function DocsClientPage({ brandingSettings, docsContent }: DocsCl
         </div>
       </div>
 
-      {/* Footer Minimalista */}
-      <footer className="border-t border-stone-100 dark:border-stone-900 py-8 px-6 mt-20 bg-stone-50/50 dark:bg-stone-900/10">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-semibold text-stone-400 dark:text-stone-505">
-          <div>
-            <span>{uiT.footerText}</span>
-          </div>
-          <div className="flex items-center gap-6">
-            <Link href="/privacidad" className="hover:text-stone-600">Privacidad</Link>
-            <Link href="/aviso-legal" className="hover:text-stone-600">Aviso Legal</Link>
-            <Link href="/condiciones-reserva" className="hover:text-stone-600">Condiciones</Link>
-          </div>
-        </div>
-      </footer>
+      {/* Footer Unificado Oficial ProBookia */}
+      <MarketingFooter
+        primaryColor="#1c1917"
+        tertiaryColor="#d4af37"
+        logoSvg={logoSvg}
+      />
 
     </div>
   );

@@ -5,10 +5,10 @@ import Link from 'next/link';
 import { BookOpen, ChevronRight, Menu, X, ArrowUpRight } from 'lucide-react';
 
 interface MarketingHeaderProps {
-  logoSvg: string | null;
-  primaryColor: string;
-  tertiaryColor: string;
-  onOpenOnboarding: (plan: 'free' | 'basic' | 'pro' | 'gold') => void;
+  logoSvg?: string | null;
+  primaryColor?: string;
+  tertiaryColor?: string;
+  onOpenOnboarding?: (plan: 'free' | 'basic' | 'pro' | 'gold') => void;
 }
 
 const NAV_ITEMS = [
@@ -50,17 +50,31 @@ export default function MarketingHeader({
     };
   }, [isMobileMenuOpen]);
 
+  const handleOpenOnboarding = (plan: 'free' | 'basic' | 'pro' | 'gold' = 'pro') => {
+    if (onOpenOnboarding) {
+      onOpenOnboarding(plan);
+    } else {
+      window.location.href = '/marketing#precios';
+    }
+  };
+
   const handleScrollTo = (sectionId: string) => {
     setIsMobileMenuOpen(false);
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      window.location.href = `/marketing#${sectionId}`;
     }
   };
 
   const handleScrollToTop = () => {
     setIsMobileMenuOpen(false);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (typeof window !== 'undefined' && (window.location.pathname === '/' || window.location.pathname === '/marketing')) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      window.location.href = '/';
+    }
   };
 
   const accentGold = tertiaryColor || '#D4AF37';
@@ -163,7 +177,7 @@ export default function MarketingHeader({
                 Iniciar Sesión
               </Link>
               <button
-                onClick={() => onOpenOnboarding('pro')}
+                onClick={() => handleOpenOnboarding('pro')}
                 style={{ backgroundColor: brandDark }}
                 className="hover:opacity-95 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all duration-200 hover:scale-[1.02] active:scale-95 border border-white/20 flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
               >
@@ -175,7 +189,7 @@ export default function MarketingHeader({
             {/* Mobile Actions: CTA rápido + Botón Hamburguesa */}
             <div className="flex md:hidden items-center gap-1.5 sm:gap-2">
               <button
-                onClick={() => onOpenOnboarding('pro')}
+                onClick={() => handleOpenOnboarding('pro')}
                 style={{ backgroundColor: brandDark }}
                 className="text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-[11px] font-bold shadow-xs transition-all active:scale-95 flex items-center gap-1 whitespace-nowrap cursor-pointer"
               >
@@ -345,7 +359,7 @@ export default function MarketingHeader({
               type="button"
               onClick={() => {
                 setIsMobileMenuOpen(false);
-                onOpenOnboarding('pro');
+                handleOpenOnboarding('pro');
               }}
               style={{ backgroundColor: brandDark }}
               className="w-full py-4 text-white rounded-2xl text-xs font-bold shadow-lg flex items-center justify-center gap-2 hover:opacity-95 transition-all active:scale-98 border border-white/20 cursor-pointer"
