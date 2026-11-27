@@ -33,6 +33,24 @@ export default function ManageCategoriesModal({
   services,
 }: ManageCategoriesModalProps) {
   const { t } = useLanguage();
+  const [channelFilter, setChannelFilter] = useState<'all' | 'web' | 'tpv'>('all');
+
+  const getCategoryChannel = (catId: string) => {
+    const catServices = services.filter((s: any) => s.category_id === catId);
+    if (catServices.length === 0) return 'empty' as const;
+    const hasWeb = catServices.some((s: any) => s.is_visible_on_web !== false && !s.is_product);
+    const hasTpv = catServices.some((s: any) => s.is_visible_on_web === false || s.is_product);
+    if (hasWeb && hasTpv) return 'mixed' as const;
+    if (hasWeb) return 'web' as const;
+    return 'tpv' as const;
+  };
+
+  const filteredCategories = categories.filter((cat) => {
+    if (channelFilter === 'all') return true;
+    const ch = getCategoryChannel(cat.id);
+    if (channelFilter === 'web') return ch === 'web' || ch === 'mixed';
+    return ch === 'tpv' || ch === 'mixed';
+  });
   const { showFeedback } = useFeedback();
 
   // Local modal and editing states
@@ -133,8 +151,28 @@ export default function ManageCategoriesModal({
               </div>
               <div className="flex items-center justify-between pt-1">
                 <span className="text-xs font-semibold text-stone-400">
-                  {categories.length} {categories.length === 1 ? 'categoría' : 'categorías'}
+                  {filteredCategories.length} {filteredCategories.length === 1 ? 'categoría' : 'categorías'}
                 </span>
+                <div className="flex items-center gap-1 bg-stone-100 p-1 rounded-xl border border-stone-200/70">
+                  {([
+                    { key: 'all', label: 'Todas' },
+                    { key: 'web', label: 'Web' },
+                    { key: 'tpv', label: 'Solo TPV' },
+                  ] as const).map((opt) => (
+                    <button
+                      key={opt.key}
+                      type="button"
+                      onClick={() => setChannelFilter(opt.key)}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                        channelFilter === opt.key
+                          ? 'bg-[#FF6B00] text-white shadow-xs'
+                          : 'text-stone-500 hover:text-stone-900'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
                 <Button 
                   id="services-manage-categories-add-btn"
                   onClick={() => setShowCategoryModal(true)}
@@ -150,7 +188,7 @@ export default function ManageCategoriesModal({
 
           <div className="p-8 max-h-[50vh] overflow-y-auto">
             <div className="space-y-3">
-              {categories.map(cat => (
+              {filteredCategories.map(cat => (
                 <div key={cat.id} className="flex flex-col p-4 bg-stone-50/70 rounded-2xl border border-stone-200/70 group transition-all gap-3 hover:bg-stone-50">
                   <div className="flex items-center justify-between">
                     {editingCategoryId === cat.id ? (
@@ -209,7 +247,38 @@ export default function ManageCategoriesModal({
                               <FolderTree size={18} strokeWidth={1.5} />
                             </div>
                           )}
-                          <span className="font-bold text-stone-800 text-sm">{cat.name}</span>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-bold text-stone-800 text-sm">{cat.name}</span>
+                            {(() => {
+                              const ch = getCategoryChannel(cat.id);
+                              if (ch === 'web') {
+                                return (
+                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                    Web
+                                  </span>
+                                );
+                              }
+                              if (ch === 'tpv') {
+                                return (
+                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-stone-100 text-stone-600 border border-stone-200">
+                                    Solo TPV
+                                  </span>
+                                );
+                              }
+                              if (ch === 'mixed') {
+                                return (
+                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-200">
+                                    Web y TPV
+                                  </span>
+                                );
+                              }
+                              return (
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-stone-50 text-stone-400 border border-stone-200/70">
+                                  Vacía
+                                </span>
+                              );
+                            })()}
+                          </div>
                         </div>
                         <div className="flex gap-1.5 shrink-0">
                           <button 
