@@ -8,6 +8,7 @@ import DOMPurify from 'isomorphic-dompurify';
 import { Skeleton } from '@/components/ui/skeleton';
 import MarketingHeader from '@/app/marketing/components/MarketingHeader';
 import MarketingFooter from '@/app/marketing/components/MarketingFooter';
+import { GOOGLE_FONTS_URL } from '@/app/marketing/utils/fonts';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -131,8 +132,11 @@ export default function DynamicDocsPage({ params }: { params: { slug: string[] }
   return (
     <div className="min-h-screen bg-[#FAFAFA] font-sans antialiased text-stone-800 flex flex-col transition-all duration-300">
       
+      {/* ── INYECCIÓN GOOGLE FONTS OFICIAL PROBOOKIA ────────────── */}
+      <style dangerouslySetInnerHTML={{ __html: `@import url('${GOOGLE_FONTS_URL}');` }} />
+
       {/* ── TOP NAV BAR (PROBOOKIA OFICIAL) ─────────────────────── */}
-      <MarketingHeader primaryColor="#1c1917" tertiaryColor="#d4af37" />
+      <MarketingHeader />
 
       {/* ── SUB-BAR: BUSCADOR & IDIOMA ─────────────────────────── */}
       <div className="bg-white/80 backdrop-blur-md border-b border-stone-200/60 py-3 px-4 sm:px-6 lg:px-8">
@@ -280,7 +284,7 @@ export default function DynamicDocsPage({ params }: { params: { slug: string[] }
       </div>
 
       {/* ── FOOTER UNIFICADO PROBOOKIA ──────────────────────────── */}
-      <MarketingFooter primaryColor="#1c1917" tertiaryColor="#d4af37" />
+      <MarketingFooter />
 
     </div>
   );

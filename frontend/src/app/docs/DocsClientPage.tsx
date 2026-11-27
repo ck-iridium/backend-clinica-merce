@@ -7,6 +7,8 @@ import { useLanguage } from '@/app/contexts/LanguageContext';
 import { DOCS_NAVIGATION } from './content';
 import MarketingHeader from '@/app/marketing/components/MarketingHeader';
 import MarketingFooter from '@/app/marketing/components/MarketingFooter';
+import { resolveHeadingFont, resolveBodyFont, FONT_WEIGHT_MAP, GOOGLE_FONTS_URL } from '@/app/marketing/utils/fonts';
+import { PROBOOKIA_BRAND } from '@/lib/probookiaBrand';
 
 interface DocsClientPageProps {
   brandingSettings: any;
@@ -26,21 +28,18 @@ export default function DocsClientPage({ brandingSettings, docsContent }: DocsCl
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [activeSubpageId]);
 
-  const primaryColor = brandingSettings?.primary_color || '#3b82f6';
-  const secondaryColor = brandingSettings?.secondary_color || '#1c1917';
-  const tertiaryColor = brandingSettings?.tertiary_color || '#d4af37';
-  const fontFamily = brandingSettings?.font_family || 'playfair_inter';
-  const logoSvg = brandingSettings?.logo_svg || null;
+  const primaryColor = brandingSettings?.primary_color || PROBOOKIA_BRAND.primaryColor;
+  const secondaryColor = brandingSettings?.secondary_color || PROBOOKIA_BRAND.secondaryColor;
+  const tertiaryColor = brandingSettings?.tertiary_color || PROBOOKIA_BRAND.tertiaryColor;
+  const fontFamily = brandingSettings?.font_family || 'playfair';
+  const fontFamilyBody = brandingSettings?.font_family_body || 'inter';
+  const logoSvg = brandingSettings?.logo_svg || PROBOOKIA_BRAND.logoSvg;
+  const logoFooterSvg = brandingSettings?.logo_footer_svg || PROBOOKIA_BRAND.logoFooterSvg;
   const fontWeightHeadings = brandingSettings?.font_weight_headings || 'semibold';
 
-  const weightMap: Record<string, string> = {
-    'light': '300',
-    'normal': '400',
-    'medium': '500',
-    'semibold': '600',
-    'bold': '700'
-  };
-  const activeWeight = weightMap[fontWeightHeadings] || '600';
+  const activeWeight = FONT_WEIGHT_MAP[fontWeightHeadings || 'semibold'] || '600';
+  const resolvedHeadingFont = resolveHeadingFont(fontFamily);
+  const resolvedBodyFont = resolveBodyFont(fontFamilyBody, fontFamily);
 
   // Find active subpage object
   const activeSection = DOCS_NAVIGATION.find(s => s.id === activeSectionId) || DOCS_NAVIGATION[0];
@@ -321,38 +320,35 @@ export default function DocsClientPage({ brandingSettings, docsContent }: DocsCl
   return (
     <div className="min-h-screen bg-white dark:bg-stone-950 text-stone-900 dark:text-stone-100 font-sans transition-all duration-300">
       
-      {/* Inyección dinámica de Google Fonts y Clases Tipográficas */}
+      {/* Inyección idéntica a la Landing de Google Fonts y Clases Tipográficas */}
       <style dangerouslySetInnerHTML={{ __html: `
+        @import url('${GOOGLE_FONTS_URL}');
+
         :root {
-          --primary-accent: ${primaryColor};
-          --secondary-accent: ${secondaryColor};
-          --tertiary-accent: ${tertiaryColor};
-          
-          --font-serif: ${
-            fontFamily === 'playfair_inter' ? "var(--font-playfair-base), 'Playfair Display', serif" :
-            fontFamily === 'outfit' ? "var(--font-outfit), 'Outfit', sans-serif" :
-            fontFamily === 'fredoka' ? "'Fredoka', sans-serif" :
-            fontFamily === 'cormorant_montserrat' ? "var(--font-cormorant), 'Cormorant Garamond', serif" :
-            fontFamily === 'cinzel_roboto' ? "'Cinzel', serif" :
-            "var(--font-inter), 'Inter', sans-serif"
-          };
-          --font-sans: ${
-            fontFamily === 'playfair_inter' ? "var(--font-inter), 'Inter', sans-serif" :
-            fontFamily === 'outfit' ? "var(--font-outfit), 'Outfit', sans-serif" :
-            fontFamily === 'fredoka' ? "'Fredoka', sans-serif" :
-            fontFamily === 'cormorant_montserrat' ? "var(--font-montserrat), 'Montserrat', sans-serif" :
-            fontFamily === 'cinzel_roboto' ? "'Roboto', sans-serif" :
-            "var(--font-inter), 'Inter', sans-serif"
-          };
+          --font-serif: ${resolvedHeadingFont} !important;
+          --font-heading: ${resolvedHeadingFont} !important;
+          --font-playfair: ${resolvedHeadingFont} !important;
+          --font-cormorant: ${resolvedHeadingFont} !important;
+          --font-sans: ${resolvedBodyFont} !important;
+          --font-body: ${resolvedBodyFont} !important;
+          --heading-weight: ${activeWeight} !important;
+          --primary-accent: ${primaryColor} !important;
+          --secondary-accent: ${secondaryColor} !important;
+          --tertiary-accent: ${tertiaryColor} !important;
         }
         
-        .font-serif {
-          font-family: var(--font-serif) !important;
+        .font-serif,
+        .font-serif.font-bold,
+        .font-serif.font-semibold,
+        .font-serif.font-medium,
+        h1, h2, h3, h4, h5, h6,
+        [class*="font-serif"] {
+          font-family: ${resolvedHeadingFont} !important;
           font-weight: ${activeWeight} !important;
         }
         
-        .font-sans, body, html, button, input, select, textarea {
-          font-family: var(--font-sans) !important;
+        .font-sans, p, input, select, textarea {
+          font-family: ${resolvedBodyFont} !important;
         }
 
         .theme-accent-color {
@@ -387,9 +383,9 @@ export default function DocsClientPage({ brandingSettings, docsContent }: DocsCl
 
       {/* HEADER CORPORATIVO B2B SAAS (IDENTICO A PROBOOKIA) */}
       <MarketingHeader
-        logoSvg={brandingSettings?.logo_svg}
-        primaryColor={brandingSettings?.primary_color}
-        tertiaryColor={brandingSettings?.tertiary_color}
+        logoSvg={logoSvg}
+        primaryColor={primaryColor}
+        tertiaryColor={tertiaryColor}
       />
 
       {/* Hero Header para la Documentación */}
@@ -524,10 +520,10 @@ export default function DocsClientPage({ brandingSettings, docsContent }: DocsCl
 
       {/* Footer Unificado Oficial ProBookia */}
       <MarketingFooter
-        primaryColor={brandingSettings?.primary_color}
-        tertiaryColor={brandingSettings?.tertiary_color}
-        logoFooterSvg={brandingSettings?.logo_footer_svg}
-        logoSvg={brandingSettings?.logo_svg}
+        primaryColor={primaryColor}
+        tertiaryColor={tertiaryColor}
+        logoFooterSvg={logoFooterSvg}
+        logoSvg={logoSvg}
       />
 
     </div>
