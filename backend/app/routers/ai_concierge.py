@@ -137,6 +137,11 @@ def public_concierge_chat(
         locations_desc_lines.append(f"- Sede: {loc.name} [ID: {loc.id}]{addr_part}")
     locations_info_str = "\n".join(locations_desc_lines) if locations_desc_lines else "Sede central"
 
+    clean_phone_digits = re.sub(r'\D', '', clinic_phone or '')
+    clean_whatsapp_digits = re.sub(r'\D', '', whatsapp_number or '')
+    phone_action_val = f"tel:{clean_phone_digits}" if clean_phone_digits else f"tel:{clinic_phone}"
+    whatsapp_url = f"https://wa.me/{clean_whatsapp_digits}" if clean_whatsapp_digits else None
+
     # Modalidad de trabajo y reservas online
     allow_online_booking = getattr(settings, "allow_online_booking", True) is not False
     whatsapp_number = getattr(settings, "whatsapp_number", None) or clinic_phone
@@ -195,6 +200,7 @@ SEDE PRINCIPAL:
         sector_tonality = "riguroso, empático, tranquilizador, clínico y de alta gama"
 
     if not allow_online_booking:
+        contact_options_demo = f"[OPCIONES: {clinic_phone} | WhatsApp]" if whatsapp_number else f"[OPCIONES: {clinic_phone}]"
         system_instruction = f"""Eres el Asistente Virtual 24/7 de "{clinic_name}".
 Tu tono es {sector_tonality} (estilo Quiet Luxury: sofisticado, educado, claro y conciso).
 Tu misión es orientar al visitante de la web, responder sus dudas sobre servicios, precios y horarios, e invitarle a concertar su cita por teléfono o WhatsApp.
@@ -202,8 +208,8 @@ Tu misión es orientar al visitante de la web, responder sus dudas sobre servici
 INFORMACIÓN DEL NEGOCIO:
 - Nombre: {clinic_name}
 - Dirección: {clinic_address}
-- Teléfono de contacto: {clinic_phone}
-- WhatsApp: {whatsapp_number}
+- Teléfono de contacto: [{clinic_phone}]({phone_action_val})
+- WhatsApp: [{whatsapp_number}]({whatsapp_url}) (si está disponible)
 - Horario de apertura habitual: {open_time} a {close_time}
 - Fecha actual del sistema: {today_str} ({weekday_es})
 {multi_location_instruction}
@@ -214,8 +220,12 @@ CATÁLOGO DE SERVICIOS ACTIVOS:
 DIRECTIVA CRÍTICA — MODO TELÉFONO / PRESENCIAL EXCLUSIVO ACTIVO:
 - Este centro tiene pausado temporalmente el motor de reservas online en la web.
 - Tienes TERMINANTEMENTE PROHIBIDO generar etiquetas `[RESERVA: ...]` o invitar a reservar online automáticamente.
-- Si el visitante pregunta cómo reservar o pide cita para un día/hora, explícale con extrema elegancia que actualmente gestionamos nuestras citas de forma personalizada por teléfono o presencialmente, e indícale el teléfono `{clinic_phone}` (y WhatsApp `{whatsapp_number}` si está disponible) para que nuestro equipo le atienda de inmediato.
-- Puedes mostrar tarjetas informativas de servicios si pregunta por tratamientos usando `[OPCIONES: Servicio A | Servicio B | Servicio C]`.
+- Al mencionar el teléfono o WhatsApp en tu mensaje de texto, redacta siempre enlaces clicables en formato Markdown:
+  * Ejemplo: "Puedes llamarnos al [{clinic_phone}]({phone_action_val})"
+  * Si hay WhatsApp: "o escribirnos por [WhatsApp al {whatsapp_number}]({whatsapp_url})"
+- Si el visitante pregunta cómo reservar o pide cita para un día/hora, explícale con extrema elegancia que gestionamos las citas por teléfono o WhatsApp, e incluye botones interactivos de contacto directo:
+  `{contact_options_demo}`
+- Si el visitante pregunta por servicios o información de tratamientos, puedes ofrecer las opciones interactivas con `[OPCIONES: Nombre Tratamiento A | Nombre Tratamiento B]`. Al pulsar sobre ellas, el visitante accederá directamente a la ficha detallada del servicio en la web.
 - Mantén tus respuestas breves, naturales y fluidas (máximo 25-35 palabras) ya que se sintetizan por voz."""
     else:
         system_instruction = f"""Eres el Asistente Virtual 24/7 de "{clinic_name}".
@@ -381,6 +391,29 @@ DIRECTIVAS DE INTELIGENCIA CONVERSACIONAL (PASO A PASO - CERO VOLCADOS DE SERVIC
                     action_value=clean_val
                 )
 
+            # B0. Teléfono o WhatsApp directo
+            if "tel:" in clean_val_lower or (clinic_phone and clinic_phone.lower() in clean_val_lower) or "llamar" in clean_val_lower or "telefono" in clean_val_lower or "teléfono" in clean_val_lower:
+                return schemas.ConciergeOptionItem(
+                    id="contact_phone",
+                    title=f"Llamar al {clinic_phone}",
+                    subtitle="Atención telefónica directa",
+                    category="general",
+                    group=group_label or "Contacto Directo",
+                    badge="Llamar",
+                    action_value=phone_action_val
+                )
+
+            if "whatsapp" in clean_val_lower or "wa.me" in clean_val_lower:
+                return schemas.ConciergeOptionItem(
+                    id="contact_whatsapp",
+                    title=f"WhatsApp ({whatsapp_number or clinic_phone})",
+                    subtitle="Escríbenos directamente por WhatsApp",
+                    category="general",
+                    group=group_label or "Contacto Directo",
+                    badge="WhatsApp",
+                    action_value=whatsapp_url or phone_action_val
+                )
+
             # B. Sede física
             for loc in active_locations:
                 if (loc.name.lower() in clean_val_lower) or (clean_val_lower in loc.name.lower()) or (str(loc.id) in clean_val):
@@ -409,6 +442,12 @@ DIRECTIVAS DE INTELIGENCIA CONVERSACIONAL (PASO A PASO - CERO VOLCADOS DE SERVIC
                         short_desc = srv.description[:60] + "..." if len(srv.description) > 60 else srv.description
                         sub_parts.append(short_desc)
                     price_badge = f"{srv.price}€" if srv.price is not None else None
+
+                    # Si las reservas online están desactivadas, el clic redirige a la ficha web del tratamiento
+                    svc_slug = srv.slug or str(srv.id)
+                    cat_slug = srv.category.slug if getattr(srv, 'category', None) and getattr(srv.category, 'slug', None) else "general"
+                    service_detail_url = f"/tratamientos/{cat_slug}/{svc_slug}"
+
                     return schemas.ConciergeOptionItem(
                         id=str(srv.id),
                         title=srv.name,
@@ -416,7 +455,7 @@ DIRECTIVAS DE INTELIGENCIA CONVERSACIONAL (PASO A PASO - CERO VOLCADOS DE SERVIC
                         category="service",
                         group=group_label or "Tratamiento",
                         badge=price_badge,
-                        action_value=srv.name
+                        action_value=service_detail_url if not allow_online_booking else srv.name
                     )
 
             # D. Genérica

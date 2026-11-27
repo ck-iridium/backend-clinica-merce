@@ -18,7 +18,10 @@ import {
   Tag,
   Home,
   Check,
-  ChevronRight
+  ChevronRight,
+  Phone,
+  MessageCircle,
+  ExternalLink
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLanguage } from '@/app/contexts/LanguageContext';
@@ -274,6 +277,121 @@ export default function FrontEndConciergeWidget() {
     }
   };
 
+  const handleOptionClick = (opt: ConciergeOptionItem) => {
+    const rawVal = (opt.action_value || opt.title || '').trim();
+    if (!rawVal) return;
+
+    // 1. Enlace telefónico directo
+    if (rawVal.startsWith('tel:')) {
+      window.location.href = rawVal;
+      return;
+    }
+
+    // 2. Enlace externo (WhatsApp, web externa, etc.)
+    if (rawVal.startsWith('http://') || rawVal.startsWith('https://')) {
+      window.open(rawVal, '_blank', 'noopener,noreferrer');
+      return;
+    }
+
+    // 3. Ruta interna (/tratamientos/..., /reservar, etc.)
+    if (rawVal.startsWith('/')) {
+      setIsOpen(false);
+      stopSpeaking();
+      router.push(rawVal);
+      return;
+    }
+
+    // 4. Si es servicio pero no venía con URL previa, buscar si podemos redirigir
+    // o enviar al chat normalmente
+    handleSend(rawVal);
+  };
+
+  const renderMessageContent = (text: string) => {
+    if (!text) return null;
+
+    // Detectar enlaces markdown [texto](url), URLs normales y números de teléfono
+    // Convertir a links clicables seguros
+    const markdownLinkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+|tel:[^\s)]+|\/[^\s)]+)\)/g;
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+
+    // Primero procesamos links de Markdown
+    let parts: (string | React.ReactNode)[] = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = markdownLinkRegex.exec(text)) !== null) {
+      const matchIndex = match.index;
+      if (matchIndex > lastIndex) {
+        parts.push(text.substring(lastIndex, matchIndex));
+      }
+
+      const label = match[1];
+      const href = match[2];
+      const isInternal = href.startsWith('/');
+      const isPhone = href.startsWith('tel:');
+
+      parts.push(
+        <a
+          key={`md-link-${matchIndex}`}
+          href={href}
+          onClick={(e) => {
+            if (isInternal) {
+              e.preventDefault();
+              setIsOpen(false);
+              stopSpeaking();
+              router.push(href);
+            }
+          }}
+          target={isInternal || isPhone ? undefined : '_blank'}
+          rel={isInternal || isPhone ? undefined : 'noopener noreferrer'}
+          className="inline-flex items-center gap-1 font-semibold text-[#b08e23] dark:text-[#d4af37] underline underline-offset-2 hover:opacity-80 transition-opacity"
+        >
+          {isPhone && <Phone className="w-3 h-3 inline-block shrink-0" />}
+          {href.includes('wa.me') && <MessageCircle className="w-3 h-3 inline-block shrink-0" />}
+          <span>{label}</span>
+          {!isInternal && !isPhone && <ExternalLink className="w-2.5 h-2.5 inline-block shrink-0" />}
+        </a>
+      );
+      lastIndex = matchIndex + match[0].length;
+    }
+
+    if (lastIndex < text.length) {
+      parts.push(text.substring(lastIndex));
+    }
+
+    // Ahora sobre las partes que sean strings, podemos procesar URLs desnudas si las hay
+    const finalElements: (string | React.ReactNode)[] = [];
+    parts.forEach((part, pIdx) => {
+      if (typeof part !== 'string') {
+        finalElements.push(part);
+        return;
+      }
+
+      const subParts = part.split(urlRegex);
+      subParts.forEach((sp, spIdx) => {
+        if (sp.match(urlRegex)) {
+          finalElements.push(
+            <a
+              key={`raw-url-${pIdx}-${spIdx}`}
+              href={sp}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 font-semibold text-[#b08e23] dark:text-[#d4af37] underline underline-offset-2 hover:opacity-80 transition-opacity"
+            >
+              {sp.includes('wa.me') && <MessageCircle className="w-3 h-3 inline-block shrink-0" />}
+              <span>{sp}</span>
+              <ExternalLink className="w-2.5 h-2.5 inline-block shrink-0" />
+            </a>
+          );
+        } else {
+          finalElements.push(sp);
+        }
+      });
+    });
+
+    return <p className="whitespace-pre-wrap">{finalElements}</p>;
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -435,7 +553,7 @@ export default function FrontEndConciergeWidget() {
                             : 'bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-950 rounded-br-sm'
                         }`}
                       >
-                        <p className="whitespace-pre-wrap">{msg.content}</p>
+                        {renderMessageContent(msg.content)}
 
                         {/* Opciones Interactivas Clicables (Tarjetas 1 por fila, Grid de Horas y Selección Múltiple) */}
                         {(() => {
@@ -544,7 +662,7 @@ export default function FrontEndConciergeWidget() {
                                                     };
                                                   });
                                                 } else {
-                                                  handleSend(opt.action_value);
+                                                  handleOptionClick(opt);
                                                 }
                                               }}
                                               className={`w-full text-left px-3 py-2.5 rounded-xl border transition-all duration-200 flex items-center justify-between group active:scale-[0.99] ${
@@ -565,6 +683,12 @@ export default function FrontEndConciergeWidget() {
                                                     <MapPin className="w-3.5 h-3.5" />
                                                   ) : opt.category === 'modality' ? (
                                                     <Home className="w-3.5 h-3.5" />
+                                                  ) : (opt.action_value || '').startsWith('tel:') ? (
+                                                    <Phone className="w-3.5 h-3.5" />
+                                                  ) : (opt.action_value || '').includes('wa.me') ? (
+                                                    <MessageCircle className="w-3.5 h-3.5" />
+                                                  ) : (opt.action_value || '').startsWith('/') ? (
+                                                    <ExternalLink className="w-3.5 h-3.5" />
                                                   ) : (
                                                     <Sparkles className="w-3.5 h-3.5" />
                                                   )}
